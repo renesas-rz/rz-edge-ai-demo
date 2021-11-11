@@ -46,11 +46,11 @@ This repository contains the code required to build the application demo. This d
     sudo cp -r tensorflow/lite/tools/make/downloads/flatbuffers/include/flatbuffers /usr/local/include
     ```
 
-4. Copy [shoppingBasketDemo.tflite](https://github.com/renesas-rz/meta-rz-edge-ai-demo/blob/master/recipes-ai/shopping-basket-mode/files/shoppingBasketDemo.tflite) to `/opt/rz-edge-ai-demo`
+4. Copy [shoppingBasketDemo.tflite](https://github.com/renesas-rz/meta-rz-edge-ai-demo/blob/master/recipes-ai/files/shoppingBasketDemo.tflite) to `/opt/rz-edge-ai-demo`
     ```
     sudo mkdir /opt/rz-edge-ai-demo
     cd /opt/rz-edge-ai-demo
-    sudo wget https://github.com/renesas-rz/meta-rz-edge-ai-demo/raw/master/recipes-ai/shopping-basket-mode/files/shoppingBasketDemo.tflite
+    sudo wget https://github.com/renesas-rz/meta-rz-edge-ai-demo/raw/master/recipes-ai/files/shoppingBasketDemo.tflite
     ```
 
 5. Exclude ArmNN incompatible code

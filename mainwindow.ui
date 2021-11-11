@@ -25,7 +25,7 @@
    <enum>Qt::NoFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>Shopping Basket Demo</string>
+   <string>Shopping Basket Mode</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QLabel" name="labelInference">

@@ -95,7 +95,7 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString modelLoc
     QSysInfo systemInfo;
 
     if (systemInfo.machineHostName() == "hihope-rzg2m") {
-        setWindowTitle("Shopping Basket Demo - RZ/G2M");
+        setWindowTitle("Shopping Basket Mode - RZ/G2M");
         boardInfo = G2M_HW_INFO;
         board = G2M;
 
@@ -107,7 +107,7 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString modelLoc
         }
 
     } else if (systemInfo.machineHostName() == "smarc-rzg2l") {
-        setWindowTitle("Shopping Basket Demo - RZ/G2L");
+        setWindowTitle("Shopping Basket Mode - RZ/G2L");
         boardInfo = G2L_HW_INFO;
         board = G2L;
 
@@ -123,7 +123,7 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString modelLoc
             cameraLocation = QString("/dev/video0");
 
     } else if (systemInfo.machineHostName() == "ek874") {
-        setWindowTitle("Shopping Basket Demo - RZ/G2E");
+        setWindowTitle("Shopping Basket Mode - RZ/G2E");
         boardInfo = G2E_HW_INFO;
         board = G2E;
 
@@ -134,7 +134,7 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString modelLoc
                 cameraLocation = QString("/dev/video0");
         }
     } else {
-        setWindowTitle("Shopping Basket Demo");
+        setWindowTitle("Shopping Basket Mode");
         boardInfo = HW_INFO_WARNING;
     }
 

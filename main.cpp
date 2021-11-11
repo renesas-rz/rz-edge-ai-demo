@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     QString cameraLocation;
     QString modelLocation;
     QString applicationDescription =
-    "Shopping Basket Demo\n"
+    "Shopping Basket Mode\n"
     "  Draws boxes around detected shopping items, displays the name\n"
     "  and confidence of the object, populates a checkout list, and\n"
     "  also displays inference time.\n\n"
