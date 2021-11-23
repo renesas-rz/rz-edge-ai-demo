@@ -27,12 +27,14 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     opencvworker.cpp \
+    shoppingbasket.cpp \
     tfliteworker.cpp \
     videoworker.cpp
 
 HEADERS += \
     mainwindow.h \
     opencvworker.h \
+    shoppingbasket.h \
     tfliteworker.h \
     videoworker.h
 

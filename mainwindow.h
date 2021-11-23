@@ -21,9 +21,6 @@
 #include <QMainWindow>
 #include <opencv2/videoio.hpp>
 
-#define BUTTON_BLUE "background-color: rgba(42, 40, 157);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
-#define BUTTON_GREYED_OUT "background-color: rgba(42, 40, 157, 90);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
-
 #define TEXT_CAMERA_INIT_STATUS_ERROR "Camera Error!\n\n No camera detected, please check connection and relaunch application.\n\nApplication will now close."
 #define TEXT_CAMERA_OPENING_ERROR "Camera Error!\n\n Camera not Opening, please check connection and relaunch application.\n\nApplication will now close."
 #define TEXT_CAMERA_FAILURE_ERROR "Camera Error!\n\n Camera has stopped working, please check the connection and relaunch application.\n\nApplication will now close."
@@ -35,8 +32,6 @@
 #define G2LC_HW_INFO "Hardware Information\n\nBoard: RZ/G2LC smarc-rzg2lc-evk\nCPUs: 2x Arm Cortex-A55\nDDR: 2GB"
 #define G2M_HW_INFO "Hardware Information\n\nBoard: RZ/G2M hihope-rzg2m\nCPUs: 2x Arm Cortex-A57, 4x Arm Cortex-A53\nDDR: 4GB"
 #define HW_INFO_WARNING "Unknown Board!"
-#define TEXT_INFERENCE "Inference Time: "
-#define TEXT_TOTAL_ITEMS "Total Items: "
 
 #define APP_WIDTH 1275
 #define APP_HEIGHT 635
@@ -55,6 +50,7 @@
 class QGraphicsScene;
 class QGraphicsView;
 class opencvWorker;
+class shoppingBasket;
 class tfliteWorker;
 class QElapsedTimer;
 class videoWorker;
@@ -68,51 +64,40 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent, QString cameraLocation, QString modelLocation);
 
-signals:
-    void startVideo();
-    void stopVideo();
-
 public slots:
     void ShowVideo();
+    void processFrame();
 
 private slots:
-    void receiveOutputTensor (const QVector<float>& receivedTensor, int recievedTimeElapsed, const cv::Mat&);
-    void on_pushButtonProcessBasket_clicked();
-    void on_pushButtonNextBasket_clicked();
+    void drawBoxes(const QVector<float>& outputTensor, QStringList labelList);
     void on_actionLicense_triggered();
     void on_actionEnable_ArmNN_Delegate_triggered();
+    void on_actionShopping_Basket_triggered();
     void on_actionHardware_triggered();
     void on_actionExit_triggered();
-    void start_video();
-    void stop_video();
     void on_actionAuto_White_Balance_triggered();
     void on_actionAuto_Exposure_triggered();
     void on_actionAuto_Gain_triggered();
 
 private:
-    void drawBoxes();
     void drawMatToView(const cv::Mat& matInput);
     void createTfWorker();
     QImage matToQImage(const cv::Mat& matToConvert);
     void createVideoWorker();
-    void setProcessButton(bool enable);
-    void setNextButton(bool enable);
     void errorPopup(QString errorMessage, int errorCode);
+    void setupShoppingMode();
 
     Ui::MainWindow *ui;
     bool useArmNNDelegate;
     QFont font;
     QPixmap image;
     QGraphicsScene *scene;
-    QVector<float> outputTensor;
     QGraphicsView *graphicsView;
     opencvWorker *cvWorker;
+    shoppingBasket *shoppingBasketMode;
     tfliteWorker *tfWorker;
-    QStringList labelListSorted;
     QString boardInfo;
     QString modelPath;
-    static const QStringList labelList;
-    static const std::vector<float> costs;
     videoWorker *vidWorker;
 };
 
