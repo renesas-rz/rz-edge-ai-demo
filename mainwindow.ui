@@ -356,6 +356,11 @@ Basket</string>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuInference">
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
     <property name="title">
      <string>Inference</string>
     </property>
