@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     parser.process(a);
     cameraLocation = parser.value(cameraOption);
 
-    modelLocation = CPU_MODEL_NAME;
+    modelLocation = CPU_MODEL_PATH;
 
     if (!QFile::exists(modelLocation))
             qFatal("%s not found in the current directory",
