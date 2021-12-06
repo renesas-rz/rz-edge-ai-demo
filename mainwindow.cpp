@@ -49,12 +49,12 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString modelLoc
 {
     Board board = Unknown;
 
-    QPixmap splashScreenImage("/opt/shopping-basket-demo/logos/rz-splashscreen.png");
+    QPixmap splashScreenImage("/opt/rz-edge-ai-demo/logos/rz-splashscreen.png");
 
     QSplashScreen *splashScreen = new QSplashScreen(splashScreenImage);
     splashScreen->setAttribute(Qt::WA_DeleteOnClose, true);
     splashScreen->show();
-    splashScreen->showMessage("Loading the \nRZG Shopping Basket Demo", Qt::AlignCenter, Qt::blue);
+    splashScreen->showMessage("Loading the \nRZ Edge AI Demo", Qt::AlignCenter, Qt::blue);
     qApp->processEvents();
     font.setPointSize(18);
     splashScreen->setFont(font);
