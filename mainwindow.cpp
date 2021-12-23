@@ -152,6 +152,7 @@ void MainWindow::setupShoppingMode()
     connect(ui->pushButtonNextBasket, SIGNAL(pressed()), shoppingBasketMode, SLOT(nextBasket()));
     connect(shoppingBasketMode, SIGNAL(getFrame()), this, SLOT(processFrame()));
     connect(shoppingBasketMode, SIGNAL(getBoxes(QVector<float>,QStringList)), this, SLOT(drawBoxes(QVector<float>,QStringList)));
+    connect(shoppingBasketMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(sendMatToDraw(cv::Mat)));
 }
 
 void MainWindow::createVideoWorker()
@@ -244,6 +245,11 @@ void MainWindow::on_actionHardware_triggered()
                                  QMessageBox::NoButton, this, Qt::Dialog | Qt::FramelessWindowHint);
     msgBox->setFont(font);
     msgBox->show();
+}
+
+void MainWindow::sendMatToDraw(const cv::Mat &matToSend)
+{
+    drawMatToView(matToSend);
 }
 
 void MainWindow::drawMatToView(const cv::Mat& matInput)

@@ -70,6 +70,7 @@ public slots:
 
 private slots:
     void drawBoxes(const QVector<float>& outputTensor, QStringList labelList);
+    void sendMatToDraw(const cv::Mat& matToSend);
     void on_actionLicense_triggered();
     void on_actionEnable_ArmNN_Delegate_triggered();
     void on_actionShopping_Basket_triggered();
