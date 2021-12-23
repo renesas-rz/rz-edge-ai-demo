@@ -43,11 +43,11 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString modelLoc
 
     QSplashScreen *splashScreen = new QSplashScreen(splashScreenImage);
     splashScreen->setAttribute(Qt::WA_DeleteOnClose, true);
+    font.setPointSize(18);
+    splashScreen->setFont(font);
     splashScreen->show();
     splashScreen->showMessage("Loading the \nRZ Edge AI Demo", Qt::AlignCenter, Qt::blue);
     qApp->processEvents();
-    font.setPointSize(18);
-    splashScreen->setFont(font);
 
     modelPath = modelLocation;
     useArmNNDelegate = true;
