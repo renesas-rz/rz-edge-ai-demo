@@ -1,5 +1,5 @@
 /*****************************************************************************************
- * Copyright (C) 2021 Renesas Electronics Corp.
+ * Copyright (C) 2022 Renesas Electronics Corp.
  * This file is part of the RZ Edge AI Demo.
  *
  * The RZ Edge AI Demo is free software using the Qt Open Source Model: you can redistribute it and/or modify
@@ -222,7 +222,7 @@ void MainWindow::drawBoxes(const QVector<float>& outputTensor, QStringList label
 void MainWindow::on_actionLicense_triggered()
 {
     QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, "License",
-                             "Copyright (C) 2021 Renesas Electronics Corp.\n\n"
+                             "Copyright (C) 2022 Renesas Electronics Corp.\n\n"
                              "The RZ Edge AI Demo is free software using the Qt Open Source Model: "
                              "you can redistribute it and/or modify "
                              "it under the terms of the GNU General Public License as published by "

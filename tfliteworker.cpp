@@ -1,5 +1,5 @@
 /*****************************************************************************************
- * Copyright (C) 2021 Renesas Electronics Corp.
+ * Copyright (C) 2022 Renesas Electronics Corp.
  * This file is part of the RZ Edge AI Demo.
  *
  * The RZ Edge AI Demo is free software using the Qt Open Source Model: you can redistribute it and/or modify
