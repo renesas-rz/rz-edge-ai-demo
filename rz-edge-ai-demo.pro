@@ -26,6 +26,7 @@ CONFIG += c++14
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
+    objectdetection.cpp \
     opencvworker.cpp \
     shoppingbasket.cpp \
     tfliteworker.cpp \
@@ -33,6 +34,7 @@ SOURCES += \
 
 HEADERS += \
     mainwindow.h \
+    objectdetection.h \
     opencvworker.h \
     shoppingbasket.h \
     tfliteworker.h \

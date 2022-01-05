@@ -16,6 +16,7 @@
  * along with the RZ Edge AI Demo.  If not, see <https://www.gnu.org/licenses/>.
  *****************************************************************************************/
 
+#include <QEventLoop>
 #include <QGraphicsScene>
 #include <QGraphicsTextItem>
 #include <QFileDialog>
@@ -29,17 +30,18 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "tfliteworker.h"
+#include "objectdetection.h"
 #include "opencvworker.h"
 #include "videoworker.h"
 #include "shoppingbasket.h"
 
-MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString modelLocation)
+MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLocation, QString modelLocation)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
     Board board = Unknown;
 
-    QPixmap splashScreenImage("/opt/rz-edge-ai-demo/logos/rz-splashscreen.png");
+    QPixmap splashScreenImage(SPLASH_SCREEN_DIRECTORY);
 
     QSplashScreen *splashScreen = new QSplashScreen(splashScreenImage);
     splashScreen->setAttribute(Qt::WA_DeleteOnClose, true);
@@ -49,8 +51,17 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString modelLoc
     splashScreen->showMessage("Loading the \nRZ Edge AI Demo", Qt::AlignCenter, Qt::blue);
     qApp->processEvents();
 
+    labelPath = labelLocation;
+    if (labelPath.isEmpty())
+        labelPath = LABEL_DIRECTORY_OD;
+
     modelPath = modelLocation;
+    if (modelPath.isEmpty())
+        modelPath = MODEL_DIRECTORY_OD;
+
     useArmNNDelegate = true;
+
+    iterations = 1;
 
     ui->setupUi(this);
     this->resize(APP_WIDTH, APP_HEIGHT);
@@ -59,11 +70,10 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString modelLoc
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    ui->labelDemoMode->setText("Mode: Shopping Basket");
-    ui->menuMode->menuAction()->setVisible(false);
+    connect(this, SIGNAL(sendMatToDraw(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
 
     QPixmap rzLogo;
-    rzLogo.load("/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png");
+    rzLogo.load(RENESAS_RZ_LOGO_DIRECTORY);
     ui->labelRzLogo->setPixmap(rzLogo);
 
     qRegisterMetaType<QVector<float> >("QVector<float>");
@@ -126,9 +136,9 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString modelLoc
         qWarning("Camera not opening. Quitting.");
         errorPopup(TEXT_CAMERA_OPENING_ERROR, EXIT_CAMERA_STOPPED_ERROR);
     } else {
-        setupShoppingMode();
         createVideoWorker();
         createTfWorker();
+        setupObjectDetectMode();
 
         /* Limit camera loop speed if using mipi camera to save on CPU
          * USB camera is alreay limited to 10 FPS */
@@ -144,15 +154,38 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString modelLoc
     }
 }
 
+void MainWindow::setupObjectDetectMode()
+{
+    demoMode = OD;
+
+    objectDetectMode = new objectDetection(ui, labelPath);
+
+    connect(this, SIGNAL(stopInference()), objectDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
+    connect(ui->pushButtonStartStop, SIGNAL(pressed()), objectDetectMode, SLOT(triggerInference()));
+    connect(objectDetectMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
+    connect(objectDetectMode, SIGNAL(getBoxes(QVector<float>,QStringList)), this, SLOT(drawBoxes(QVector<float>,QStringList)));
+    connect(objectDetectMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
+    connect(objectDetectMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
+    connect(objectDetectMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
+    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>&, int, const cv::Mat&)),
+            objectDetectMode, SLOT(runInference(QVector<float>,int,cv::Mat)));
+}
+
 void MainWindow::setupShoppingMode()
 {
+    demoMode = SB;
+
     shoppingBasketMode = new shoppingBasket(ui);
 
     connect(ui->pushButtonProcessBasket, SIGNAL(pressed()), shoppingBasketMode, SLOT(processBasket()));
     connect(ui->pushButtonNextBasket, SIGNAL(pressed()), shoppingBasketMode, SLOT(nextBasket()));
     connect(shoppingBasketMode, SIGNAL(getFrame()), this, SLOT(processFrame()));
     connect(shoppingBasketMode, SIGNAL(getBoxes(QVector<float>,QStringList)), this, SLOT(drawBoxes(QVector<float>,QStringList)));
-    connect(shoppingBasketMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(sendMatToDraw(cv::Mat)));
+    connect(shoppingBasketMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
+    connect(shoppingBasketMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
+    connect(shoppingBasketMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
+    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>&, int, const cv::Mat&)),
+            shoppingBasketMode, SLOT(runInference(QVector<float>,int,cv::Mat)));
 }
 
 void MainWindow::createVideoWorker()
@@ -160,8 +193,6 @@ void MainWindow::createVideoWorker()
     vidWorker = new videoWorker();
 
     connect(vidWorker, SIGNAL(showVideo()), this, SLOT(ShowVideo()));
-    connect(shoppingBasketMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
-    connect(shoppingBasketMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
 }
 
 void MainWindow::createTfWorker()
@@ -171,9 +202,6 @@ void MainWindow::createTfWorker()
      * RZ/G2M is 2 */
     int inferenceThreads = 2;
     tfWorker = new tfliteWorker(modelPath, useArmNNDelegate, inferenceThreads);
-
-    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>&, int, const cv::Mat&)),
-            shoppingBasketMode, SLOT(runInference(QVector<float>,int,cv::Mat)));
 }
 
 void MainWindow::ShowVideo()
@@ -186,7 +214,7 @@ void MainWindow::ShowVideo()
         qWarning("Camera no longer working. Quitting.");
         errorPopup(TEXT_CAMERA_FAILURE_ERROR, EXIT_CAMERA_STOPPED_ERROR);
     } else {
-        drawMatToView(*image);
+        emit sendMatToDraw(*image);
     }
 }
 
@@ -216,6 +244,7 @@ void MainWindow::drawBoxes(const QVector<float>& outputTensor, QStringList label
             scene->addRect(double(xmin), double(ymin), double(xmax - xmin), double(ymax - ymin), pen, brush);
         }
 
+    if (demoMode == SB)
         ui->labelTotalItems->setText(TEXT_TOTAL_ITEMS + QString("%1").arg(outputTensor.size() / 6));
 }
 
@@ -245,11 +274,6 @@ void MainWindow::on_actionHardware_triggered()
                                  QMessageBox::NoButton, this, Qt::Dialog | Qt::FramelessWindowHint);
     msgBox->setFont(font);
     msgBox->show();
-}
-
-void MainWindow::sendMatToDraw(const cv::Mat &matToSend)
-{
-    drawMatToView(matToSend);
 }
 
 void MainWindow::drawMatToView(const cv::Mat& matInput)
@@ -285,12 +309,6 @@ QImage MainWindow::matToQImage(const cv::Mat& matToConvert)
 void MainWindow::processFrame()
 {
     const cv::Mat* image;
-    unsigned int iterations;
-
-    if (cvWorker->getUsingMipi())
-        iterations = 6;
-    else
-        iterations = 2;
 
     image = cvWorker->getImage(iterations);
 
@@ -318,6 +336,14 @@ void MainWindow::on_actionEnable_ArmNN_Delegate_triggered()
 
     delete tfWorker;
     createTfWorker();
+    disconnectSignals();
+
+    if (demoMode == SB) {
+        setupShoppingMode();
+    } else if (demoMode == OD) {
+        setupObjectDetectMode();
+        emit stopInference();
+    }
 }
 
 void MainWindow::errorPopup(QString errorMessage, int errorCode)
@@ -367,10 +393,84 @@ void MainWindow::on_actionAuto_Gain_triggered()
 
 void MainWindow::on_actionShopping_Basket_triggered()
 {
+    /* Store objection detection model being used */
+    modelObjectDetect = modelPath;
+
+    modelPath = MODEL_DIRECTORY_SB;
+
+    if (cvWorker->getUsingMipi())
+        iterations = 6;
+    else
+        iterations = 2;
+
+    delete tfWorker;
+    createTfWorker();
+
+    disconnectSignals();
     setupShoppingMode();
 
-    ui->labelDemoMode->setText("Mode: Shopping Basket");
-    ui->stackedWidgetLeft->setCurrentIndex(0);
-    ui->stackedWidgetRight->setCurrentIndex(0);
-    ui->actionShopping_Basket->setDisabled(true);
+    vidWorker->StartVideo();
+}
+
+void MainWindow::on_actionObject_Detection_triggered()
+{
+    modelPath = modelObjectDetect;
+
+    iterations = 1;
+
+    delete tfWorker;
+    createTfWorker();
+
+    disconnectSignals();
+    setupObjectDetectMode();
+
+    vidWorker->StartVideo();
+}
+
+void MainWindow::on_actionLoad_Model_triggered()
+{
+    QFileDialog dialog(this);
+
+    emit stopInference();
+
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setDirectory(MODEL_DIRECTORY_PATH);
+    dialog.setNameFilter("TFLite Files (*tflite)");
+    dialog.setViewMode(QFileDialog::Detail);
+
+    if (dialog.exec())
+        modelPath = dialog.selectedFiles().at(0);
+
+    if (modelPath.isEmpty())
+        modelPath = MODEL_DIRECTORY_OD;
+
+    dialog.setDirectory(LABEL_DIRECTORY_PATH);
+    dialog.setNameFilter("Text Files (*txt)");
+
+    if (dialog.exec())
+        labelPath = dialog.selectedFiles().at(0);
+
+    if (labelPath.isEmpty())
+        labelPath = LABEL_DIRECTORY_OD;
+
+    dialog.close();
+
+    delete tfWorker;
+    createTfWorker();
+
+    disconnectSignals();
+    setupObjectDetectMode();
+}
+
+void MainWindow::disconnectSignals()
+{
+    if (demoMode == SB) {
+        shoppingBasketMode->disconnect();
+
+        delete shoppingBasketMode;
+    } else if (demoMode == OD) {
+        objectDetectMode->disconnect();
+
+        delete objectDetectMode;
+    }
 }

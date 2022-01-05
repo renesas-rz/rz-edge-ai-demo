@@ -25,7 +25,13 @@
 #define TEXT_CAMERA_OPENING_ERROR "Camera Error!\n\n Camera not Opening, please check connection and relaunch application.\n\nApplication will now close."
 #define TEXT_CAMERA_FAILURE_ERROR "Camera Error!\n\n Camera has stopped working, please check the connection and relaunch application.\n\nApplication will now close."
 
-#define CPU_MODEL_PATH "/opt/rz-edge-ai-demo/models/shoppingBasketDemo.tflite"
+#define LABEL_DIRECTORY_PATH "/opt/rz-edge-ai-demo/labels/"
+#define LABEL_DIRECTORY_OD "/opt/rz-edge-ai-demo/labels/coco_labels.txt"
+#define MODEL_DIRECTORY_PATH "/opt/rz-edge-ai-demo/models/"
+#define MODEL_DIRECTORY_OD "/opt/rz-edge-ai-demo/models/mobilenet_ssd_v2_coco_quant_postprocess.tflite"
+#define MODEL_DIRECTORY_SB "/opt/rz-edge-ai-demo/models/shoppingBasketDemo.tflite"
+#define RENESAS_RZ_LOGO_DIRECTORY "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
+#define SPLASH_SCREEN_DIRECTORY "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
 
 #define G2E_HW_INFO "Hardware Information\n\nBoard: RZ/G2E ek874\nCPUs: 2x Arm Cortex-A53,\nDDR: 2GB"
 #define G2L_HW_INFO "Hardware Information\n\nBoard: RZ/G2L smarc-rzg2l-evk\nCPUs: 2x Arm Cortex-A55\nDDR: 2GB"
@@ -49,46 +55,58 @@
 
 class QGraphicsScene;
 class QGraphicsView;
+class objectDetection;
 class opencvWorker;
 class shoppingBasket;
 class tfliteWorker;
 class QElapsedTimer;
+class QEventLoop;
 class videoWorker;
 
 namespace Ui { class MainWindow; } //Needed for mainwindow.ui
+
+enum Mode { SB, OD };
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent, QString cameraLocation, QString modelLocation);
+    MainWindow(QWidget *parent, QString cameraLocation, QString labelLocation, QString modelLocation);
 
 public slots:
     void ShowVideo();
     void processFrame();
 
+signals:
+    void stopInference();
+    void sendMatToDraw(const cv::Mat& matToSend);
+
 private slots:
     void drawBoxes(const QVector<float>& outputTensor, QStringList labelList);
-    void sendMatToDraw(const cv::Mat& matToSend);
+    void drawMatToView(const cv::Mat& matInput);
     void on_actionLicense_triggered();
     void on_actionEnable_ArmNN_Delegate_triggered();
     void on_actionShopping_Basket_triggered();
+    void on_actionObject_Detection_triggered();
     void on_actionHardware_triggered();
     void on_actionExit_triggered();
     void on_actionAuto_White_Balance_triggered();
     void on_actionAuto_Exposure_triggered();
     void on_actionAuto_Gain_triggered();
+    void on_actionLoad_Model_triggered();
 
 private:
-    void drawMatToView(const cv::Mat& matInput);
     void createTfWorker();
     QImage matToQImage(const cv::Mat& matToConvert);
     void createVideoWorker();
     void errorPopup(QString errorMessage, int errorCode);
+    void setupObjectDetectMode();
     void setupShoppingMode();
+    void disconnectSignals();
 
     Ui::MainWindow *ui;
+    unsigned int iterations;
     bool useArmNNDelegate;
     QFont font;
     QPixmap image;
@@ -96,10 +114,15 @@ private:
     QGraphicsView *graphicsView;
     opencvWorker *cvWorker;
     shoppingBasket *shoppingBasketMode;
+    objectDetection *objectDetectMode;
     tfliteWorker *tfWorker;
+    QEventLoop *qeventLoop;
     QString boardInfo;
     QString modelPath;
+    QString modelObjectDetect;
+    QString labelPath;
     videoWorker *vidWorker;
+    Mode demoMode;
 };
 
 #endif // MAINWINDOW_H

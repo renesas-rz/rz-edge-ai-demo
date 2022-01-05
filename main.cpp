@@ -27,21 +27,35 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QCommandLineParser parser;
     QCommandLineOption cameraOption(QStringList() << "c" << "camera", "Choose a camera.", "file");
+    QCommandLineOption labelOption (QStringList() << "l" << "label", "Choose a label for Object Detection Mode.", "file");
+    QCommandLineOption modelOption (QStringList() << "m" << "model", "Choose a model for Object Detection Mode.", "file");
     QString cameraLocation;
+    QString labelLocation;
     QString modelLocation;
     QString applicationDescription =
+    "Selecting Demo Mode\n"
+    "Mode->Object Detection: Object Detection Mode.\n"
+    "Mode->Shopping Basket: Shopping Basket Mode.\n\n"
+    "Required Hardware:\n"
+    "  Camera: Currently the Google Coral Mipi camera is supported,\n"
+    "          but should work with any UVC compatible USB camera.\n\n"
+    "Object Detection Mode (Default)\n"
+    "  Draws boxes around detected objects, displays the name\n"
+    "  and confidence level in the object, and also displays inference time\n"
+    "  and Total FPS.\n\n"
+    "Buttons:\n"
+    "  Start/Stop: Starts the live camera feed, grabs the frame and runs inference\n"
+    "              or just displays the live camera feed.\n\n"
     "Shopping Basket Mode\n"
     "  Draws boxes around detected shopping items, displays the name\n"
     "  and confidence of the object, populates a checkout list, and\n"
     "  also displays inference time.\n\n"
-    "Required Hardware:\n"
-    "  Camera: Currently the Google Coral Mipi camera is supported,\n"
-    "          but should work with any UVC compatible USB camera.\n\n"
     "Buttons:\n"
     "  Process Basket: Pauses the live camera feed, grabs the frame and runs inference.\n"
-    "  Next Basket: Clears inference results and resumes live camera feed.\n"
-    "  About->Hardware: Display the board information.\n"
-    "  About->License: Read the license that this app is licensed under.\n"
+    "  Next Basket: Clears inference results and resumes live camera feed.\n\n"
+    "Common Mode Buttons:\n"
+    "  About->Hardware: Display the platform information.\n"
+    "  About->License: Read the license information.\n"
     "  About->Exit: Close the application.\n"
     "  Inference->Enable/Disable: Enable or disable the ArmNN Delegate\n"
     "                             during inference.\n\n"
@@ -53,19 +67,17 @@ int main(int argc, char *argv[])
     "  2: Camera stopped working";
 
     parser.addOption(cameraOption);
+    parser.addOption(labelOption);
+    parser.addOption(modelOption);
     parser.addHelpOption();
     parser.setApplicationDescription(applicationDescription);
     parser.process(a);
     cameraLocation = parser.value(cameraOption);
-
-    modelLocation = CPU_MODEL_PATH;
-
-    if (!QFile::exists(modelLocation))
-            qFatal("%s not found in the current directory",
-                    modelLocation.toStdString().c_str());
+    labelLocation = parser.value(labelOption);
+    modelLocation = parser.value(modelOption);
 
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    MainWindow w(nullptr, cameraLocation, modelLocation);
+    MainWindow w(nullptr, cameraLocation, labelLocation, modelLocation);
     w.show();
     return a.exec();
 }

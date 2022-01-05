@@ -10,8 +10,9 @@ This repository contains the code required to build the application demo. This d
 4. Run `qmake`.
 5. Run `make`.
 6. Copy `rz-edge-ai-demo` to the root filesystem.
-7. Copy `shoppingBasketDemo.tflite` to `/opt/rz-edge-ai-demo`.
-8. Run the app with `./rz-edge-ai-demo`.
+7. Copy the directory `models/` to `/opt/rz-edge-ai-demo`.
+8. Copy the directory `labels/` to `/opt/rz-edge-ai-demo`.
+9. Run the app with `./rz-edge-ai-demo`.
 
 ### Target: Ubuntu
 1. Install dependencies
@@ -47,14 +48,20 @@ This repository contains the code required to build the application demo. This d
     sudo cp -r tensorflow/lite/tools/make/downloads/flatbuffers/include/flatbuffers /usr/local/include
     ```
 
-4. Copy [shoppingBasketDemo.tflite](https://github.com/renesas-rz/meta-rz-edge-ai-demo/blob/master/recipes-ai/files/shoppingBasketDemo.tflite) to `/opt/rz-edge-ai-demo`
+4. Copy [models/](https://github.com/renesas-rz/meta-rz-edge-ai-demo/blob/master/recipes-ai/rz-edge-ai-demo/files/models) to `/opt/rz-edge-ai-demo`
     ```
-    sudo mkdir /opt/rz-edge-ai-demo
-    cd /opt/rz-edge-ai-demo
-    sudo wget https://github.com/renesas-rz/meta-rz-edge-ai-demo/raw/master/recipes-ai/files/shoppingBasketDemo.tflite
+    sudo mkdir /opt/rz-edge-ai-demo/
+    git clone https://github.com/renesas-rz/meta-rz-edge-ai-demo.git $WORK/meta-rz-edge-ai-demo
+    cd $WORK/meta-rz-edge-ai-demo/recipes-ai/rz-edge-ai-demo/files/
+    sudo cp -r models/ /opt/rz-edge-ai-demo/
     ```
 
-5. Exclude ArmNN incompatible code
+5. Copy [labels/](https://github.com/renesas-rz/meta-rz-edge-ai-demo/blob/master/recipes-ai/rz-edge-ai-demo/files/labels) to `/opt/rz-edge-ai-demo`
+    ```
+    sudo cp -r labels/ /opt/rz-edge-ai-demo/
+    ```
+
+6. Exclude ArmNN incompatible code
 
    As ArmNN is not supported for x86 machines, remove the ArmNN code by uncommenting
    the line below from rz-edge-ai-demo.pro:
@@ -62,7 +69,7 @@ This repository contains the code required to build the application demo. This d
    #DEFINES += SBD_X86
    ```
 
-6. Build demo application
+7. Build demo application
     ```
     cd rz-edge-ai-demo
     qmake
@@ -70,4 +77,4 @@ This repository contains the code required to build the application demo. This d
     sudo cp rz-edge-ai-demo /opt/rz-edge-ai-demo
     ```
 
-7. Run the demo with `/opt/rz-edge-ai-demo/rz-edge-ai-demo`
+8. Run the demo with `/opt/rz-edge-ai-demo/rz-edge-ai-demo`

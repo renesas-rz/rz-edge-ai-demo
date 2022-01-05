@@ -37,6 +37,17 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui)
 
     font.setPointSize(14);
 
+    uiSB->actionShopping_Basket->setDisabled(true);
+    uiSB->actionObject_Detection->setDisabled(false);
+    uiSB->actionLoad_Model->setVisible(false);
+
+    uiSB->labelInference->setText(TEXT_INFERENCE);
+    uiSB->labelDemoMode->setText("Mode: Shopping Basket");
+    uiSB->labelTotalItems->setText(TEXT_TOTAL_ITEMS);
+
+    uiSB->stackedWidgetLeft->setCurrentIndex(0);
+    uiSB->stackedWidgetRight->setCurrentIndex(0);
+
     uiSB->tableWidget->verticalHeader()->setDefaultSectionSize(25);
     uiSB->tableWidget->setHorizontalHeaderLabels({"Item", "Price"});
     uiSB->tableWidget->horizontalHeader()->setFont(font);
@@ -45,10 +56,6 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui)
     double column1Width = uiSB->tableWidget->geometry().width() * 0.8;
     uiSB->tableWidget->setColumnWidth(0, column1Width);
     uiSB->tableWidget->horizontalHeader()->setStretchLastSection(true);
-
-    uiSB->labelInference->setText(TEXT_INFERENCE);
-
-    uiSB->labelTotalItems->setText(TEXT_TOTAL_ITEMS);
 
     setProcessButton(true);
     setNextButton(false);
