@@ -3,8 +3,8 @@
 This repository contains the code required to build the application demo. This demo requires [TensorFlow](https://github.com/tensorflow/tensorflow/tree/v2.3.1) and [OpenCV](https://opencv.org/).
 
 ## Manual Build Instructions
-### RZ/G2
-1. Setup the yocto enviroment described in [meta-rz-edge-ai-demo](https://github.com/renesas-rz/meta-rz-edge-ai-demo) (copy `.conf` files from templates) and run `bitbake core-image-qt-sdk -c populate_sdk` to create the cross toolchain.
+### Target: RZ/G2
+1. Setup the yocto environment described in [meta-rz-edge-ai-demo](https://github.com/renesas-rz/meta-rz-edge-ai-demo) for the target platform (copy `.conf` files from templates) and run `bitbake core-image-qt-sdk -c populate_sdk` to create the cross toolchain.
 2. Install cross toolchain with `sudo sh ./poky-glibc-x86_64-core-image-qt-sdk-aarch64-toolchain-<SDK Version>.sh`.
 3. Set up environment variables with `source /<SDK location>/environment-setup-aarch64-poky-linux`.
 4. Run `qmake`.
@@ -13,16 +13,17 @@ This repository contains the code required to build the application demo. This d
 7. Copy `shoppingBasketDemo.tflite` to `/opt/rz-edge-ai-demo`.
 8. Run the app with `./rz-edge-ai-demo`.
 
-### Ubuntu
+### Target: Ubuntu
 1. Install dependencies
     ```
+    export WORK=<path-to-your-build-directory>
     sudo apt install cmake qtbase5-dev qtdeclarative5-dev qt5-default qtmultimedia5-dev qtcreator
     ```
 
 2. Install opencv core and opencv videoio, make sure your version has Gstreamer enabled. Otherwise build and install [OpenCV](https://github.com/opencv/opencv.git)
     ```
-    git clone  https://github.com/opencv/opencv.git
-    cd opencv/
+    git clone  https://github.com/opencv/opencv.git $WORK/opencv
+    cd $WORK/opencv/
     mkdir build/
     cd build/
     cmake -D CMAKE_BUILD_TYPE=RELEASE \
@@ -36,8 +37,8 @@ This repository contains the code required to build the application demo. This d
 
 3. Build and install [TensorFlow lite v2.3.1](https://github.com/tensorflow/tensorflow/tree/v2.3.1)
     ```
-    git clone  https://github.com/tensorflow/tensorflow.git
-    cd tensorflow/
+    git clone  https://github.com/tensorflow/tensorflow.git $WORK/tensorflow
+    cd $WORK/tensorflow/
     git checkout v2.3.1
     ./tensorflow/lite/tools/make/download_dependencies.sh
     make -j$(nproc) -f ./tensorflow/lite/tools/make/Makefile
