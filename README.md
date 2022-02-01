@@ -1,6 +1,6 @@
 # RZ Edge AI Demo Application Source Code
 
-This repository contains the code required to build the application demo. This demo requires [TensorFlow](https://github.com/tensorflow/tensorflow/tree/v2.3.1) and [OpenCV](https://opencv.org/).
+This repository contains the code required to build the RZ Edge AI Demo application.
 
 ## Manual Build Instructions
 ### Target: RZ/G2
