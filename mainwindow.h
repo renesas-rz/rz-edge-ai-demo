@@ -26,7 +26,7 @@
 #define TEXT_CAMERA_FAILURE_ERROR "Camera Error!\n\n Camera has stopped working, please check the connection and relaunch application.\n\nApplication will now close."
 
 #define LABEL_DIRECTORY_PATH "/opt/rz-edge-ai-demo/labels/"
-#define LABEL_DIRECTORY_OD "/opt/rz-edge-ai-demo/labels/coco_labels.txt"
+#define LABEL_DIRECTORY_OD "/opt/rz-edge-ai-demo/labels/mobilenet_ssd_v2_coco_quant_postprocess_labels.txt"
 #define MODEL_DIRECTORY_PATH "/opt/rz-edge-ai-demo/models/"
 #define MODEL_DIRECTORY_OD "/opt/rz-edge-ai-demo/models/mobilenet_ssd_v2_coco_quant_postprocess.tflite"
 #define MODEL_DIRECTORY_SB "/opt/rz-edge-ai-demo/models/shoppingBasketDemo.tflite"
