@@ -29,9 +29,12 @@ objectDetection::objectDetection(Ui::MainWindow *ui, const QString labelPath)
     QString fileLine;
 
     uiOD = ui;
+    inputModeOD = cameraModeOD;
 
     uiOD->actionShopping_Basket->setDisabled(false);
     uiOD->actionObject_Detection->setDisabled(true);
+    uiOD->actionLoad_Camera->setDisabled(true);
+    uiOD->actionLoad_File->setText(TEXT_LOAD_FILE);
     uiOD->actionLoad_Model->setVisible(true);
 
     uiOD->labelInference->setText(TEXT_INFERENCE);
@@ -51,6 +54,9 @@ objectDetection::objectDetection(Ui::MainWindow *ui, const QString labelPath)
 
     uiOD->stackedWidgetLeft->setCurrentIndex(1);
     uiOD->stackedWidgetRight->setCurrentIndex(1);
+
+    uiOD->toolButtonPlay->setVisible(false);
+    uiOD->toolButtonStop->setVisible(false);
 
     labelFile.setFileName(labelPath);
     if (!labelFile.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -85,43 +91,60 @@ void objectDetection::setButtonState(bool enable)
 
 void objectDetection::triggerInference()
 {
-    if (buttonState) {
-        startTime = std::chrono::high_resolution_clock::now();
-        continuousMode = true;
-        setButtonState(false);
+    if (inputModeOD == imageModeOD) {
+        continuousMode = false;
+
         stopVideo();
+        setButtonState(false);
 
         emit getFrame();
     } else {
-        continuousMode = false;
-        setButtonState(true);
-        startVideo();
+        if (buttonState) {
+            continuousMode = true;
 
-        uiOD->labelInference->setText(TEXT_INFERENCE);
-        uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
-        uiOD->tableWidgetOD->setRowCount(0);
+            timeTotalFps(true);
+            setButtonState(false);
+            stopVideo();
+
+            if (inputModeOD == videoModeOD)
+                setPlayButtonState(false);
+
+            emit getFrame();
+        } else {
+            continuousMode = false;
+
+            setButtonState(true);
+
+            if (inputModeOD == videoModeOD) {
+                stopVideo();
+                setPlayButtonState(true);
+            } else {
+                startVideo();
+                uiOD->labelInference->setText(TEXT_INFERENCE);
+                uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
+                uiOD->tableWidgetOD->setRowCount(0);
+            }
+        }
     }
 }
 
 void objectDetection::runInference(const QVector<float> &receivedTensor, int receivedTimeElapsed, const cv::Mat &receivedMat)
 {
-    int timeElapsed;
-    std::chrono::high_resolution_clock::time_point stopTime;
-
-    stopTime = std::chrono::high_resolution_clock::now();
-    timeElapsed = int(std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
-
     outputTensor = receivedTensor;
 
     uiOD->labelInference->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
 
     updateObjectList(outputTensor);
-    displayTotalFPS(timeElapsed);
+
+    emit sendMatToView(receivedMat);
 
     if (continuousMode) {
-        emit sendMatToView(receivedMat);
-        startTime = std::chrono::high_resolution_clock::now();
+        /* Stop Total FPS timer and display it to GUI, then restart timer before getting the next frame */
+        timeTotalFps(false);
+        timeTotalFps(true);
         emit getFrame();
+    } else {
+        setButtonState(true);
     }
 
     emit getBoxes(outputTensor, labelList);
@@ -158,7 +181,86 @@ void objectDetection::updateObjectList(const QVector<float> receivedList)
     uiOD->tableWidgetOD->insertRow(uiOD->tableWidgetOD->rowCount());
 }
 
-void objectDetection::displayTotalFPS(int totalProcessTime)
+void objectDetection::playVideoFile()
+{
+    if (videoFilePlaying) {
+        uiOD->labelInference->setText(TEXT_INFERENCE);
+        uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
+        uiOD->tableWidgetOD->setRowCount(0);
+        setPlayButtonState(false);
+        startVideo();
+    } else {
+        continuousMode = false;
+
+        stopVideo();
+        setButtonState(true);
+        setPlayButtonState(true);
+    }
+}
+
+void objectDetection::stopVideoFile()
+{
+    stopVideo();
+    setButtonState(true);
+    setPlayButtonState(true);
+    uiOD->graphicsView->scene()->clear();
+    uiOD->labelInference->setText(TEXT_INFERENCE);
+    uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
+    uiOD->tableWidgetOD->setRowCount(0);
+
+    emit restartVideo();
+}
+
+void objectDetection::setPlayButtonState(bool enable)
+{
+    videoFilePlaying = enable;
+    emit setPlayIcon(enable);
+}
+
+void objectDetection::setCameraMode()
+{
+    inputModeOD = cameraModeOD;
+
+    uiOD->actionLoad_Camera->setEnabled(false);
+    uiOD->actionLoad_File->setText(TEXT_LOAD_FILE);
+    uiOD->toolButtonPlay->setVisible(false);
+    uiOD->toolButtonStop->setVisible(false);
+}
+
+void objectDetection::setImageMode()
+{
+    inputModeOD = imageModeOD;
+
+    uiOD->actionLoad_Camera->setEnabled(true);
+    uiOD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
+    uiOD->toolButtonPlay->setVisible(false);
+    uiOD->toolButtonStop->setVisible(false);
+}
+
+void objectDetection::setVideoMode()
+{
+    inputModeOD = videoModeOD;
+
+    uiOD->actionLoad_Camera->setEnabled(true);
+    uiOD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
+    uiOD->toolButtonPlay->setVisible(true);
+    uiOD->toolButtonStop->setVisible(true);
+}
+
+void objectDetection::timeTotalFps(bool startingTimer)
+{
+    if (startingTimer) {
+        /* Start the timer to measure Total FPS */
+        startTime = std::chrono::high_resolution_clock::now();
+    } else {
+        /* Stop timer, calculate Total FPS and display to GUI */
+        std::chrono::high_resolution_clock::time_point stopTime = std::chrono::high_resolution_clock::now();
+        int timeElapsed = int(std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
+        displayTotalFps(timeElapsed);
+    }
+}
+
+void objectDetection::displayTotalFps(int totalProcessTime)
 {
     float totalFps = 1000.0/totalProcessTime;
 
@@ -168,9 +270,15 @@ void objectDetection::displayTotalFPS(int totalProcessTime)
 void objectDetection::stopContinuousMode()
 {
     continuousMode = false;
+
+    stopVideo();
     setButtonState(true);
+    setPlayButtonState(true);
+
     uiOD->labelInference->setText(TEXT_INFERENCE);
     uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
     uiOD->tableWidgetOD->setRowCount(0);
-    emit startVideo();
+
+    if (inputModeOD != videoModeOD)
+        emit startVideo();
 }

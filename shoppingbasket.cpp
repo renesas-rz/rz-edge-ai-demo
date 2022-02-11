@@ -57,6 +57,9 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui)
     uiSB->tableWidget->setColumnWidth(0, column1Width);
     uiSB->tableWidget->horizontalHeader()->setStretchLastSection(true);
 
+    uiSB->toolButtonPlay->setVisible(false);
+    uiSB->toolButtonStop->setVisible(false);
+
     setProcessButton(true);
     setNextButton(false);
 }

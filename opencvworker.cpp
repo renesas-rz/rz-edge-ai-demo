@@ -27,11 +27,13 @@
 #include "opencvworker.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 opencvWorker::opencvWorker(QString cameraLocation, Board board)
 {
     webcamName = cameraLocation.toStdString();
     connectionAttempts = 0;
+    inputOpenCV = cameraInput;
 
     setupCamera();
 
@@ -180,7 +182,7 @@ void opencvWorker::connectCamera()
     }
 
     /* Define the format for the camera to use */
-    camera = new cv::VideoCapture(webcamName);
+    camera = new cv::VideoCapture(webcamName, cv::CAP_V4L2);
     camera->set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('U', 'Y', 'V', 'Y'));
     camera->open(webcamName);
 
@@ -224,23 +226,87 @@ void opencvWorker::checkCamera()
 
 opencvWorker::~opencvWorker() {
     camera->release();
+    videoFile->release();
 }
 
 cv::Mat* opencvWorker::getImage(unsigned int iterations)
 {
-    do {
-        *camera >> picture;
+    if (inputOpenCV == imageInput) {
+        /* For image file input, read image from file */
+        picture = cv::imread(imagePath.toStdString());
+    } else if (inputOpenCV == videoInput) {
+        /* For video file input, grab the current frame from the video playback device */
+        getVideoFileFrame();
 
         if (picture.empty()) {
-            qWarning("Image retrieval error");
+            qWarning("Video frame retrieval error");
             return nullptr;
         }
+    } else {
+        /* For camera input, grab the latest frame from the camera */
+        do {
+            *camera >> picture;
 
-    } while (--iterations);
+            if (picture.empty()) {
+                qWarning("Image retrieval error");
+                return nullptr;
+            }
 
+        } while (--iterations);
+    }
     cv::cvtColor(picture, picture, cv::COLOR_BGR2RGB);
 
     return &picture;
+}
+
+void opencvWorker::getVideoFileFrame()
+{
+    int prevFramePos = videoFile->get(cv::CAP_PROP_POS_FRAMES);
+
+    *videoFile >> picture;
+
+    /* Set the position of the video back to the start when it reaches the end */
+    if (videoFile->get(cv::CAP_PROP_POS_FRAMES) == prevFramePos) {
+        qWarning("Reached end of video, restarted playback");
+        videoFile->set(cv::CAP_PROP_POS_FRAMES, 0);
+        *videoFile >> picture;
+    }
+}
+
+void opencvWorker::useImageMode(QString imageFilePath)
+{
+    checkVideoFile();
+    inputOpenCV = imageInput;
+    imagePath = imageFilePath;
+}
+
+void opencvWorker::useCameraMode()
+{
+    checkVideoFile();
+    inputOpenCV = cameraInput;
+}
+
+void opencvWorker::useVideoMode(QString videoFilePath)
+{
+    checkVideoFile();
+    inputOpenCV = videoInput;
+
+    videoFile = new cv::VideoCapture(videoFilePath.toStdString());
+
+    if (!videoFile->isOpened())
+        qWarning("Could not open video file");
+}
+
+void opencvWorker::checkVideoFile()
+{
+    /* Close video file capture device */
+    if (inputOpenCV == videoInput)
+        videoFile->release();
+}
+
+void opencvWorker::resetVideoFile()
+{
+    videoFile->set(cv::CAP_PROP_POS_FRAMES, 0);
 }
 
 bool opencvWorker::getUsingMipi()

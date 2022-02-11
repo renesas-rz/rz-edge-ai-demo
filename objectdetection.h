@@ -29,11 +29,15 @@
 #define BUTTON_RED "background-color: rgba(255, 0, 0);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
 
 #define TEXT_INFERENCE "Inference Time: "
+#define TEXT_LOAD_FILE "Load Image/Video"
+#define TEXT_LOAD_NEW_FILE "Load New Image/Video"
 #define TEXT_TOTAL_FPS "Total FPS: "
 
 class QGraphicsScene;
 
 namespace Ui { class MainWindow; }
+
+enum InputOD { cameraModeOD, imageModeOD, videoModeOD };
 
 class objectDetection : public QObject
 {
@@ -41,6 +45,10 @@ class objectDetection : public QObject
 
 public:
     objectDetection(Ui::MainWindow *ui, const QString labelPath);
+    void setImageMode();
+    void setVideoMode();
+    void setCameraMode();
+    void timeTotalFps(bool startingTimer);
 
 public slots:
     void runInference(const QVector<float>& receivedTensor, int receivedTimeElapsed, const cv::Mat&receivedMat);
@@ -48,25 +56,32 @@ public slots:
 signals:
     void getFrame();
     void getBoxes(const QVector<float>& receivedTensor, QStringList labelList);
+    void restartVideo();
     void sendMatToView(const cv::Mat&receivedMat);
+    void setPlayIcon(bool state);
     void startVideo();
     void stopVideo();
 
 private slots:
+    void playVideoFile();
     void stopContinuousMode();
+    void stopVideoFile();
     void triggerInference();
 
 private:
     void setButtonState(bool enable);
-    void displayTotalFPS(int totalProcessTime);
+    void setPlayButtonState(bool enable);
+    void displayTotalFps(int totalProcessTime);
     void updateObjectList(const QVector<float> receivedList);
 
     Ui::MainWindow *uiOD;
     QVector<float> outputTensor;
     bool buttonState;
     bool continuousMode;
+    bool videoFilePlaying;
     QStringList labelList;
     std::chrono::high_resolution_clock::time_point startTime;
+    InputOD inputModeOD;
 };
 
 #endif // OBJECTDETECTION_H

@@ -49,6 +49,9 @@
       <height>600</height>
      </size>
     </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
     <property name="sizeAdjustPolicy">
      <enum>QAbstractScrollArea::AdjustToContents</enum>
     </property>
@@ -240,6 +243,32 @@ border-style: outset;
       </property>
       <property name="checked">
        <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="toolButtonStop">
+      <property name="geometry">
+       <rect>
+        <x>80</x>
+        <y>140</y>
+        <width>41</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>...</string>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="toolButtonPlay">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>140</y>
+        <width>41</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>...</string>
       </property>
      </widget>
     </widget>
@@ -582,9 +611,22 @@ border-style: outset;
     <addaction name="actionShopping_Basket"/>
     <addaction name="actionObject_Detection"/>
    </widget>
+   <widget class="QMenu" name="menuInput">
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="title">
+     <string>Input</string>
+    </property>
+    <addaction name="actionLoad_Camera"/>
+    <addaction name="actionLoad_File"/>
+   </widget>
    <addaction name="menuMode"/>
    <addaction name="menuAbout"/>
    <addaction name="menuInference"/>
+   <addaction name="menuInput"/>
    <addaction name="menuCam_Settings"/>
   </widget>
   <action name="actionLicense">
@@ -644,6 +686,16 @@ border-style: outset;
   <action name="actionLoad_Model">
    <property name="text">
     <string>Load Model</string>
+   </property>
+  </action>
+  <action name="actionLoad_File">
+   <property name="text">
+    <string>Load Image/Video</string>
+   </property>
+  </action>
+  <action name="actionLoad_Camera">
+   <property name="text">
+    <string>Load Camera Feed</string>
    </property>
   </action>
  </widget>

@@ -37,6 +37,7 @@
 Q_DECLARE_METATYPE(cv::Mat)
 
 enum Board { G2E, G2L, G2M, Unknown };
+enum InputOpenCV { cameraInput, imageInput, videoInput };
 
 class opencvWorker : public QObject
 {
@@ -53,6 +54,13 @@ public:
     void toggleGain();
     void toggleExpose();
     void toggleSaturation();
+    void useCameraMode();
+    void useImageMode(QString imageFilePath);
+    void useVideoMode(QString videoFilePath);
+
+private slots:
+    void getVideoFileFrame();
+    void resetVideoFile();
 
 private:
     int runCommand(std::string command, std::string &stdoutput);
@@ -60,19 +68,24 @@ private:
     void setupCamera();
     void connectCamera();
     void checkCamera();
+    void checkVideoFile();
 
     std::unique_ptr<cv::VideoCapture> videoCapture;
     bool webcamInitialised;
     bool webcamOpened;
     bool usingMipi;
     int connectionAttempts;
+    QString imagePath;
     std::string webcamName;
     cv::Mat picture;
     cv::VideoCapture *camera;
+    cv::Mat imageFile;
+    cv::VideoCapture *videoFile;
     std::string cameraInitialization;
     bool autoWhiteBalance;
     bool autoGain;
     v4l2_exposure_auto_type autoExpose;
+    InputOpenCV inputOpenCV;
 };
 
 #endif // OPENCVCAPTUREWORKER_H

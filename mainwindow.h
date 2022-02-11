@@ -25,8 +25,12 @@
 #define TEXT_CAMERA_OPENING_ERROR "Camera Error!\n\n Camera not Opening, please check connection and relaunch application.\n\nApplication will now close."
 #define TEXT_CAMERA_FAILURE_ERROR "Camera Error!\n\n Camera has stopped working, please check the connection and relaunch application.\n\nApplication will now close."
 
+#define IMAGE_FILE_FILTER "Images (*.bmp *.dib *.jpeg *.jpg *.jpe *.png *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif);;"
+#define VIDEO_FILE_FILTER "Videos (*.asf *.avi *.3gp *.mp4 *m4v *.mov *.flv *.mpeg *.mkv *.webm *.mxf *.ogg)"
+
 #define LABEL_DIRECTORY_PATH "/opt/rz-edge-ai-demo/labels/"
 #define LABEL_DIRECTORY_OD "/opt/rz-edge-ai-demo/labels/mobilenet_ssd_v2_coco_quant_postprocess_labels.txt"
+#define MEDIA_DIRECTORY_PATH "/opt/rz-edge-ai-demo/media/"
 #define MODEL_DIRECTORY_PATH "/opt/rz-edge-ai-demo/models/"
 #define MODEL_DIRECTORY_OD "/opt/rz-edge-ai-demo/models/mobilenet_ssd_v2_coco_quant_postprocess.tflite"
 #define MODEL_DIRECTORY_SB "/opt/rz-edge-ai-demo/models/shoppingBasketDemo.tflite"
@@ -65,6 +69,7 @@ class videoWorker;
 
 namespace Ui { class MainWindow; } //Needed for mainwindow.ui
 
+enum Input { cameraMode, imageMode, videoMode };
 enum Mode { SB, OD };
 
 class MainWindow : public QMainWindow
@@ -79,12 +84,15 @@ public slots:
     void processFrame();
 
 signals:
+    void fileLoaded();
     void stopInference();
     void sendMatToDraw(const cv::Mat& matToSend);
 
 private slots:
+    void closeEvent(QCloseEvent *event);
     void drawBoxes(const QVector<float>& outputTensor, QStringList labelList);
     void drawMatToView(const cv::Mat& matInput);
+    void setPlayToolButton(bool playState);
     void on_actionLicense_triggered();
     void on_actionEnable_ArmNN_Delegate_triggered();
     void on_actionShopping_Basket_triggered();
@@ -94,6 +102,8 @@ private slots:
     void on_actionAuto_White_Balance_triggered();
     void on_actionAuto_Exposure_triggered();
     void on_actionAuto_Gain_triggered();
+    void on_actionLoad_Camera_triggered();
+    void on_actionLoad_File_triggered();
     void on_actionLoad_Model_triggered();
 
 private:
@@ -104,6 +114,7 @@ private:
     void setupObjectDetectMode();
     void setupShoppingMode();
     void disconnectSignals();
+    void checkInputMode();
 
     Ui::MainWindow *ui;
     unsigned int iterations;
@@ -122,6 +133,7 @@ private:
     QString modelObjectDetect;
     QString labelPath;
     videoWorker *vidWorker;
+    Input inputMode;
     Mode demoMode;
 };
 
