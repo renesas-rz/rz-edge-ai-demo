@@ -190,6 +190,7 @@ void MainWindow::setupShoppingMode()
     connect(ui->pushButtonNextBasket, SIGNAL(pressed()), shoppingBasketMode, SLOT(nextBasket()));
     connect(shoppingBasketMode, SIGNAL(getFrame()), this, SLOT(processFrame()));
     connect(shoppingBasketMode, SIGNAL(getBoxes(QVector<float>,QStringList)), this, SLOT(drawBoxes(QVector<float>,QStringList)));
+    connect(shoppingBasketMode, SIGNAL(getStaticImage()), this, SLOT(getImageFrame()));
     connect(shoppingBasketMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
     connect(shoppingBasketMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
     connect(shoppingBasketMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
@@ -446,7 +447,6 @@ void MainWindow::on_actionShopping_Basket_triggered()
     disconnectSignals();
     setupShoppingMode();
 
-    ui->menuInput->menuAction()->setVisible(false);
     cvWorker->useCameraMode();
     vidWorker->StartVideo();
 }
@@ -525,7 +525,10 @@ void MainWindow::on_actionLoad_File_triggered()
     dialog.setDirectory(MEDIA_DIRECTORY_PATH);
 
     mediaFileFilter = IMAGE_FILE_FILTER;
-    mediaFileFilter += VIDEO_FILE_FILTER;
+
+    if (demoMode == OD)
+        mediaFileFilter += VIDEO_FILE_FILTER;
+
     dialog.setNameFilter(mediaFileFilter);
 
     if (dialog.exec())
@@ -541,32 +544,48 @@ void MainWindow::on_actionLoad_File_triggered()
     }
 
     mediaFilePath = QDir::current().absoluteFilePath(mediaFileName);
+    ui->actionLoad_Camera->setEnabled(true);
 
     if (dialog.selectedNameFilter().contains("Images")) {
         inputMode = imageMode;
         cvWorker->useImageMode(mediaFilePath);
-        objectDetectMode->setImageMode();
+
+        if (demoMode == OD)
+            objectDetectMode->setImageMode();
+        else if (demoMode == SB)
+            shoppingBasketMode->setImageMode(true);
     } else if (dialog.selectedNameFilter().contains("Videos")) {
         inputMode = videoMode;
         cvWorker->useVideoMode(mediaFilePath);
         objectDetectMode->setVideoMode();
     }
 
-    emit sendMatToDraw(*cvWorker->getImage(1));
+    getImageFrame();
     emit fileLoaded();
     ui->labelTotalFps->setText(TEXT_TOTAL_FPS);
     dialog.close();
     qeventLoop->exec();
 }
 
+void MainWindow::getImageFrame()
+{
+    emit sendMatToDraw(*cvWorker->getImage(1));
+}
+
 void MainWindow::on_actionLoad_Camera_triggered()
 {
     inputMode = cameraMode;
 
-    emit stopInference();
-
+    ui->actionLoad_Camera->setEnabled(false);
     cvWorker->useCameraMode();
-    objectDetectMode->setCameraMode();
+
+    if (demoMode == OD) {
+	emit stopInference();
+
+        objectDetectMode->setCameraMode();
+    } else if (demoMode == SB) {
+        shoppingBasketMode->setImageMode(false);
+    }
     vidWorker->StartVideo();
 }
 

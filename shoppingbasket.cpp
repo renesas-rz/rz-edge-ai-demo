@@ -34,12 +34,15 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui)
 {
     QFont font;
     uiSB = ui;
+    inputModeSB = cameraModeSB;
 
     font.setPointSize(14);
 
     uiSB->actionShopping_Basket->setDisabled(true);
     uiSB->actionObject_Detection->setDisabled(false);
     uiSB->actionLoad_Model->setVisible(false);
+    uiSB->actionLoad_Camera->setDisabled(true);
+    uiSB->actionLoad_File->setText(TEXT_LOAD_IMAGE);
 
     uiSB->labelInference->setText(TEXT_INFERENCE);
     uiSB->labelDemoMode->setText("Mode: Shopping Basket");
@@ -99,12 +102,16 @@ void shoppingBasket::nextBasket()
     uiSB->labelInference->setText(TEXT_INFERENCE);
     uiSB->labelTotalItems->setText(TEXT_TOTAL_ITEMS);
 
-    emit startVideo();
+    if (inputModeSB == imageModeSB)
+        emit getStaticImage();
+    else
+        emit startVideo();
 }
 
 void shoppingBasket::processBasket()
 {
-    emit stopVideo();
+    if (inputModeSB == cameraModeSB)
+        emit stopVideo();
 
     setProcessButton(false);
     setNextButton(true);
@@ -161,4 +168,20 @@ void shoppingBasket::runInference(const QVector<float> &receivedTensor, int rece
         emit sendMatToView(receivedMat);
 
     emit getBoxes(outputTensor, labelList);
+}
+
+void shoppingBasket::setImageMode(bool imageStatus)
+{
+    if (imageStatus) {
+        inputModeSB = imageModeSB;
+        uiSB->actionLoad_File->setText(TEXT_LOAD_NEW_IMAGE);
+    } else {
+        inputModeSB = cameraModeSB;
+        uiSB->actionLoad_File->setText(TEXT_LOAD_IMAGE);
+    }
+    uiSB->labelInference->setText(TEXT_INFERENCE);
+    uiSB->labelTotalItems->setText(TEXT_TOTAL_ITEMS);
+    uiSB->tableWidget->setRowCount(0);
+    setProcessButton(true);
+    setNextButton(false);
 }

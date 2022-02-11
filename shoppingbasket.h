@@ -26,11 +26,15 @@
 #define BUTTON_GREYED_OUT "background-color: rgba(42, 40, 157, 90);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
 
 #define TEXT_INFERENCE "Inference Time: "
+#define TEXT_LOAD_IMAGE "Load Image"
+#define TEXT_LOAD_NEW_IMAGE "Load New Image"
 #define TEXT_TOTAL_ITEMS "Total Items: "
 
 class QGraphicsScene;
 
 namespace Ui { class MainWindow; }
+
+enum InputSB { cameraModeSB, imageModeSB };
 
 class shoppingBasket  : public QObject
 {
@@ -38,12 +42,14 @@ class shoppingBasket  : public QObject
 
 public:
     shoppingBasket(Ui::MainWindow *ui);
+    void setImageMode(bool imageStatus);
 
 public slots:
     void runInference(const QVector<float>& receivedTensor, int receivedTimeElapsed, const cv::Mat&receivedMat);
 
 signals:
     void getFrame();
+    void getStaticImage();
     void getBoxes(const QVector<float>& receivedTensor, QStringList labelList);
     void sendMatToView(const cv::Mat&receivedMat);
     void startVideo();
@@ -62,6 +68,7 @@ private:
     QVector<float> outputTensor;
     static const std::vector<float> costs;
     static const QStringList labelList;
+    InputSB inputModeSB;
 };
 
 #endif // SHOPPINGBASKET_H
