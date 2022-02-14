@@ -75,11 +75,11 @@ void objectDetection::setButtonState(bool enable)
 {
     if (enable) {
         buttonState = true;
-        uiOD->pushButtonStartStop->setText("Start");
+        uiOD->pushButtonStartStop->setText("Start\nInference");
         uiOD->pushButtonStartStop->setStyleSheet(BUTTON_BLUE);
     } else {
         buttonState = false;
-        uiOD->pushButtonStartStop->setText("Stop");
+        uiOD->pushButtonStartStop->setText("Stop\nInference");
         uiOD->pushButtonStartStop->setStyleSheet(BUTTON_RED);
     }
 
