@@ -59,6 +59,7 @@ private slots:
 private:
     void setButtonState(bool enable);
     void displayTotalFPS(int totalProcessTime);
+    void updateObjectList(const QVector<float> receivedList);
 
     Ui::MainWindow *uiOD;
     QVector<float> outputTensor;

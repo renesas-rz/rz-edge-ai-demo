@@ -24,6 +24,7 @@
 
 objectDetection::objectDetection(Ui::MainWindow *ui, const QString labelPath)
 {
+    QFont font;
     QFile labelFile;
     QString fileLine;
 
@@ -36,6 +37,17 @@ objectDetection::objectDetection(Ui::MainWindow *ui, const QString labelPath)
     uiOD->labelInference->setText(TEXT_INFERENCE);
     uiOD->labelDemoMode->setText("Mode: Object Detection");
     uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
+
+    font.setPointSize(14);
+    uiOD->tableWidgetOD->verticalHeader()->setDefaultSectionSize(25);
+    uiOD->tableWidgetOD->setHorizontalHeaderLabels({"Object Name", "Count"});
+    uiOD->tableWidgetOD->horizontalHeader()->setFont(font);
+    uiOD->tableWidgetOD->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    uiOD->tableWidgetOD->resizeColumnsToContents();
+    double objectNameColumnWidth = uiOD->tableWidgetOD->geometry().width() * 0.8;
+    uiOD->tableWidgetOD->setColumnWidth(0, objectNameColumnWidth);
+    uiOD->tableWidgetOD->horizontalHeader()->setStretchLastSection(true);
+    uiOD->tableWidgetOD->setRowCount(0);
 
     uiOD->stackedWidgetLeft->setCurrentIndex(1);
     uiOD->stackedWidgetRight->setCurrentIndex(1);
@@ -87,6 +99,7 @@ void objectDetection::triggerInference()
 
         uiOD->labelInference->setText(TEXT_INFERENCE);
         uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
+        uiOD->tableWidgetOD->setRowCount(0);
     }
 }
 
@@ -102,6 +115,7 @@ void objectDetection::runInference(const QVector<float> &receivedTensor, int rec
 
     uiOD->labelInference->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
 
+    updateObjectList(outputTensor);
     displayTotalFPS(timeElapsed);
 
     if (continuousMode) {
@@ -111,6 +125,37 @@ void objectDetection::runInference(const QVector<float> &receivedTensor, int rec
     }
 
     emit getBoxes(outputTensor, labelList);
+}
+
+void objectDetection::updateObjectList(const QVector<float> receivedList)
+{
+    QStringList objectsDetectedList;
+    QTableWidgetItem* objectName;
+    QTableWidgetItem* objectAmount;
+
+    uiOD->tableWidgetOD->setRowCount(0);
+
+    for (int i = 0; (i + 5) < receivedList.size(); i += 6) {
+        objectsDetectedList.append(labelList[int(receivedList[i])]);
+    }
+
+    for (int i = 0; i < labelList.size(); i++) {
+        int objectTotal = objectsDetectedList.count(labelList.at(i));
+
+        if (objectTotal > 0) {
+            objectName = new QTableWidgetItem(labelList.at(i));
+            objectAmount = new QTableWidgetItem(QString::number(objectTotal));
+
+            objectName->setTextAlignment(Qt::AlignCenter);
+            objectAmount->setTextAlignment(Qt::AlignCenter);
+
+            uiOD->tableWidgetOD->insertRow(uiOD->tableWidgetOD->rowCount());
+            uiOD->tableWidgetOD->setItem(uiOD->tableWidgetOD->rowCount()-1, 0, objectName);
+            uiOD->tableWidgetOD->setItem(uiOD->tableWidgetOD->rowCount()-1, 1, objectAmount);
+        }
+    }
+    uiOD->tableWidgetOD->sortByColumn(0, Qt::AscendingOrder);
+    uiOD->tableWidgetOD->insertRow(uiOD->tableWidgetOD->rowCount());
 }
 
 void objectDetection::displayTotalFPS(int totalProcessTime)
@@ -126,5 +171,6 @@ void objectDetection::stopContinuousMode()
     setButtonState(true);
     uiOD->labelInference->setText(TEXT_INFERENCE);
     uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
+    uiOD->tableWidgetOD->setRowCount(0);
     emit startVideo();
 }
