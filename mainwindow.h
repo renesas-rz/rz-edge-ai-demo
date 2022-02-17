@@ -85,6 +85,7 @@ public slots:
 
 signals:
     void fileLoaded();
+    void modelLoaded();
     void stopInference();
     void sendMatToDraw(const cv::Mat& matToSend);
 

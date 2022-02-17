@@ -458,7 +458,10 @@ void MainWindow::on_actionObject_Detection_triggered()
 
 void MainWindow::on_pushButtonLoadAIModel_clicked()
 {
+    qeventLoop = new QEventLoop;
     QFileDialog dialog(this);
+
+    connect(this, SIGNAL(modelLoaded()), qeventLoop, SLOT(quit()));
 
     emit stopInference();
 
@@ -490,6 +493,9 @@ void MainWindow::on_pushButtonLoadAIModel_clicked()
     disconnectSignals();
     setupObjectDetectMode();
     checkInputMode();
+
+    modelLoaded();
+    qeventLoop->exec();
 }
 
 void MainWindow::on_actionLoad_File_triggered()
