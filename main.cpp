@@ -34,8 +34,8 @@ int main(int argc, char *argv[])
     QString modelLocation;
     QString applicationDescription =
     "Selecting Demo Mode\n"
-    "Mode->Object Detection: Object Detection Mode.\n"
-    "Mode->Shopping Basket: Shopping Basket Mode.\n\n"
+    "Demo Mode->Object Detection: Object Detection Mode.\n"
+    "Demo Mode->Shopping Basket: Shopping Basket Mode.\n\n"
     "Required Hardware:\n"
     "  Camera: Currently the Google Coral Mipi camera is supported,\n"
     "          but should work with any UVC compatible USB camera.\n\n"

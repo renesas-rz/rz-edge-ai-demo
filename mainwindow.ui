@@ -620,7 +620,7 @@ AI Model</string>
     <addaction name="actionAuto_Exposure"/>
     <addaction name="actionAuto_White_Balance"/>
    </widget>
-   <widget class="QMenu" name="menuMode">
+   <widget class="QMenu" name="menuDemoMode">
     <property name="font">
      <font>
       <pointsize>13</pointsize>
@@ -628,7 +628,7 @@ AI Model</string>
      </font>
     </property>
     <property name="title">
-     <string>Mode</string>
+     <string>Demo Mode</string>
     </property>
     <addaction name="actionShopping_Basket"/>
     <addaction name="actionObject_Detection"/>
@@ -645,7 +645,7 @@ AI Model</string>
     <addaction name="actionLoad_Camera"/>
     <addaction name="actionLoad_File"/>
    </widget>
-   <addaction name="menuMode"/>
+   <addaction name="menuDemoMode"/>
    <addaction name="menuAbout"/>
    <addaction name="menuInference"/>
    <addaction name="menuInput"/>
