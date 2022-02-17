@@ -96,6 +96,7 @@ private slots:
     void getImageFrame();
     void on_actionLicense_triggered();
     void on_actionEnable_ArmNN_Delegate_triggered();
+    void on_actionTensorFlow_Lite_triggered();
     void on_actionShopping_Basket_triggered();
     void on_actionObject_Detection_triggered();
     void on_actionHardware_triggered();

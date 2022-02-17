@@ -610,6 +610,7 @@ AI Model</string>
     <property name="title">
      <string>Inference Engine</string>
     </property>
+    <addaction name="actionTensorFlow_Lite"/>
     <addaction name="actionEnable_ArmNN_Delegate"/>
    </widget>
    <widget class="QMenu" name="menuDemoMode">
@@ -657,7 +658,7 @@ AI Model</string>
   </action>
   <action name="actionEnable_ArmNN_Delegate">
    <property name="text">
-    <string>Disable ArmNN Delegate</string>
+    <string>TensorFlow Lite + ArmNN delegate</string>
    </property>
    <property name="iconText">
     <string>ArmNN Delegate</string>
@@ -689,6 +690,11 @@ AI Model</string>
   <action name="actionLoad_Camera">
    <property name="text">
     <string>Load Camera Feed</string>
+   </property>
+  </action>
+  <action name="actionTensorFlow_Lite">
+   <property name="text">
+    <string>TensorFlow Lite</string>
    </property>
   </action>
  </widget>

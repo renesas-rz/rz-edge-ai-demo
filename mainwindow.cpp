@@ -72,6 +72,9 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
+    ui->actionEnable_ArmNN_Delegate->setEnabled(false);
+    ui->actionTensorFlow_Lite->setEnabled(true);
+
     connect(this, SIGNAL(sendMatToDraw(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
 
     QPixmap rzLogo;
@@ -331,17 +334,32 @@ void MainWindow::processFrame()
 
 void MainWindow::on_actionEnable_ArmNN_Delegate_triggered()
 {
-    /* Update the GUI text */
-    if(useArmNNDelegate) {
-        ui->actionEnable_ArmNN_Delegate->setText("Enable ArmNN Delegate");
-        ui->labelDelegate->setText("TensorFlow Lite");
-    } else {
-        ui->actionEnable_ArmNN_Delegate->setText("Disable ArmNN Delegate");
-        ui->labelDelegate->setText("TensorFlow Lite + ArmNN delegate");
-    }
+    useArmNNDelegate = true;
 
-    /* Toggle delegate state */
-    useArmNNDelegate = !useArmNNDelegate;
+    ui->actionEnable_ArmNN_Delegate->setEnabled(false);
+    ui->actionTensorFlow_Lite->setEnabled(true);
+    ui->labelDelegate->setText("TensorFlow Lite + ArmNN delegate");
+
+    delete tfWorker;
+    createTfWorker();
+    disconnectSignals();
+
+    if (demoMode == SB) {
+        setupShoppingMode();
+    } else if (demoMode == OD) {
+        setupObjectDetectMode();
+        checkInputMode();
+        emit stopInference();
+    }
+}
+
+void MainWindow::on_actionTensorFlow_Lite_triggered()
+{
+    useArmNNDelegate = false;
+
+    ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+    ui->actionTensorFlow_Lite->setEnabled(false);
+    ui->labelDelegate->setText("TensorFlow Lite");
 
     delete tfWorker;
     createTfWorker();
