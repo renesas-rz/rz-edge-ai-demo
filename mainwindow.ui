@@ -646,10 +646,10 @@ AI Model</string>
     <addaction name="actionLoad_File"/>
    </widget>
    <addaction name="menuDemoMode"/>
-   <addaction name="menuAbout"/>
    <addaction name="menuInput"/>
    <addaction name="menuInferenceEngine"/>
    <addaction name="menuCam_Settings"/>
+   <addaction name="menuAbout"/>
   </widget>
   <action name="actionLicense">
    <property name="text">
