@@ -40,7 +40,6 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui)
 
     uiSB->actionShopping_Basket->setDisabled(true);
     uiSB->actionObject_Detection->setDisabled(false);
-    uiSB->actionLoad_Model->setVisible(false);
     uiSB->actionLoad_Camera->setDisabled(true);
     uiSB->actionLoad_File->setText(TEXT_LOAD_IMAGE);
 

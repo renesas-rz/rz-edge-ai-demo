@@ -35,7 +35,6 @@ objectDetection::objectDetection(Ui::MainWindow *ui, const QString labelPath)
     uiOD->actionObject_Detection->setDisabled(true);
     uiOD->actionLoad_Camera->setDisabled(true);
     uiOD->actionLoad_File->setText(TEXT_LOAD_FILE);
-    uiOD->actionLoad_Model->setVisible(true);
 
     uiOD->labelInference->setText(TEXT_INFERENCE);
     uiOD->labelDemoMode->setText("Mode: Object Detection");

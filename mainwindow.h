@@ -104,7 +104,7 @@ private slots:
     void on_actionAuto_Gain_triggered();
     void on_actionLoad_Camera_triggered();
     void on_actionLoad_File_triggered();
-    void on_actionLoad_Model_triggered();
+    void on_pushButtonLoadAIModel_clicked();
 
 private:
     void createTfWorker();

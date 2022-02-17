@@ -456,7 +456,7 @@ void MainWindow::on_actionObject_Detection_triggered()
     vidWorker->StartVideo();
 }
 
-void MainWindow::on_actionLoad_Model_triggered()
+void MainWindow::on_pushButtonLoadAIModel_clicked()
 {
     QFileDialog dialog(this);
 

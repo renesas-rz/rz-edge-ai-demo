@@ -202,7 +202,7 @@ Basket</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>10</y>
+        <y>300</y>
         <width>111</width>
         <height>111</height>
        </rect>
@@ -238,6 +238,54 @@ border-style: outset;
       <property name="text">
        <string>Start
 Inference</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLoadAIModel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>110</y>
+        <width>111</width>
+        <height>111</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>23</pointsize>
+        <weight>75</weight>
+        <italic>false</italic>
+        <bold>true</bold>
+        <underline>false</underline>
+        <strikeout>false</strikeout>
+        <kerning>false</kerning>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string/>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(42, 40, 157);
+color: rgb(255, 255, 255);
+border: 2px;
+border-radius: 55px;
+border-style: outset;
+</string>
+      </property>
+      <property name="text">
+       <string>Load
+AI Model</string>
       </property>
       <property name="checkable">
        <bool>true</bool>
@@ -563,7 +611,6 @@ Inference</string>
      <string>Inference</string>
     </property>
     <addaction name="actionEnable_ArmNN_Delegate"/>
-    <addaction name="actionLoad_Model"/>
    </widget>
    <widget class="QMenu" name="menuCam_Settings">
     <property name="title">
@@ -656,11 +703,6 @@ Inference</string>
   <action name="actionObject_Detection">
    <property name="text">
     <string>Object Detection</string>
-   </property>
-  </action>
-  <action name="actionLoad_Model">
-   <property name="text">
-    <string>Load Model</string>
    </property>
   </action>
   <action name="actionLoad_File">
