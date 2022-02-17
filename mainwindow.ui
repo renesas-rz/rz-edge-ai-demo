@@ -245,32 +245,6 @@ border-style: outset;
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QToolButton" name="toolButtonStop">
-      <property name="geometry">
-       <rect>
-        <x>80</x>
-        <y>140</y>
-        <width>41</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>...</string>
-      </property>
-     </widget>
-     <widget class="QToolButton" name="toolButtonPlay">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>140</y>
-        <width>41</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>...</string>
-      </property>
-     </widget>
     </widget>
    </widget>
    <widget class="QStackedWidget" name="stackedWidgetRight">

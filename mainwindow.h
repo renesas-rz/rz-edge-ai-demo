@@ -93,7 +93,6 @@ private slots:
     void drawBoxes(const QVector<float>& outputTensor, QStringList labelList);
     void drawMatToView(const cv::Mat& matInput);
     void getImageFrame();
-    void setPlayToolButton(bool playState);
     void on_actionLicense_triggered();
     void on_actionEnable_ArmNN_Delegate_triggered();
     void on_actionShopping_Basket_triggered();

@@ -60,7 +60,6 @@ public:
 
 private slots:
     void getVideoFileFrame();
-    void resetVideoFile();
 
 private:
     int runCommand(std::string command, std::string &stdoutput);

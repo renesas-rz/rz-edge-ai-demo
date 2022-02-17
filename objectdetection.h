@@ -48,7 +48,6 @@ public:
     void setImageMode();
     void setVideoMode();
     void setCameraMode();
-    void timeTotalFps(bool startingTimer);
 
 public slots:
     void runInference(const QVector<float>& receivedTensor, int receivedTimeElapsed, const cv::Mat&receivedMat);
@@ -63,22 +62,19 @@ signals:
     void stopVideo();
 
 private slots:
-    void playVideoFile();
     void stopContinuousMode();
-    void stopVideoFile();
     void triggerInference();
 
 private:
     void setButtonState(bool enable);
-    void setPlayButtonState(bool enable);
     void displayTotalFps(int totalProcessTime);
+    void timeTotalFps(bool startingTimer);
     void updateObjectList(const QVector<float> receivedList);
 
     Ui::MainWindow *uiOD;
     QVector<float> outputTensor;
     bool buttonState;
     bool continuousMode;
-    bool videoFilePlaying;
     QStringList labelList;
     std::chrono::high_resolution_clock::time_point startTime;
     InputOD inputModeOD;

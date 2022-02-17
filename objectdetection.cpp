@@ -55,9 +55,6 @@ objectDetection::objectDetection(Ui::MainWindow *ui, const QString labelPath)
     uiOD->stackedWidgetLeft->setCurrentIndex(1);
     uiOD->stackedWidgetRight->setCurrentIndex(1);
 
-    uiOD->toolButtonPlay->setVisible(false);
-    uiOD->toolButtonStop->setVisible(false);
-
     labelFile.setFileName(labelPath);
     if (!labelFile.open(QIODevice::ReadOnly | QIODevice::Text))
         qFatal("%s could not be opened.", labelPath.toStdString().c_str());
@@ -106,9 +103,6 @@ void objectDetection::triggerInference()
             setButtonState(false);
             stopVideo();
 
-            if (inputModeOD == videoModeOD)
-                setPlayButtonState(false);
-
             emit getFrame();
         } else {
             continuousMode = false;
@@ -117,7 +111,6 @@ void objectDetection::triggerInference()
 
             if (inputModeOD == videoModeOD) {
                 stopVideo();
-                setPlayButtonState(true);
             } else {
                 startVideo();
                 uiOD->labelInference->setText(TEXT_INFERENCE);
@@ -181,50 +174,12 @@ void objectDetection::updateObjectList(const QVector<float> receivedList)
     uiOD->tableWidgetOD->insertRow(uiOD->tableWidgetOD->rowCount());
 }
 
-void objectDetection::playVideoFile()
-{
-    if (videoFilePlaying) {
-        uiOD->labelInference->setText(TEXT_INFERENCE);
-        uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
-        uiOD->tableWidgetOD->setRowCount(0);
-        setPlayButtonState(false);
-        startVideo();
-    } else {
-        continuousMode = false;
-
-        stopVideo();
-        setButtonState(true);
-        setPlayButtonState(true);
-    }
-}
-
-void objectDetection::stopVideoFile()
-{
-    stopVideo();
-    setButtonState(true);
-    setPlayButtonState(true);
-    uiOD->graphicsView->scene()->clear();
-    uiOD->labelInference->setText(TEXT_INFERENCE);
-    uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
-    uiOD->tableWidgetOD->setRowCount(0);
-
-    emit restartVideo();
-}
-
-void objectDetection::setPlayButtonState(bool enable)
-{
-    videoFilePlaying = enable;
-    emit setPlayIcon(enable);
-}
-
 void objectDetection::setCameraMode()
 {
     inputModeOD = cameraModeOD;
 
     uiOD->actionLoad_Camera->setEnabled(false);
     uiOD->actionLoad_File->setText(TEXT_LOAD_FILE);
-    uiOD->toolButtonPlay->setVisible(false);
-    uiOD->toolButtonStop->setVisible(false);
 }
 
 void objectDetection::setImageMode()
@@ -233,8 +188,6 @@ void objectDetection::setImageMode()
 
     uiOD->actionLoad_Camera->setEnabled(true);
     uiOD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
-    uiOD->toolButtonPlay->setVisible(false);
-    uiOD->toolButtonStop->setVisible(false);
 }
 
 void objectDetection::setVideoMode()
@@ -243,8 +196,6 @@ void objectDetection::setVideoMode()
 
     uiOD->actionLoad_Camera->setEnabled(true);
     uiOD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
-    uiOD->toolButtonPlay->setVisible(true);
-    uiOD->toolButtonStop->setVisible(true);
 }
 
 void objectDetection::timeTotalFps(bool startingTimer)
@@ -273,7 +224,6 @@ void objectDetection::stopContinuousMode()
 
     stopVideo();
     setButtonState(true);
-    setPlayButtonState(true);
 
     uiOD->labelInference->setText(TEXT_INFERENCE);
     uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);

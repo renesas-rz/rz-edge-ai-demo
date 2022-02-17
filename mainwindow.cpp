@@ -72,9 +72,6 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    ui->toolButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-    ui->toolButtonStop->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
-
     connect(this, SIGNAL(sendMatToDraw(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
 
     QPixmap rzLogo;
@@ -167,13 +164,9 @@ void MainWindow::setupObjectDetectMode()
 
     connect(this, SIGNAL(stopInference()), objectDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
     connect(ui->pushButtonStartStop, SIGNAL(pressed()), objectDetectMode, SLOT(triggerInference()));
-    connect(ui->toolButtonPlay, SIGNAL(pressed()), objectDetectMode, SLOT(playVideoFile()));
-    connect(ui->toolButtonStop,SIGNAL(pressed()), objectDetectMode, SLOT(stopVideoFile()));
     connect(objectDetectMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
     connect(objectDetectMode, SIGNAL(getBoxes(QVector<float>,QStringList)), this, SLOT(drawBoxes(QVector<float>,QStringList)));
     connect(objectDetectMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
-    connect(objectDetectMode, SIGNAL(setPlayIcon(bool)), this, SLOT(setPlayToolButton(bool)));
-    connect(objectDetectMode, SIGNAL(restartVideo()), cvWorker, SLOT(resetVideoFile()));
     connect(objectDetectMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
     connect(objectDetectMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
     connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>&, int, const cv::Mat&)),
@@ -217,9 +210,6 @@ void MainWindow::createTfWorker()
 void MainWindow::ShowVideo()
 {
     const cv::Mat* image;
-
-    if (inputMode == videoMode)
-        objectDetectMode->timeTotalFps(true);
 
     image = cvWorker->getImage(1);
 
@@ -303,9 +293,6 @@ void MainWindow::drawMatToView(const cv::Mat& matInput)
 
     scene->addPixmap(image);
     scene->setSceneRect(image.rect());
-
-    if (inputMode == videoMode)
-        objectDetectMode->timeTotalFps(false);
 }
 
 QImage MainWindow::matToQImage(const cv::Mat& matToConvert)
@@ -600,14 +587,6 @@ void MainWindow::checkInputMode()
     } else {
         objectDetectMode->setCameraMode();
     }
-}
-
-void MainWindow::setPlayToolButton(bool playState)
-{
-    if (playState)
-        ui->toolButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-    else
-        ui->toolButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
 }
 
 void MainWindow::disconnectSignals()

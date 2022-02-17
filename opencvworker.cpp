@@ -304,11 +304,6 @@ void opencvWorker::checkVideoFile()
         videoFile->release();
 }
 
-void opencvWorker::resetVideoFile()
-{
-    videoFile->set(cv::CAP_PROP_POS_FRAMES, 0);
-}
-
 bool opencvWorker::getUsingMipi()
 {
     return usingMipi;

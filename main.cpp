@@ -48,8 +48,6 @@ int main(int argc, char *argv[])
     "Buttons:\n"
     "  Start/Stop: Starts the live camera feed/media file, grabs the frame and runs\n"
     "              inference or just displays the live camera feed/media file.\n"
-    "  Video Controls: Only available when video file is loaded. Play, pause\n"
-    "                  and stop can be performed.\n"
     "  Input->Load Image/Video: Load an image or video file.\n\n"
     "Shopping Basket Mode\n"
     "  Draws boxes around detected shopping items, displays the name\n"
