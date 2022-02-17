@@ -100,9 +100,6 @@ private slots:
     void on_actionObject_Detection_triggered();
     void on_actionHardware_triggered();
     void on_actionExit_triggered();
-    void on_actionAuto_White_Balance_triggered();
-    void on_actionAuto_Exposure_triggered();
-    void on_actionAuto_Gain_triggered();
     void on_actionLoad_Camera_triggered();
     void on_actionLoad_File_triggered();
     void on_pushButtonLoadAIModel_clicked();

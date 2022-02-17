@@ -32,8 +32,6 @@
 
 #include <QObject>
 
-#include <linux/types.h>
-
 Q_DECLARE_METATYPE(cv::Mat)
 
 enum Board { G2E, G2L, G2M, Unknown };
@@ -50,10 +48,6 @@ public:
     bool cameraInit();
     bool getCameraOpen();
     bool getUsingMipi();
-    void toggleWhitebalanceAuto();
-    void toggleGain();
-    void toggleExpose();
-    void toggleSaturation();
     void useCameraMode();
     void useImageMode(QString imageFilePath);
     void useVideoMode(QString videoFilePath);
@@ -63,7 +57,6 @@ private slots:
 
 private:
     int runCommand(std::string command, std::string &stdoutput);
-    void setControl(__u32 id, __s32 value);
     void setupCamera();
     void connectCamera();
     void checkCamera();
@@ -81,9 +74,6 @@ private:
     cv::Mat imageFile;
     cv::VideoCapture *videoFile;
     std::string cameraInitialization;
-    bool autoWhiteBalance;
-    bool autoGain;
-    v4l2_exposure_auto_type autoExpose;
     InputOpenCV inputOpenCV;
 };
 

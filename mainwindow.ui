@@ -612,14 +612,6 @@ AI Model</string>
     </property>
     <addaction name="actionEnable_ArmNN_Delegate"/>
    </widget>
-   <widget class="QMenu" name="menuCam_Settings">
-    <property name="title">
-     <string>Camera Settings</string>
-    </property>
-    <addaction name="actionAuto_Gain"/>
-    <addaction name="actionAuto_Exposure"/>
-    <addaction name="actionAuto_White_Balance"/>
-   </widget>
    <widget class="QMenu" name="menuDemoMode">
     <property name="font">
      <font>
@@ -648,7 +640,6 @@ AI Model</string>
    <addaction name="menuDemoMode"/>
    <addaction name="menuInput"/>
    <addaction name="menuInferenceEngine"/>
-   <addaction name="menuCam_Settings"/>
    <addaction name="menuAbout"/>
   </widget>
   <action name="actionLicense">
@@ -678,21 +669,6 @@ AI Model</string>
   <action name="actionHardware">
    <property name="text">
     <string>Hardware</string>
-   </property>
-  </action>
-  <action name="actionAuto_Gain">
-   <property name="text">
-    <string>Disable Auto Gain</string>
-   </property>
-  </action>
-  <action name="actionAuto_Exposure">
-   <property name="text">
-    <string>Disable Auto Exposure</string>
-   </property>
-  </action>
-  <action name="actionAuto_White_Balance">
-   <property name="text">
-    <string>Disable Auto White Balance</string>
    </property>
   </action>
   <action name="actionShopping_Basket">
