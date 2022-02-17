@@ -601,14 +601,14 @@ AI Model</string>
     <addaction name="actionLicense"/>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuInference">
+   <widget class="QMenu" name="menuInferenceEngine">
     <property name="font">
      <font>
       <pointsize>13</pointsize>
      </font>
     </property>
     <property name="title">
-     <string>Inference</string>
+     <string>Inference Engine</string>
     </property>
     <addaction name="actionEnable_ArmNN_Delegate"/>
    </widget>
@@ -647,8 +647,8 @@ AI Model</string>
    </widget>
    <addaction name="menuDemoMode"/>
    <addaction name="menuAbout"/>
-   <addaction name="menuInference"/>
    <addaction name="menuInput"/>
+   <addaction name="menuInferenceEngine"/>
    <addaction name="menuCam_Settings"/>
   </widget>
   <action name="actionLicense">
