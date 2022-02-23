@@ -58,6 +58,7 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui)
     double column1Width = uiSB->tableWidget->geometry().width() * 0.8;
     uiSB->tableWidget->setColumnWidth(0, column1Width);
     uiSB->tableWidget->horizontalHeader()->setStretchLastSection(true);
+    uiSB->tableWidgetOD->setRowCount(0);
 
     setProcessButton(true);
     setNextButton(false);
@@ -171,10 +172,13 @@ void shoppingBasket::setImageMode(bool imageStatus)
     if (imageStatus) {
         inputModeSB = imageModeSB;
         uiSB->actionLoad_File->setText(TEXT_LOAD_NEW_IMAGE);
+
+        emit getStaticImage();
     } else {
         inputModeSB = cameraModeSB;
         uiSB->actionLoad_File->setText(TEXT_LOAD_IMAGE);
     }
+    uiSB->actionLoad_Camera->setEnabled(imageStatus);
     uiSB->labelInference->setText(TEXT_INFERENCE);
     uiSB->labelTotalItems->setText(TEXT_TOTAL_ITEMS);
     uiSB->tableWidget->setRowCount(0);

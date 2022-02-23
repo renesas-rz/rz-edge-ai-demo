@@ -346,6 +346,9 @@ void MainWindow::on_actionEnable_ArmNN_Delegate_triggered()
 
     if (demoMode == SB) {
         setupShoppingMode();
+
+        if (inputMode == imageMode)
+            shoppingBasketMode->setImageMode(true);
     } else if (demoMode == OD) {
         setupObjectDetectMode();
         checkInputMode();
@@ -367,6 +370,9 @@ void MainWindow::on_actionTensorFlow_Lite_triggered()
 
     if (demoMode == SB) {
         setupShoppingMode();
+
+        if (inputMode == imageMode)
+            shoppingBasketMode->setImageMode(true);
     } else if (demoMode == OD) {
         setupObjectDetectMode();
         checkInputMode();
