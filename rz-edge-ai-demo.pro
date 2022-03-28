@@ -58,6 +58,19 @@ LIBS += \
     -ldl \
     -lutil
 
+contains(DEFINES, DUNFELL) {
+LIBS += \
+    -lflatbuffers \
+    -lfft2d_fftsg2d \
+    -lruy \
+    -lXNNPACK \
+    -lpthreadpool \
+    -lcpuinfo \
+    -lclog \
+    -lfft2d_fftsg \
+    -lfarmhash
+}
+
 !contains(DEFINES, SBD_X86) {
 LIBS += \
     -larmnn \
