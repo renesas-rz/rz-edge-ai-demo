@@ -26,17 +26,21 @@
 #include <armnn/Utils.hpp>
 #include <delegate/armnn_delegate.hpp>
 #include <delegate/DelegateOptions.hpp>
+#ifdef DUNFELL
+#include "tensorflow/lite/delegates/xnnpack/xnnpack_delegate.h"
+#endif
 
-tfliteWorker::tfliteWorker(QString modelLocation, bool armnnDelegate, int defaultThreads)
+tfliteWorker::tfliteWorker(QString modelLocation, Delegate delegateType, int defaultThreads)
 {
     tflite::ops::builtin::BuiltinOpResolver tfliteResolver;
     TfLiteIntArray *wantedDimensions;
+    this->delegateType = delegateType;
 
     tfliteModel = tflite::FlatBufferModel::BuildFromFile(modelLocation.toStdString().c_str());
     tflite::InterpreterBuilder(*tfliteModel, tfliteResolver) (&tfliteInterpreter);
 
     /* Setup the delegate */
-    if(armnnDelegate == true) {
+    if(delegateType == armNN) {
         std::vector<armnn::BackendId> backends = {armnn::Compute::CpuAcc};
         armnnDelegate::DelegateOptions delegateOptions(backends);
         std::unique_ptr<TfLiteDelegate, decltype(&armnnDelegate::TfLiteArmnnDelegateDelete)>
@@ -45,8 +49,20 @@ tfliteWorker::tfliteWorker(QString modelLocation, bool armnnDelegate, int defaul
 
         /* Instruct the Interpreter to use the armnnDelegate */
         if (tfliteInterpreter->ModifyGraphWithDelegate(std::move(armnnTfLiteDelegate)) != kTfLiteOk)
-           qWarning("Delegate could not be used to modify the graph\n");
+           qWarning("ArmNN Delegate could not be used to modify the graph\n");
     }
+
+#ifdef DUNFELL
+    if (delegateType == xnnpack) {
+        TfLiteXNNPackDelegateOptions xnnpack_options = TfLiteXNNPackDelegateOptionsDefault();
+
+        xnnpack_options.num_threads = defaultThreads;
+        xnnpack_delegate = TfLiteXNNPackDelegateCreate(&xnnpack_options);
+
+        if (tfliteInterpreter->ModifyGraphWithDelegate(xnnpack_delegate) != kTfLiteOk)
+            qWarning("Could not modifiy Graph with XNNPack Delegate\n");
+    }
+#endif
 
     if (tfliteInterpreter->AllocateTensors() != kTfLiteOk)
         qFatal("Failed to allocate tensors!");
@@ -58,6 +74,15 @@ tfliteWorker::tfliteWorker(QString modelLocation, bool armnnDelegate, int defaul
     wantedHeight = wantedDimensions->data[1];
     wantedWidth = wantedDimensions->data[2];
     wantedChannels = wantedDimensions->data[3];
+}
+
+tfliteWorker::~tfliteWorker() {
+    tfliteInterpreter.reset();
+
+#ifdef DUNFELL
+    if (delegateType == xnnpack)
+        TfLiteXNNPackDelegateDelete(xnnpack_delegate);
+#endif
 }
 
 /*

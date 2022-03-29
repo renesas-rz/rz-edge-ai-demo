@@ -612,6 +612,7 @@ AI Model</string>
     </property>
     <addaction name="actionTensorFlow_Lite"/>
     <addaction name="actionEnable_ArmNN_Delegate"/>
+    <addaction name="actionTensorflow_Lite_XNNPack_delegate"/>
    </widget>
    <widget class="QMenu" name="menuDemoMode">
     <property name="font">
@@ -695,6 +696,11 @@ AI Model</string>
   <action name="actionTensorFlow_Lite">
    <property name="text">
     <string>TensorFlow Lite</string>
+   </property>
+  </action>
+  <action name="actionTensorflow_Lite_XNNPack_delegate">
+   <property name="text">
+    <string>Tensorflow Lite + XNNPack delegate</string>
    </property>
   </action>
  </widget>

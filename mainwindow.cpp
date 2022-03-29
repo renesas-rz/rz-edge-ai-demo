@@ -1,4 +1,4 @@
-/*****************************************************************************************
+﻿/*****************************************************************************************
  * Copyright (C) 2022 Renesas Electronics Corp.
  * This file is part of the RZ Edge AI Demo.
  *
@@ -30,7 +30,6 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "tfliteworker.h"
 #include "objectdetection.h"
 #include "opencvworker.h"
 #include "videoworker.h"
@@ -61,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
     if (modelPath.isEmpty())
         modelPath = MODEL_DIRECTORY_OD;
 
-    useArmNNDelegate = true;
+    delegateType = armNN;
 
     iterations = 1;
 
@@ -74,6 +73,10 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
 
     ui->actionEnable_ArmNN_Delegate->setEnabled(false);
     ui->actionTensorFlow_Lite->setEnabled(true);
+
+#ifndef DUNFELL
+    ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(false);
+#endif
 
     connect(this, SIGNAL(sendMatToDraw(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
 
@@ -202,7 +205,7 @@ void MainWindow::createTfWorker()
      * of the same type logically group first, which for the RZ/G2L and
      * RZ/G2M is 2 */
     int inferenceThreads = 2;
-    tfWorker = new tfliteWorker(modelPath, useArmNNDelegate, inferenceThreads);
+    tfWorker = new tfliteWorker(modelPath, delegateType, inferenceThreads);
 }
 
 void MainWindow::ShowVideo()
@@ -332,14 +335,8 @@ void MainWindow::processFrame()
     }
 }
 
-void MainWindow::on_actionEnable_ArmNN_Delegate_triggered()
+void MainWindow::remakeTfWorker()
 {
-    useArmNNDelegate = true;
-
-    ui->actionEnable_ArmNN_Delegate->setEnabled(false);
-    ui->actionTensorFlow_Lite->setEnabled(true);
-    ui->labelDelegate->setText("TensorFlow Lite + ArmNN delegate");
-
     delete tfWorker;
     createTfWorker();
     disconnectSignals();
@@ -356,28 +353,46 @@ void MainWindow::on_actionEnable_ArmNN_Delegate_triggered()
     }
 }
 
+void MainWindow::on_actionEnable_ArmNN_Delegate_triggered()
+{
+    delegateType = armNN;
+
+    ui->actionEnable_ArmNN_Delegate->setEnabled(false);
+    ui->actionTensorFlow_Lite->setEnabled(true);
+#ifdef DUNFELL
+    ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(true);
+#endif
+
+    ui->labelDelegate->setText("TensorFlow Lite + ArmNN delegate");
+
+    remakeTfWorker();
+}
+
+void MainWindow::on_actionTensorflow_Lite_XNNPack_delegate_triggered()
+{
+    delegateType = xnnpack;
+
+    ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+    ui->actionTensorFlow_Lite->setEnabled(true);
+    ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(false);
+    ui->labelDelegate->setText("TensorFlow Lite + XNNPack Delegate");
+
+    remakeTfWorker();
+}
+
 void MainWindow::on_actionTensorFlow_Lite_triggered()
 {
-    useArmNNDelegate = false;
+    delegateType = none;
 
     ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     ui->actionTensorFlow_Lite->setEnabled(false);
+#ifdef DUNFELL
+    ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(true);
+#endif
+
     ui->labelDelegate->setText("TensorFlow Lite");
 
-    delete tfWorker;
-    createTfWorker();
-    disconnectSignals();
-
-    if (demoMode == SB) {
-        setupShoppingMode();
-
-        if (inputMode == imageMode)
-            shoppingBasketMode->setImageMode(true);
-    } else if (demoMode == OD) {
-        setupObjectDetectMode();
-        checkInputMode();
-        emit stopInference();
-    }
+    remakeTfWorker();
 }
 
 void MainWindow::errorPopup(QString errorMessage, int errorCode)

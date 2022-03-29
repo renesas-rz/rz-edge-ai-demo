@@ -21,6 +21,8 @@
 #include <QMainWindow>
 #include <opencv2/videoio.hpp>
 
+#include "tfliteworker.h"
+
 #define TEXT_CAMERA_INIT_STATUS_ERROR "Camera Error!\n\n No camera detected, please check connection and relaunch application.\n\nApplication will now close."
 #define TEXT_CAMERA_OPENING_ERROR "Camera Error!\n\n Camera not Opening, please check connection and relaunch application.\n\nApplication will now close."
 #define TEXT_CAMERA_FAILURE_ERROR "Camera Error!\n\n Camera has stopped working, please check the connection and relaunch application.\n\nApplication will now close."
@@ -97,6 +99,7 @@ private slots:
     void on_actionLicense_triggered();
     void on_actionEnable_ArmNN_Delegate_triggered();
     void on_actionTensorFlow_Lite_triggered();
+    void on_actionTensorflow_Lite_XNNPack_delegate_triggered();
     void on_actionShopping_Basket_triggered();
     void on_actionObject_Detection_triggered();
     void on_actionHardware_triggered();
@@ -110,6 +113,7 @@ private:
     QImage matToQImage(const cv::Mat& matToConvert);
     void createVideoWorker();
     void errorPopup(QString errorMessage, int errorCode);
+    void remakeTfWorker();
     void setupObjectDetectMode();
     void setupShoppingMode();
     void disconnectSignals();
@@ -117,7 +121,7 @@ private:
 
     Ui::MainWindow *ui;
     unsigned int iterations;
-    bool useArmNNDelegate;
+    Delegate delegateType;
     QFont font;
     QPixmap image;
     QGraphicsScene *scene;

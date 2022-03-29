@@ -28,12 +28,15 @@
 
 #define DETECT_THRESHOLD 0.5
 
+enum Delegate { armNN, xnnpack, none };
+
 class tfliteWorker : public QObject
 {
     Q_OBJECT
 
 public:
-    tfliteWorker(QString modelLocation, bool armnnDelegate, int defaultThreads);
+    tfliteWorker(QString modelLocation, Delegate armnnDelegate, int defaultThreads);
+    ~tfliteWorker();
     void receiveImage(const cv::Mat&);
 
 signals:
@@ -43,6 +46,10 @@ private:
     std::unique_ptr<tflite::Interpreter> tfliteInterpreter;
     std::unique_ptr<tflite::FlatBufferModel> tfliteModel;
     std::string modelName;
+    Delegate delegateType;
+#ifdef DUNFELL
+    TfLiteDelegate* xnnpack_delegate;
+#endif
     QVector<float> outputTensor;
     int wantedWidth, wantedHeight, wantedChannels;
 };
