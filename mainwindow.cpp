@@ -287,7 +287,7 @@ void MainWindow::drawMatToView(const cv::Mat& matInput)
     scene->clear();
 
     if (!cvWorker->getUsingMipi() || (inputMode != cameraMode))
-        image = image.scaled(800, 600);
+        image = image.scaled(800, 600, Qt::AspectRatioMode::KeepAspectRatio);
 
     scene->addPixmap(image);
     scene->setSceneRect(image.rect());
