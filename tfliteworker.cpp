@@ -22,12 +22,10 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 
-#ifndef SBD_X86
 #include <armnn/ArmNN.hpp>
 #include <armnn/Utils.hpp>
 #include <delegate/armnn_delegate.hpp>
 #include <delegate/DelegateOptions.hpp>
-#endif
 
 tfliteWorker::tfliteWorker(QString modelLocation, bool armnnDelegate, int defaultThreads)
 {
@@ -37,7 +35,6 @@ tfliteWorker::tfliteWorker(QString modelLocation, bool armnnDelegate, int defaul
     tfliteModel = tflite::FlatBufferModel::BuildFromFile(modelLocation.toStdString().c_str());
     tflite::InterpreterBuilder(*tfliteModel, tfliteResolver) (&tfliteInterpreter);
 
-#ifndef SBD_X86
     /* Setup the delegate */
     if(armnnDelegate == true) {
         std::vector<armnn::BackendId> backends = {armnn::Compute::CpuAcc};
@@ -50,7 +47,6 @@ tfliteWorker::tfliteWorker(QString modelLocation, bool armnnDelegate, int defaul
         if (tfliteInterpreter->ModifyGraphWithDelegate(std::move(armnnTfLiteDelegate)) != kTfLiteOk)
            qWarning("Delegate could not be used to modify the graph\n");
     }
-#endif
 
     if (tfliteInterpreter->AllocateTensors() != kTfLiteOk)
         qFatal("Failed to allocate tensors!");

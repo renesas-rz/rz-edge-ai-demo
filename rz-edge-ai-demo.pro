@@ -20,9 +20,6 @@ QT += core gui multimedia widgets
 
 CONFIG += c++14
 
-# Uncomment the line below to build for the X86 architecture
-#DEFINES += SBD_X86
-
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
@@ -50,6 +47,9 @@ INCLUDEPATH += \
 
 LIBS += \
     -L $$(SDKTARGETSYSROOT)/usr/lib64 \
+    -larmnn \
+    -larmnnDelegate \
+    -larmnnUtils \
     -lopencv_core \
     -lopencv_imgproc \
     -lopencv_imgcodecs \
@@ -69,11 +69,4 @@ LIBS += \
     -lclog \
     -lfft2d_fftsg \
     -lfarmhash
-}
-
-!contains(DEFINES, SBD_X86) {
-LIBS += \
-    -larmnn \
-    -larmnnDelegate \
-    -larmnnUtils
 }
