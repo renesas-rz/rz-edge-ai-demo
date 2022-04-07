@@ -79,7 +79,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent, QString cameraLocation, QString labelLocation, QString modelLocation);
+    MainWindow(QWidget *parent, QString cameraLocation, QString labelLocation, QString modelLocation, Mode mode);
 
 public slots:
     void ShowVideo();

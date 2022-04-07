@@ -29,9 +29,13 @@ int main(int argc, char *argv[])
     QCommandLineOption cameraOption(QStringList() << "c" << "camera", "Choose a camera.", "file");
     QCommandLineOption labelOption (QStringList() << "l" << "label", "Choose a label for Object Detection Mode.", "file", QString(LABEL_DIRECTORY_OD));
     QCommandLineOption modelOption (QStringList() << "m" << "model", "Choose a model for Object Detection Mode.", "file", QString(MODEL_DIRECTORY_OD));
+    QCommandLineOption modeOption (QStringList() << "s" << "start-mode",
+                                   "Choose a mode to start the application in: [shopping-basket|object-detection].", "mode", QString("object-detection"));
     QString cameraLocation;
     QString labelLocation;
     QString modelLocation;
+    QString modeString;
+    Mode mode = OD;
     QString applicationDescription =
     "Selecting Demo Mode\n"
     "Demo Mode->Object Detection: Object Detection Mode.\n"
@@ -87,15 +91,24 @@ int main(int argc, char *argv[])
     parser.addOption(cameraOption);
     parser.addOption(labelOption);
     parser.addOption(modelOption);
+    parser.addOption(modeOption);
     parser.addHelpOption();
     parser.setApplicationDescription(applicationDescription);
     parser.process(a);
     cameraLocation = parser.value(cameraOption);
     labelLocation = parser.value(labelOption);
     modelLocation = parser.value(modelOption);
+    modeString = parser.value(modeOption);
+
+    if (modeString == "shopping-basket")
+        mode = SB;
+    else if (modeString == "object-detection")
+        mode = OD;
+    else
+        qWarning("Warning: unknown demo mode requested, starting in default mode...");
 
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    MainWindow w(nullptr, cameraLocation, labelLocation, modelLocation);
+    MainWindow w(nullptr, cameraLocation, labelLocation, modelLocation, mode);
     w.show();
     return a.exec();
 }

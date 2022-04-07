@@ -35,12 +35,13 @@
 #include "videoworker.h"
 #include "shoppingbasket.h"
 
-MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLocation, QString modelLocation)
+MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLocation, QString modelLocation, Mode mode)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
     Board board = Unknown;
     inputMode = cameraMode;
+    demoMode = mode;
 
     QPixmap splashScreenImage(SPLASH_SCREEN_DIRECTORY);
 
@@ -146,7 +147,11 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
     } else {
         createVideoWorker();
         createTfWorker();
-        setupObjectDetectMode();
+
+        if (demoMode == SB)
+            setupShoppingMode();
+        else if (demoMode == OD)
+            setupObjectDetectMode();
 
         /* Limit camera loop speed if using mipi camera to save on CPU
          * USB camera is alreay limited to 10 FPS */
@@ -177,6 +182,7 @@ void MainWindow::setupObjectDetectMode()
 void MainWindow::setupShoppingMode()
 {
     demoMode = SB;
+    modelPath = MODEL_DIRECTORY_SB;
 
     shoppingBasketMode = new shoppingBasket(ui);
 
@@ -425,7 +431,6 @@ void MainWindow::on_actionShopping_Basket_triggered()
     modelObjectDetect = modelPath;
 
     inputMode = cameraMode;
-    modelPath = MODEL_DIRECTORY_SB;
 
     if (cvWorker->getUsingMipi())
         iterations = 6;
