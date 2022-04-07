@@ -54,11 +54,11 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
 
     labelPath = labelLocation;
     if (labelPath.isEmpty())
-        labelPath = LABEL_DIRECTORY_OD;
+        qWarning("Warning: Label file path not provided");
 
     modelPath = modelLocation;
     if (modelPath.isEmpty())
-        modelPath = MODEL_DIRECTORY_OD;
+          qWarning("Warning: Model file path not provided");
 
     delegateType = armNN;
 

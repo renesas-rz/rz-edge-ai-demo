@@ -27,8 +27,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QCommandLineParser parser;
     QCommandLineOption cameraOption(QStringList() << "c" << "camera", "Choose a camera.", "file");
-    QCommandLineOption labelOption (QStringList() << "l" << "label", "Choose a label for Object Detection Mode.", "file");
-    QCommandLineOption modelOption (QStringList() << "m" << "model", "Choose a model for Object Detection Mode.", "file");
+    QCommandLineOption labelOption (QStringList() << "l" << "label", "Choose a label for Object Detection Mode.", "file", QString(LABEL_DIRECTORY_OD));
+    QCommandLineOption modelOption (QStringList() << "m" << "model", "Choose a model for Object Detection Mode.", "file", QString(MODEL_DIRECTORY_OD));
     QString cameraLocation;
     QString labelLocation;
     QString modelLocation;
