@@ -19,7 +19,6 @@
 #ifndef OBJECTDETECTION_H
 #define OBJECTDETECTION_H
 
-#include <QObject>
 #include <QMainWindow>
 
 #include <chrono>

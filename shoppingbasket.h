@@ -18,7 +18,6 @@
 #ifndef SHOPPINGBASKET_H
 #define SHOPPINGBASKET_H
 
-#include <QObject>
 #include <QMainWindow>
 #include <opencv2/videoio.hpp>
 

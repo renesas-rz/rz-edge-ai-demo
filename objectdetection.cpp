@@ -17,7 +17,7 @@
  *****************************************************************************************/
 
 #include <QEventLoop>
-#include <QFileDialog>
+#include <QFile>
 
 #include "objectdetection.h"
 #include "ui_mainwindow.h"
