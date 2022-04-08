@@ -302,7 +302,7 @@ void MainWindow::drawMatToView(const cv::Mat& matInput)
     image = QPixmap::fromImage(imageToDraw);
     scene->clear();
 
-    if (!cvWorker->getUsingMipi() || (inputMode != cameraMode))
+    if ((!cvWorker->getUsingMipi() && inputMode == cameraMode) || (inputMode == imageMode))
         image = image.scaled(800, 600, Qt::AspectRatioMode::KeepAspectRatio);
 
     scene->addPixmap(image);

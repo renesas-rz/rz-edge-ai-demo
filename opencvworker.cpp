@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/videodev2.h>
+#include <math.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -34,6 +35,7 @@ opencvWorker::opencvWorker(QString cameraLocation, Board board)
     webcamName = cameraLocation.toStdString();
     connectionAttempts = 0;
     inputOpenCV = cameraInput;
+    videoCodecs = true;
 
     setupCamera();
 
@@ -45,6 +47,9 @@ opencvWorker::opencvWorker(QString cameraLocation, Board board)
         else if (board == G2L || board == G2LC)
             cameraInitialization = G2L_CAM_INIT;
     }
+
+    if (board == G2LC)
+        videoCodecs = false;
 
     connectCamera();
 }
@@ -212,7 +217,8 @@ void opencvWorker::getVideoFileFrame()
     /* Set the position of the video back to the start when it reaches the end */
     if (videoFile->get(cv::CAP_PROP_POS_FRAMES) == prevFramePos) {
         qWarning("Reached end of video, restarted playback");
-        videoFile->set(cv::CAP_PROP_POS_FRAMES, 0);
+        videoFile->release();
+        useVideoMode(videoLoadedPath);
         *videoFile >> picture;
     }
 }
@@ -232,10 +238,23 @@ void opencvWorker::useCameraMode()
 
 void opencvWorker::useVideoMode(QString videoFilePath)
 {
+    QString videoDecodePipeline;
+
     checkVideoFile();
     inputOpenCV = videoInput;
+    videoLoadedPath = videoFilePath;
+    setVideoDims();
 
-    videoFile = new cv::VideoCapture(videoFilePath.toStdString());
+    /* Check which decoding pipeline to use */
+    if (videoCodecs)
+        videoDecodePipeline = GST_CODEC_PIPELINE;
+    else
+        videoDecodePipeline = GST_NO_CODEC_PIPELINE;
+
+    QString videoPipeline = "filesrc location=" + QString(videoLoadedPath) + QString(videoDecodePipeline) +
+            " video/x-raw, format=BGR, width=" + QString::number(videoWidth) + ", height=" + QString::number(videoHeight) + " ! appsink";
+
+    videoFile = new cv::VideoCapture(videoPipeline.toStdString(), cv::CAP_GSTREAMER);
 
     if (!videoFile->isOpened())
         qWarning("Could not open video file");
@@ -246,6 +265,38 @@ void opencvWorker::checkVideoFile()
     /* Close video file capture device */
     if (inputOpenCV == videoInput)
         videoFile->release();
+}
+
+void opencvWorker::setVideoDims()
+{
+    cv::VideoCapture *videoChecker = new cv::VideoCapture(videoLoadedPath.toStdString());
+
+    double videoFileHeight = videoChecker->get(cv::CAP_PROP_FRAME_HEIGHT);
+    double videoFileWidth = videoChecker->get(cv::CAP_PROP_FRAME_WIDTH);
+    double aspectRatio = videoFileWidth / videoFileHeight;
+
+    videoChecker->release();
+
+    /* Round aspect ratio to 2 decimal places */
+    double aspectRatioRounded = round(aspectRatio * 100) / 100;
+
+    /*
+     * Identify aspect ratio and set downscaled resolution.
+     * Downscaled resolutions set must allign with 32 to prevent any display issues
+     */
+    if ((aspectRatioRounded == VIDEO_ASPECT_RATIO_16_TO_9) || (aspectRatioRounded == VIDEO_ASPECT_RATIO_16_TO_10)) {
+        videoHeight = 480;
+        videoWidth = 768;
+    } else if (aspectRatioRounded == VIDEO_ASPECT_RATIO_4_TO_3) {
+        videoHeight = 576;
+        videoWidth = 768;
+    } else if (aspectRatioRounded == VIDEO_ASPECT_RATIO_5_TO_4) {
+        videoHeight = 512;
+        videoWidth = 640;
+    } else {
+        videoHeight = videoFileHeight;
+        videoWidth = videoFileWidth;
+    }
 }
 
 bool opencvWorker::getUsingMipi()

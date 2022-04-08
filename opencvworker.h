@@ -23,6 +23,14 @@
 #define G2M_CAM_INIT "media-ctl -d /dev/media0 -r && media-ctl -d /dev/media0 -l \"'rcar_csi2 fea80000.csi2':1->'VIN0 output':0 [1]\" && media-ctl -d /dev/media0 -V \"'rcar_csi2 fea80000.csi2':1 [fmt:UYVY8_2X8/800x600 field:none]\" && media-ctl -d /dev/media0 -V \"'ov5645 2-003c':0 [fmt:UYVY8_2X8/800x600 field:none]\""
 #define G2E_CAM_INIT "media-ctl -d /dev/media0 -r && media-ctl -d /dev/media0 -l \"'rcar_csi2 feaa0000.csi2':1->'VIN4 output':0 [1]\" && media-ctl -d /dev/media0 -V \"'rcar_csi2 feaa0000.csi2':1 [fmt:UYVY8_2X8/800x600 field:none]\" && media-ctl -d /dev/media0 -V \"'ov5645 3-003c':0 [fmt:UYVY8_2X8/800x600 field:none]\""
 
+#define GST_CODEC_PIPELINE " ! qtdemux ! queue ! h264parse ! omxh264dec ! queue ! vspmfilter dmabuf-use=true ! "
+#define GST_NO_CODEC_PIPELINE " ! decodebin ! videoscale ! videoconvert ! "
+
+#define VIDEO_ASPECT_RATIO_4_TO_3 1.33
+#define VIDEO_ASPECT_RATIO_5_TO_4 1.25
+#define VIDEO_ASPECT_RATIO_16_TO_9 1.78
+#define VIDEO_ASPECT_RATIO_16_TO_10 1.6
+
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
 
@@ -59,13 +67,18 @@ private:
     void connectCamera();
     void checkCamera();
     void checkVideoFile();
+    void setVideoDims();
 
     std::unique_ptr<cv::VideoCapture> videoCapture;
     bool webcamInitialised;
     bool webcamOpened;
     bool usingMipi;
+    bool videoCodecs;
+    int videoHeight;
+    int videoWidth;
     int connectionAttempts;
     QString imagePath;
+    QString videoLoadedPath;
     std::string webcamName;
     cv::Mat picture;
     cv::VideoCapture *camera;
