@@ -35,13 +35,15 @@
 #include "videoworker.h"
 #include "shoppingbasket.h"
 
-MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLocation, QString modelLocation, Mode mode)
+MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLocation,
+                       QString modelLocation, Mode mode, QString pricesFile)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
     Board board = Unknown;
     inputMode = cameraMode;
     demoMode = mode;
+    pricesPath = pricesFile;
 
     QPixmap splashScreenImage(SPLASH_SCREEN_DIRECTORY);
 
@@ -184,7 +186,7 @@ void MainWindow::setupShoppingMode()
     demoMode = SB;
     modelPath = MODEL_DIRECTORY_SB;
 
-    shoppingBasketMode = new shoppingBasket(ui);
+    shoppingBasketMode = new shoppingBasket(ui, pricesPath);
 
     connect(ui->pushButtonProcessBasket, SIGNAL(pressed()), shoppingBasketMode, SLOT(processBasket()));
     connect(ui->pushButtonNextBasket, SIGNAL(pressed()), shoppingBasketMode, SLOT(nextBasket()));

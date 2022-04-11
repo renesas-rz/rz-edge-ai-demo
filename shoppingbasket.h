@@ -40,7 +40,7 @@ class shoppingBasket  : public QObject
     Q_OBJECT
 
 public:
-    shoppingBasket(Ui::MainWindow *ui);
+    shoppingBasket(Ui::MainWindow *ui, QString pricesFile);
     void setImageMode(bool imageStatus);
 
 public slots:
@@ -61,11 +61,12 @@ private slots:
 private:
     void setNextButton(bool enable);
     void setProcessButton(bool enable);
+    std::vector<float> readPricesFile(QString pricesPath);
 
     Ui::MainWindow *uiSB;
     QStringList labelListSorted;
     QVector<float> outputTensor;
-    static const std::vector<float> costs;
+    std::vector<float> costs;
     static const QStringList labelList;
     InputSB inputModeSB;
 };

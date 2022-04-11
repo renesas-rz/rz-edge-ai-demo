@@ -19,22 +19,19 @@
 #include "shoppingbasket.h"
 #include "ui_mainwindow.h"
 
+#include <QFile>
+
 const QStringList shoppingBasket::labelList = {"Baked Beans", "Coke", "Diet Coke",
                                                "Fusilli Pasta", "Lindt Chocolate",
                                                "Mars", "Penne Pasta", "Pringles",
                                                "Redbull", "Sweetcorn"};
 
-const std::vector<float> shoppingBasket::costs = {float(0.85), float(0.82),
-                                                  float(0.79), float(0.89),
-                                                  float(1.80), float(0.80),
-                                                  float(0.89), float(0.85),
-                                                  float(1.20), float(0.69)};
-
-shoppingBasket::shoppingBasket(Ui::MainWindow *ui)
+shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QString pricesFile)
 {
     QFont font;
     uiSB = ui;
     inputModeSB = cameraModeSB;
+    costs = readPricesFile(pricesFile);
 
     font.setPointSize(14);
 
@@ -62,6 +59,26 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui)
 
     setProcessButton(true);
     setNextButton(false);
+}
+
+std::vector<float> shoppingBasket::readPricesFile(QString pricesPath)
+{
+    QFile pricesFile;
+    QString fileLine;
+    std::vector<float> prices;
+
+    pricesFile.setFileName(pricesPath);
+    if (!pricesFile.open(QIODevice::ReadOnly | QIODevice::Text))
+        qFatal("%s could not be opened.", pricesPath.toStdString().c_str());
+
+    while (!pricesFile.atEnd()) {
+        fileLine = pricesFile.readLine();
+        fileLine.remove(QRegularExpression("^\\s*\\d*\\s*"));
+        fileLine.remove(QRegularExpression("\n"));
+        prices.push_back(fileLine.toFloat());
+    }
+
+    return prices;
 }
 
 void shoppingBasket::setNextButton(bool enable)

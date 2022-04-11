@@ -30,10 +30,13 @@ int main(int argc, char *argv[])
     QCommandLineOption modelOption (QStringList() << "m" << "model", "Choose a model for Object Detection Mode.", "file", QString(MODEL_DIRECTORY_OD));
     QCommandLineOption modeOption (QStringList() << "s" << "start-mode",
                                    "Choose a mode to start the application in: [shopping-basket|object-detection].", "mode", QString("object-detection"));
+    QCommandLineOption pricesOption (QStringList() << "p" << "prices-file",
+                                   "Choose a text file listing the prices to use for the shopping basket mode", "file", LABEL_DIRECTORY_SB_PRICES);
     QString cameraLocation;
     QString labelLocation;
     QString modelLocation;
     QString modeString;
+    QString pricesLocation;
     Mode mode = OD;
     QString applicationDescription =
     "Selecting Demo Mode\n"
@@ -80,7 +83,9 @@ int main(int argc, char *argv[])
     "    Shopping Basket Mode: shoppingBasketDemo_labels.txt\n"
     "  Model:\n"
     "    Object Detection Mode: mobilenet_ssd_v2_coco_quant_postprocess.tflite\n"
-    "    Shopping Basket Mode: shoppingBasketDemo.tflite\n\n"
+    "    Shopping Basket Mode: shoppingBasketDemo.tflite\n"
+    "  Mode Specific Files:\n"
+    "    Shopping Basket Prices: shoppingBasketDemo_prices.txt\n\n"
 
     "Application Exit Codes:\n"
     "  0: Successful exit\n"
@@ -91,12 +96,14 @@ int main(int argc, char *argv[])
     parser.addOption(labelOption);
     parser.addOption(modelOption);
     parser.addOption(modeOption);
+    parser.addOption(pricesOption);
     parser.addHelpOption();
     parser.setApplicationDescription(applicationDescription);
     parser.process(a);
     cameraLocation = parser.value(cameraOption);
     labelLocation = parser.value(labelOption);
     modelLocation = parser.value(modelOption);
+    pricesLocation = parser.value(pricesOption);
     modeString = parser.value(modeOption);
 
     if (modeString == "shopping-basket")
@@ -107,7 +114,7 @@ int main(int argc, char *argv[])
         qWarning("Warning: unknown demo mode requested, starting in default mode...");
 
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    MainWindow w(nullptr, cameraLocation, labelLocation, modelLocation, mode);
+    MainWindow w(nullptr, cameraLocation, labelLocation, modelLocation, mode, pricesLocation);
     w.show();
     return a.exec();
 }
