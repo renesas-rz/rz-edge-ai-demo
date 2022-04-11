@@ -8,12 +8,12 @@
     - cd temp
     - git clone git@gitlab.renesas.solutions:spl2/continuous-integration/build-scripts.git
     - export PATH="${PWD}/build-scripts:${PATH}"
-    - artifactorial-tool.sh -g ai-demos-sdk__${CI_JOB_NAME}.sh -p
-    - chmod +x ai-demos-sdk__${CI_JOB_NAME}.sh
-    - ./ai-demos-sdk__${CI_JOB_NAME}.sh -d /opt/poky/sdk -y
+    - artifactorial-tool.sh -g rz-edge-ai-demo-sdk__${CI_JOB_NAME}.sh -p
+    - chmod +x rz-edge-ai-demo-sdk__${CI_JOB_NAME}.sh
+    - ./rz-edge-ai-demo-sdk__${CI_JOB_NAME}.sh -d /opt/poky/sdk -y
     - cd ..
     - source /opt/poky/sdk/environment-setup-aarch64-poky-linux
-    - qmake
+    - qmake ${QDEFINES}
     - make
   artifacts:
     name: "${CI_JOB_NAME}-${CI_JOB_ID}"
@@ -22,18 +22,22 @@
     paths:
       - rz-edge-ai-demo
 
-hihope-rzg2m_shopping-basket:
+hihope-rzg2m:
   image: gitlab.renesas.solutions:5050/spl2/continuous-integration/dockerfiles:ubuntu-18.04-latest
   extends: .app-build
 
-ek874_shopping-basket:
+ek874:
   image: gitlab.renesas.solutions:5050/spl2/continuous-integration/dockerfiles:ubuntu-18.04-latest
   extends: .app-build
 
-smarc-rzg2l_shopping-basket:
+smarc-rzg2l:
   image: gitlab.renesas.solutions:5050/spl2/continuous-integration/dockerfiles:ubuntu-20.04-latest
   extends: .app-build
+  variables:
+    QDEFINES: 'DEFINES+=DUNFELL'
 
-smarc-rzg2lc_shopping-basket:
+smarc-rzg2lc:
   image: gitlab.renesas.solutions:5050/spl2/continuous-integration/dockerfiles:ubuntu-20.04-latest
   extends: .app-build
+  variables:
+    QDEFINES: 'DEFINES+=DUNFELL'
