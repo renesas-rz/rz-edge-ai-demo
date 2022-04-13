@@ -19,6 +19,16 @@ This repository contains the code required to build the RZ Edge AI Demo applicat
 
 3. Set up environment variables with `source /<SDK location>/environment-setup-aarch64-poky-linux`.
 4. Run `qmake`.
+
+   RZ/G2E and RZ/G2M:
+   ```
+   qmake
+   ```
+
+   RZ/G2L and RZ/G2LC:
+   ```
+   qmake DEFINES+=DUNFELL
+   ```
 5. Run `make`.
 6. Copy `rz-edge-ai-demo` to the root filesystem.
 7. Copy the directory `models/` to `/opt/rz-edge-ai-demo`.
