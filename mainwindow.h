@@ -40,6 +40,9 @@
 #define RENESAS_RZ_LOGO_DIRECTORY "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
 #define SPLASH_SCREEN_DIRECTORY "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
 
+#define CONFIDENCE_OFFSET_SSD 5
+#define ITEM_OFFSET_SSD 4
+
 #define G2E_HW_INFO "Hardware Information\n\nBoard: RZ/G2E ek874\nCPUs: 2x Arm Cortex-A53,\nDDR: 2GB"
 #define G2L_HW_INFO "Hardware Information\n\nBoard: RZ/G2L smarc-rzg2l-evk\nCPUs: 2x Arm Cortex-A55\nDDR: 2GB"
 #define G2LC_HW_INFO "Hardware Information\n\nBoard: RZ/G2LC smarc-rzg2lc-evk\nCPUs: 2x Arm Cortex-A55\nDDR: 1GB"

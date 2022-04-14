@@ -29,6 +29,8 @@
 #define TEXT_LOAD_NEW_IMAGE "Load New Image"
 #define TEXT_TOTAL_ITEMS "Total Items: "
 
+#define DETECT_THRESHOLD 0.5
+
 class QGraphicsScene;
 
 namespace Ui { class MainWindow; }
@@ -44,7 +46,7 @@ public:
     void setImageMode(bool imageStatus);
 
 public slots:
-    void runInference(const QVector<float>& receivedTensor, int receivedTimeElapsed, const cv::Mat&receivedMat);
+    void runInference(QVector<float> receivedTensor, int receivedTimeElapsed, const cv::Mat&receivedMat);
 
 signals:
     void getFrame();
@@ -62,6 +64,7 @@ private:
     void setNextButton(bool enable);
     void setProcessButton(bool enable);
     std::vector<float> readPricesFile(QString pricesPath);
+    QVector<float> sortTensor(QVector<float> &receivedTensor);
 
     Ui::MainWindow *uiSB;
     QStringList labelListSorted;

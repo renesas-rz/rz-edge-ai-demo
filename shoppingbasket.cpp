@@ -21,6 +21,9 @@
 
 #include <QFile>
 
+#define ITEM_INDEX 4
+#define BOX_POINTS 4
+
 const QStringList shoppingBasket::labelList = {"Baked Beans", "Coke", "Diet Coke",
                                                "Fusilli Pasta", "Lindt Chocolate",
                                                "Mars", "Penne Pasta", "Pringles",
@@ -138,17 +141,45 @@ void shoppingBasket::processBasket()
     emit getFrame();
 }
 
-void shoppingBasket::runInference(const QVector<float> &receivedTensor, int receivedTimeElapsed, const cv::Mat &receivedMat)
+QVector<float> shoppingBasket::sortTensor(QVector<float> &receivedTensor)
+{
+    QVector<float> sortedTensor = QVector<float>();
+    int itemStride = (int) receivedTensor.last();
+
+    /* The final output tensor of the model is unused in this demo mode */
+    receivedTensor.removeLast();
+
+    for(int i = itemStride; i > 0; i--) {
+        float confidenceLevel = receivedTensor.at(receivedTensor.size() - i);
+
+        /* Only include the item if the confidence level is at threshold */
+        if (confidenceLevel > DETECT_THRESHOLD && confidenceLevel <= float(1.0)) {
+            /* Box points */
+            for(int j = 0; j < BOX_POINTS; j++)
+                sortedTensor.push_back(receivedTensor.at((itemStride - i) * BOX_POINTS + j));
+
+            /* Item ID */
+            sortedTensor.push_back(receivedTensor.at(receivedTensor.size() - (itemStride * 2) + (itemStride - i)));
+
+            /* Confidence level */
+            sortedTensor.push_back(confidenceLevel);
+        }
+    }
+
+    return sortedTensor;
+}
+
+void shoppingBasket::runInference(QVector<float> receivedTensor, int receivedTimeElapsed, const cv::Mat &receivedMat)
 {
     QTableWidgetItem* item;
     QTableWidgetItem* price;
     float totalCost = 0;
+    outputTensor = sortTensor(receivedTensor);
 
-    outputTensor = receivedTensor;
     uiSB->tableWidget->setRowCount(0);
     labelListSorted.clear();
 
-    for (int i = 0; (i + 5) < receivedTensor.size(); i += 6) {
+    for (int i = ITEM_INDEX; (i + 1) < outputTensor.size(); i += 6) {
         totalCost += costs[int(outputTensor[i])];
         labelListSorted.push_back(labelList[int(outputTensor[i])]);
     }

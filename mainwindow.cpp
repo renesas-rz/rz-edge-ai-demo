@@ -183,7 +183,7 @@ void MainWindow::setupObjectDetectMode()
     connect(objectDetectMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
     connect(objectDetectMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
     connect(objectDetectMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
-    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>&, int, const cv::Mat&)),
+    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, const cv::Mat&)),
             objectDetectMode, SLOT(runInference(QVector<float>,int,cv::Mat)));
 }
 
@@ -201,7 +201,7 @@ void MainWindow::setupShoppingMode()
     connect(shoppingBasketMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
     connect(shoppingBasketMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
     connect(shoppingBasketMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
-    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>&, int, const cv::Mat&)),
+    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, const cv::Mat&)),
             shoppingBasketMode, SLOT(runInference(QVector<float>,int,cv::Mat)));
 }
 
@@ -241,17 +241,17 @@ void MainWindow::drawBoxes(const QVector<float>& outputTensor, QStringList label
             QPen pen;
             QBrush brush;
             QGraphicsTextItem* itemName = scene->addText(nullptr);
-            float ymin = outputTensor[i + 2] * float(scene->height());
-            float xmin = outputTensor[i + 3] * float(scene->width());
-            float ymax = outputTensor[i + 4] * float(scene->height());
-            float xmax = outputTensor[i + 5] * float(scene->width());
-            float scorePercentage = outputTensor[i + 1] * 100;
+            float ymin = outputTensor[i + 0] * float(scene->height());
+            float xmin = outputTensor[i + 1] * float(scene->width());
+            float ymax = outputTensor[i + 2] * float(scene->height());
+            float xmax = outputTensor[i + 3] * float(scene->width());
+            float scorePercentage = outputTensor[i + CONFIDENCE_OFFSET_SSD] * 100;
 
             pen.setColor(BOX_COLOUR);
             pen.setWidth(BOX_WIDTH);
 
             itemName->setHtml(QString("<div style='background:rgba(0, 0, 0, 100%);font-size:xx-large;'>" +
-                                      QString(labelList[int(outputTensor[i])] + " " +
+                                      QString(labelList[int(outputTensor[i + ITEM_OFFSET_SSD])] + " " +
                                       QString::number(double(scorePercentage), 'f', 1) + "%") +
                                       QString("</div>")));
             itemName->setPos(xmin, ymin);

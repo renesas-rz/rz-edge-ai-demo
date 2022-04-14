@@ -26,8 +26,6 @@
 
 #include <opencv2/videoio.hpp>
 
-#define DETECT_THRESHOLD 0.5
-
 enum Delegate { armNN, xnnpack, none };
 
 class tfliteWorker : public QObject

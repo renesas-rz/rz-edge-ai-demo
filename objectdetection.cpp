@@ -22,6 +22,11 @@
 #include "objectdetection.h"
 #include "ui_mainwindow.h"
 
+#define ITEM_OFFSET 4
+#define BOX_POINTS 4
+
+#define DETECT_THRESHOLD 0.5
+
 objectDetection::objectDetection(Ui::MainWindow *ui, const QString labelPath)
 {
     QFont font;
@@ -120,9 +125,37 @@ void objectDetection::triggerInference()
     }
 }
 
-void objectDetection::runInference(const QVector<float> &receivedTensor, int receivedTimeElapsed, const cv::Mat &receivedMat)
+QVector<float> objectDetection::sortTensor(QVector<float> &receivedTensor)
 {
-    outputTensor = receivedTensor;
+    QVector<float> sortedTensor = QVector<float>();
+    int itemStride = (int) receivedTensor.last();
+
+    /* The final output tensor of the model is unused in this demo mode */
+    receivedTensor.removeLast();
+
+    for(int i = itemStride; i > 0; i--) {
+        float confidenceLevel = receivedTensor.at(receivedTensor.size() - i);
+
+        /* Only include the item if the confidence level is at threshold */
+        if (confidenceLevel > DETECT_THRESHOLD && confidenceLevel <= float(1.0)) {
+            /* Box points */
+            for(int j = 0; j < BOX_POINTS; j++)
+                sortedTensor.push_back(receivedTensor.at((itemStride - i) * BOX_POINTS + j));
+
+            /* Item ID */
+            sortedTensor.push_back(receivedTensor.at(receivedTensor.size() - ((itemStride * 2)) + (itemStride - i)));
+
+            /* Confidence level */
+            sortedTensor.push_back(confidenceLevel);
+        }
+    }
+
+    return sortedTensor;
+}
+
+void objectDetection::runInference(QVector<float> receivedTensor, int receivedTimeElapsed, const cv::Mat &receivedMat)
+{
+    outputTensor = sortTensor(receivedTensor);
 
     uiOD->labelInference->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
 
@@ -150,9 +183,8 @@ void objectDetection::updateObjectList(const QVector<float> receivedList)
 
     uiOD->tableWidgetOD->setRowCount(0);
 
-    for (int i = 0; (i + 5) < receivedList.size(); i += 6) {
+    for (int i = ITEM_OFFSET; (i + 1) < receivedList.size(); i += 6)
         objectsDetectedList.append(labelList[int(receivedList[i])]);
-    }
 
     for (int i = 0; i < labelList.size(); i++) {
         int objectTotal = objectsDetectedList.count(labelList.at(i));

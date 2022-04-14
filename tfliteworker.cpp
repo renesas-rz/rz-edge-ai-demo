@@ -112,14 +112,22 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
     tfliteInterpreter->Invoke();
     stopTime = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; tfliteInterpreter->typed_output_tensor<float>(2)[i] > float(DETECT_THRESHOLD)
-         && tfliteInterpreter->typed_output_tensor<float>(2)[i] <= float(1.0); i++) {
-        outputTensor.push_back(tfliteInterpreter->typed_output_tensor<float>(1)[i]);          //item
-        outputTensor.push_back(tfliteInterpreter->typed_output_tensor<float>(2)[i]);          //confidence
-        outputTensor.push_back(tfliteInterpreter->typed_output_tensor<float>(0)[i * 4]);      //box ymin
-        outputTensor.push_back(tfliteInterpreter->typed_output_tensor<float>(0)[i * 4 + 1]);  //box xmin
-        outputTensor.push_back(tfliteInterpreter->typed_output_tensor<float>(0)[i * 4 + 2]);  //box ymax
-        outputTensor.push_back(tfliteInterpreter->typed_output_tensor<float>(0)[i * 4 + 3]);  //box xmax
+    /* Cycle through each output tensor and store all data */
+    for (size_t i = 0; i < tfliteInterpreter->outputs().size(); i++) {
+        size_t dataSize = sizeof(float);
+
+        if (tfliteInterpreter->output_tensor(i)->type == kTfLiteFloat32)
+            dataSize = sizeof(float);
+        else if (tfliteInterpreter->output_tensor(i)->type == kTfLiteUInt8)
+            dataSize = sizeof(uint8_t);
+
+        /* Total number of data elements */
+        int outputCount = tfliteInterpreter->output_tensor(i)->bytes / dataSize;
+
+        for (int k = 0; k < outputCount; k++) {
+                float output = tfliteInterpreter->typed_output_tensor<float>(i)[k];
+                outputTensor.push_back(output);
+        }
     }
 
     timeElapsed = int(std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());

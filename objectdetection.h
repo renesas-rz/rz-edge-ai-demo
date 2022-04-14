@@ -49,7 +49,7 @@ public:
     void setCameraMode();
 
 public slots:
-    void runInference(const QVector<float>& receivedTensor, int receivedTimeElapsed, const cv::Mat&receivedMat);
+    void runInference(QVector<float> receivedTensor, int receivedTimeElapsed, const cv::Mat&receivedMat);
 
 signals:
     void getFrame();
@@ -68,6 +68,7 @@ private:
     void setButtonState(bool enable);
     void displayTotalFps(int totalProcessTime);
     void timeTotalFps(bool startingTimer);
+    QVector<float> sortTensor(QVector<float> &receivedTensor);
     void updateObjectList(const QVector<float> receivedList);
 
     Ui::MainWindow *uiOD;
