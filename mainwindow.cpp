@@ -59,7 +59,13 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
     if (labelPath.isEmpty())
         qWarning("Warning: Label file path not provided");
 
-    modelPath = modelLocation;
+    modelObjectDetect = modelLocation;
+
+    if (demoMode == SB)
+        modelPath = MODEL_DIRECTORY_SB;
+    else
+        modelPath = modelLocation;
+
     if (modelPath.isEmpty())
           qWarning("Warning: Model file path not provided");
 
@@ -184,7 +190,6 @@ void MainWindow::setupObjectDetectMode()
 void MainWindow::setupShoppingMode()
 {
     demoMode = SB;
-    modelPath = MODEL_DIRECTORY_SB;
 
     shoppingBasketMode = new shoppingBasket(ui, pricesPath);
 
@@ -433,6 +438,7 @@ void MainWindow::on_actionShopping_Basket_triggered()
     modelObjectDetect = modelPath;
 
     inputMode = cameraMode;
+    modelPath = MODEL_DIRECTORY_SB;
 
     if (cvWorker->getUsingMipi())
         iterations = 6;
