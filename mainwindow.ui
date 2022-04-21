@@ -97,14 +97,14 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="pageShoppingL">
      <widget class="QPushButton" name="pushButtonNextBasket">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>140</y>
+        <y>190</y>
         <width>111</width>
         <height>111</height>
        </rect>
@@ -152,7 +152,7 @@ Basket</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>270</y>
+        <y>360</y>
         <width>111</width>
         <height>111</height>
        </rect>
@@ -188,6 +188,54 @@ border-style: outset;
       <property name="text">
        <string>Process
 Basket</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonLoadAIModelSB">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>111</width>
+        <height>111</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>23</pointsize>
+        <weight>75</weight>
+        <italic>false</italic>
+        <bold>true</bold>
+        <underline>false</underline>
+        <strikeout>false</strikeout>
+        <kerning>false</kerning>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string/>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(42, 40, 157);
+color: rgb(255, 255, 255);
+border: 2px;
+border-radius: 55px;
+border-style: outset;
+</string>
+      </property>
+      <property name="text">
+       <string>Load
+AI Model</string>
       </property>
       <property name="checkable">
        <bool>true</bool>
@@ -246,7 +294,7 @@ Inference</string>
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButtonLoadAIModel">
+     <widget class="QPushButton" name="pushButtonLoadAIModelOD">
       <property name="geometry">
        <rect>
         <x>10</x>

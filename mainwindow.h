@@ -32,11 +32,13 @@
 
 #define LABEL_DIRECTORY_PATH "/opt/rz-edge-ai-demo/labels/"
 #define LABEL_DIRECTORY_OD "/opt/rz-edge-ai-demo/labels/mobilenet_ssd_v2_coco_quant_postprocess_labels.txt"
-#define LABEL_DIRECTORY_SB_PRICES "/opt/rz-edge-ai-demo/prices/shoppingBasketDemo_prices.txt"
+#define LABEL_DIRECTORY_SB "/opt/rz-edge-ai-demo/labels/shoppingBasketDemo_labels.txt"
 #define MEDIA_DIRECTORY_PATH "/opt/rz-edge-ai-demo/media/"
 #define MODEL_DIRECTORY_PATH "/opt/rz-edge-ai-demo/models/"
 #define MODEL_DIRECTORY_OD "/opt/rz-edge-ai-demo/models/mobilenet_ssd_v2_coco_quant_postprocess.tflite"
 #define MODEL_DIRECTORY_SB "/opt/rz-edge-ai-demo/models/shoppingBasketDemo.tflite"
+#define PRICES_DIRECTORY_DEFAULT "/opt/rz-edge-ai-demo/prices/shoppingBasketDemo_prices.txt"
+#define PRICES_DIRECTORY_PATH "/opt/rz-edge-ai-demo/prices/"
 #define RENESAS_RZ_LOGO_DIRECTORY "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
 #define SPLASH_SCREEN_DIRECTORY "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
 
@@ -101,6 +103,7 @@ private slots:
     void drawBoxes(const QVector<float>& outputTensor, QStringList labelList);
     void drawMatToView(const cv::Mat& matInput);
     void getImageFrame();
+    void loadAIModel();
     void on_actionLicense_triggered();
     void on_actionEnable_ArmNN_Delegate_triggered();
     void on_actionTensorFlow_Lite_triggered();
@@ -111,7 +114,6 @@ private slots:
     void on_actionExit_triggered();
     void on_actionLoad_Camera_triggered();
     void on_actionLoad_File_triggered();
-    void on_pushButtonLoadAIModel_clicked();
 
 private:
     void createTfWorker();
@@ -123,6 +125,7 @@ private:
     void setupShoppingMode();
     void disconnectSignals();
     void checkInputMode();
+    QStringList readLabelFile(QString labelPath);
 
     Ui::MainWindow *ui;
     unsigned int iterations;
@@ -139,8 +142,12 @@ private:
     QString boardInfo;
     QString modelPath;
     QString pricesPath;
-    QString modelObjectDetect;
+    QString modelOD;
+    QString modelSB;
     QString labelPath;
+    QString labelOD;
+    QString labelSB;
+    QStringList labelFileList;
     videoWorker *vidWorker;
     Input inputMode;
     Mode demoMode;

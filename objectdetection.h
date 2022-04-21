@@ -43,7 +43,7 @@ class objectDetection : public QObject
      Q_OBJECT
 
 public:
-    objectDetection(Ui::MainWindow *ui, const QString labelPath);
+    objectDetection(Ui::MainWindow *ui, QStringList labelFileList);
     void setImageMode();
     void setVideoMode();
     void setCameraMode();

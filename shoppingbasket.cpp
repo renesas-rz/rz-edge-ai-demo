@@ -24,16 +24,12 @@
 #define ITEM_INDEX 4
 #define BOX_POINTS 4
 
-const QStringList shoppingBasket::labelList = {"Baked Beans", "Coke", "Diet Coke",
-                                               "Fusilli Pasta", "Lindt Chocolate",
-                                               "Mars", "Penne Pasta", "Pringles",
-                                               "Redbull", "Sweetcorn"};
-
-shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QString pricesFile)
+shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QString pricesFile)
 {
     QFont font;
     uiSB = ui;
     inputModeSB = cameraModeSB;
+    labelList = labelFileList;
     costs = readPricesFile(pricesFile);
 
     font.setPointSize(14);
@@ -55,10 +51,10 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QString pricesFile)
     uiSB->tableWidget->horizontalHeader()->setFont(font);
     uiSB->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     uiSB->tableWidget->resizeColumnsToContents();
-    double column1Width = uiSB->tableWidget->geometry().width() * 0.8;
+    double column1Width = uiSB->tableWidget->geometry().width() * 0.6;
     uiSB->tableWidget->setColumnWidth(0, column1Width);
     uiSB->tableWidget->horizontalHeader()->setStretchLastSection(true);
-    uiSB->tableWidgetOD->setRowCount(0);
+    uiSB->tableWidget->setRowCount(0);
 
     setProcessButton(true);
     setNextButton(false);
@@ -224,6 +220,8 @@ void shoppingBasket::setImageMode(bool imageStatus)
     } else {
         inputModeSB = cameraModeSB;
         uiSB->actionLoad_File->setText(TEXT_LOAD_IMAGE);
+
+        emit startVideo();
     }
     uiSB->actionLoad_Camera->setEnabled(imageStatus);
     uiSB->labelInference->setText(TEXT_INFERENCE);

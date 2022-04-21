@@ -59,13 +59,9 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
     if (labelPath.isEmpty())
         qWarning("Warning: Label file path not provided");
 
-    modelObjectDetect = modelLocation;
+    labelFileList = readLabelFile(labelPath);
 
-    if (demoMode == SB)
-        modelPath = MODEL_DIRECTORY_SB;
-    else
-        modelPath = modelLocation;
-
+    modelPath = modelLocation;
     if (modelPath.isEmpty())
           qWarning("Warning: Model file path not provided");
 
@@ -156,10 +152,19 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
         createVideoWorker();
         createTfWorker();
 
-        if (demoMode == SB)
+        if (demoMode == SB) {
+            /* Set default object detection parameters */
+            labelOD = LABEL_DIRECTORY_OD;
+            modelOD = MODEL_DIRECTORY_OD;
+
             setupShoppingMode();
-        else if (demoMode == OD)
+        } else if (demoMode == OD) {
+            /* Set default shopping basket parameters */
+            labelSB = LABEL_DIRECTORY_SB;
+            modelSB = MODEL_DIRECTORY_SB;
+
             setupObjectDetectMode();
+        }
 
         /* Limit camera loop speed if using mipi camera to save on CPU
          * USB camera is alreay limited to 10 FPS */
@@ -174,9 +179,10 @@ void MainWindow::setupObjectDetectMode()
 {
     demoMode = OD;
 
-    objectDetectMode = new objectDetection(ui, labelPath);
+    objectDetectMode = new objectDetection(ui, labelFileList);
 
     connect(this, SIGNAL(stopInference()), objectDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
+    connect(ui->pushButtonLoadAIModelOD, SIGNAL(pressed()), this, SLOT(loadAIModel()));
     connect(ui->pushButtonStartStop, SIGNAL(pressed()), objectDetectMode, SLOT(triggerInference()));
     connect(objectDetectMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
     connect(objectDetectMode, SIGNAL(getBoxes(QVector<float>,QStringList)), this, SLOT(drawBoxes(QVector<float>,QStringList)));
@@ -191,8 +197,9 @@ void MainWindow::setupShoppingMode()
 {
     demoMode = SB;
 
-    shoppingBasketMode = new shoppingBasket(ui, pricesPath);
+    shoppingBasketMode = new shoppingBasket(ui, labelFileList, pricesPath);
 
+    connect(ui->pushButtonLoadAIModelSB, SIGNAL(pressed()), this, SLOT(loadAIModel()));
     connect(ui->pushButtonProcessBasket, SIGNAL(pressed()), shoppingBasketMode, SLOT(processBasket()));
     connect(ui->pushButtonNextBasket, SIGNAL(pressed()), shoppingBasketMode, SLOT(nextBasket()));
     connect(shoppingBasketMode, SIGNAL(getFrame()), this, SLOT(processFrame()));
@@ -434,11 +441,14 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_actionShopping_Basket_triggered()
 {
-    /* Store objection detection model being used */
-    modelObjectDetect = modelPath;
+    /* Store objection detection label and model being used */
+    labelOD = labelPath;
+    modelOD = modelPath;
 
     inputMode = cameraMode;
-    modelPath = MODEL_DIRECTORY_SB;
+    modelPath = modelSB;
+    labelPath = labelSB;
+    labelFileList = readLabelFile(labelSB);
 
     if (cvWorker->getUsingMipi())
         iterations = 6;
@@ -457,8 +467,14 @@ void MainWindow::on_actionShopping_Basket_triggered()
 
 void MainWindow::on_actionObject_Detection_triggered()
 {
+    /* Store shopping basket label and model being used */
+    labelSB = labelPath;
+    modelSB = modelPath;
+
     inputMode = cameraMode;
-    modelPath = modelObjectDetect;
+    modelPath = modelOD;
+    labelPath = labelOD;
+    labelFileList = readLabelFile(labelPath);
 
     iterations = 1;
 
@@ -473,44 +489,76 @@ void MainWindow::on_actionObject_Detection_triggered()
     vidWorker->StartVideo();
 }
 
-void MainWindow::on_pushButtonLoadAIModel_clicked()
+void MainWindow::loadAIModel()
 {
     qeventLoop = new QEventLoop;
     QFileDialog dialog(this);
 
     connect(this, SIGNAL(modelLoaded()), qeventLoop, SLOT(quit()));
 
-    emit stopInference();
+    if (demoMode == OD)
+        emit stopInference();
 
     dialog.setFileMode(QFileDialog::AnyFile);
     dialog.setDirectory(MODEL_DIRECTORY_PATH);
     dialog.setNameFilter("TFLite Files (*tflite)");
     dialog.setViewMode(QFileDialog::Detail);
 
+    modelPath.clear();
+
     if (dialog.exec())
         modelPath = dialog.selectedFiles().at(0);
 
-    if (modelPath.isEmpty())
-        modelPath = MODEL_DIRECTORY_OD;
+    /* Set default model if model path is empty */
+    if (modelPath.isEmpty()) {
+        if (demoMode == OD)
+            modelPath = MODEL_DIRECTORY_OD;
+        else if (demoMode == SB)
+            modelPath = MODEL_DIRECTORY_SB;
+    }
 
     dialog.setDirectory(LABEL_DIRECTORY_PATH);
     dialog.setNameFilter("Text Files (*txt)");
 
+    labelPath.clear();
+
     if (dialog.exec())
         labelPath = dialog.selectedFiles().at(0);
 
-    if (labelPath.isEmpty())
-        labelPath = LABEL_DIRECTORY_OD;
+    /* Set default label if label path is empty */
+    if (labelPath.isEmpty()) {
+        if (demoMode == OD)
+            labelPath = LABEL_DIRECTORY_OD;
+        else if (demoMode == SB)
+            labelPath = LABEL_DIRECTORY_SB;
+    }
 
-    dialog.close();
+    labelFileList = readLabelFile(labelPath);
 
     delete tfWorker;
     createTfWorker();
-
     disconnectSignals();
-    setupObjectDetectMode();
-    checkInputMode();
 
+    if (demoMode == OD) {
+        setupObjectDetectMode();
+    } else if (demoMode == SB) {
+        /* Prices file selection */
+        dialog.setDirectory(PRICES_DIRECTORY_PATH);
+        dialog.setNameFilter("Text Files (*txt)");
+
+        pricesPath.clear();
+
+        if (dialog.exec())
+            pricesPath = dialog.selectedFiles().at(0);
+
+        if (pricesPath.isEmpty())
+            pricesPath = PRICES_DIRECTORY_DEFAULT;
+
+        setupShoppingMode();
+    }
+
+    dialog.close();
+    checkInputMode();
     modelLoaded();
     qeventLoop->exec();
 }
@@ -582,6 +630,28 @@ void MainWindow::getImageFrame()
     emit sendMatToDraw(*cvWorker->getImage(1));
 }
 
+QStringList MainWindow::readLabelFile(QString labelPath)
+{
+    QFile labelFile;
+    QString fileLine;
+    QStringList labelList;
+
+    labelFile.setFileName(labelPath);
+    if (!labelFile.open(QIODevice::ReadOnly | QIODevice::Text))
+        qFatal("%s could not be opened.", labelPath.toStdString().c_str());
+
+    while (!labelFile.atEnd()) {
+        fileLine = labelFile.readLine();
+        fileLine.remove(QRegularExpression("^\\s*\\d*\\s*"));
+        fileLine.remove(QRegularExpression("\n"));
+        labelList.append(fileLine);
+    }
+
+    labelFile.close();
+
+    return labelList;
+}
+
 void MainWindow::on_actionLoad_Camera_triggered()
 {
     inputMode = cameraMode;
@@ -596,7 +666,6 @@ void MainWindow::on_actionLoad_Camera_triggered()
     } else if (demoMode == SB) {
         shoppingBasketMode->setImageMode(false);
     }
-    vidWorker->StartVideo();
 }
 
 void MainWindow::checkInputMode()
@@ -606,9 +675,15 @@ void MainWindow::checkInputMode()
         vidWorker->StopVideo();
         objectDetectMode->setVideoMode();
     } else if (inputMode == imageMode) {
-        objectDetectMode->setImageMode();
+        if (demoMode == OD)
+            objectDetectMode->setImageMode();
+        else if (demoMode == SB)
+            shoppingBasketMode->setImageMode(true);
     } else {
-        objectDetectMode->setCameraMode();
+        if (demoMode == OD)
+            objectDetectMode->setCameraMode();
+        else if (demoMode == SB)
+            shoppingBasketMode->setImageMode(false);
     }
 }
 

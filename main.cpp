@@ -18,6 +18,7 @@
 
 #include <QApplication>
 #include <QCommandLineParser>
+#include <QFileInfo>
 
 #include "mainwindow.h"
 
@@ -26,12 +27,12 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QCommandLineParser parser;
     QCommandLineOption cameraOption(QStringList() << "c" << "camera", "Choose a camera.", "file");
-    QCommandLineOption labelOption (QStringList() << "l" << "label", "Choose a label for Object Detection Mode.", "file", QString(LABEL_DIRECTORY_OD));
-    QCommandLineOption modelOption (QStringList() << "m" << "model", "Choose a model for Object Detection Mode.", "file", QString(MODEL_DIRECTORY_OD));
+    QCommandLineOption labelOption (QStringList() << "l" << "label", "Choose a label for selected demo mode.", "file");
+    QCommandLineOption modelOption (QStringList() << "m" << "model", "Choose a model for selected demo mode.", "file");
     QCommandLineOption modeOption (QStringList() << "s" << "start-mode",
                                    "Choose a mode to start the application in: [shopping-basket|object-detection].", "mode", QString("object-detection"));
     QCommandLineOption pricesOption (QStringList() << "p" << "prices-file",
-                                   "Choose a text file listing the prices to use for the shopping basket mode", "file", LABEL_DIRECTORY_SB_PRICES);
+                                   "Choose a text file listing the prices to use for the shopping basket mode", "file", PRICES_DIRECTORY_DEFAULT);
     QString cameraLocation;
     QString labelLocation;
     QString modelLocation;
@@ -62,6 +63,7 @@ int main(int argc, char *argv[])
     "  and confidence of the object, populates a checkout list, and\n"
     "  also displays inference time.\n\n"
     "Buttons:\n"
+    "  Load AI Model: Load a different model, label file and prices file.\n"
     "  Process Basket: Pauses the live camera feed, grabs the frame and runs inference.\n"
     "  Next Basket: Clears inference results and resumes live camera feed.\n"
     "  Input->Load Image: Load a static image file.\n\n"
@@ -112,6 +114,26 @@ int main(int argc, char *argv[])
         mode = OD;
     else
         qWarning("Warning: unknown demo mode requested, starting in default mode...");
+
+    if (!QFileInfo(modelLocation).isFile()) {
+        if (!labelLocation.isEmpty())
+            qWarning("Warning: label file does not exist, using default label file...");
+
+        if (mode == SB)
+            labelLocation = LABEL_DIRECTORY_SB;
+        else if (mode == OD)
+            labelLocation = LABEL_DIRECTORY_OD;
+    }
+
+    if (!QFileInfo(modelLocation).isFile()) {
+        if (!modelLocation.isEmpty())
+            qWarning("Warning: AI model does not exist, using default AI model...");
+
+        if (mode == SB)
+            modelLocation = MODEL_DIRECTORY_SB;
+        else if (mode == OD)
+            modelLocation = MODEL_DIRECTORY_OD;
+    }
 
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     MainWindow w(nullptr, cameraLocation, labelLocation, modelLocation, mode, pricesLocation);

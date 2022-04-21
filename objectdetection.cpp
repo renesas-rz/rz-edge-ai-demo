@@ -27,14 +27,13 @@
 
 #define DETECT_THRESHOLD 0.5
 
-objectDetection::objectDetection(Ui::MainWindow *ui, const QString labelPath)
+objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList)
 {
     QFont font;
-    QFile labelFile;
-    QString fileLine;
 
     uiOD = ui;
     inputModeOD = cameraModeOD;
+    labelList = labelFileList;
 
     uiOD->actionShopping_Basket->setDisabled(false);
     uiOD->actionObject_Detection->setDisabled(true);
@@ -58,19 +57,6 @@ objectDetection::objectDetection(Ui::MainWindow *ui, const QString labelPath)
 
     uiOD->stackedWidgetLeft->setCurrentIndex(1);
     uiOD->stackedWidgetRight->setCurrentIndex(1);
-
-    labelFile.setFileName(labelPath);
-    if (!labelFile.open(QIODevice::ReadOnly | QIODevice::Text))
-        qFatal("%s could not be opened.", labelPath.toStdString().c_str());
-
-    while (!labelFile.atEnd()) {
-        fileLine = labelFile.readLine();
-        fileLine.remove(QRegularExpression("^\\s*\\d*\\s*"));
-        fileLine.remove(QRegularExpression("\n"));
-        labelList.append(fileLine);
-    }
-
-    labelFile.close();
 
     setButtonState(true);
 }
