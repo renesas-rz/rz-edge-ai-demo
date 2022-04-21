@@ -40,11 +40,18 @@
 #define MODEL_DIRECTORY_SB "/opt/rz-edge-ai-demo/models/shoppingBasketDemo.tflite"
 #define PRICES_DIRECTORY_DEFAULT "/opt/rz-edge-ai-demo/prices/shoppingBasketDemo_prices_gbp.txt"
 #define PRICES_DIRECTORY_PATH "/opt/rz-edge-ai-demo/prices/"
+#define MODEL_DIRECTORY_PE_T "/opt/rz-edge-ai-demo/models/lite-model_movenet_singlepose_thunder_tflite_int8_4.tflite"
+#define MODEL_DIRECTORY_PE_L "/opt/rz-edge-ai-demo/models/lite-model_movenet_singlepose_lightning_tflite_int8_4.tflite"
 #define RENESAS_RZ_LOGO_DIRECTORY "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
 #define SPLASH_SCREEN_DIRECTORY "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
 
 #define CONFIDENCE_OFFSET_SSD 5
 #define ITEM_OFFSET_SSD 4
+
+#define G2E_PLATFORM "ek874"
+#define G2L_PLATFORM "smarc-rzg2l"
+#define G2LC_PLATFORM "smarc-rzg2lc"
+#define G2M_PLATFORM "hihope-rzg2m"
 
 #define G2E_HW_INFO "Hardware Information\n\nBoard: RZ/G2E ek874\nCPUs: 2x Arm Cortex-A53,\nDDR: 2GB"
 #define G2L_HW_INFO "Hardware Information\n\nBoard: RZ/G2L smarc-rzg2l-evk\nCPUs: 2x Arm Cortex-A55\nDDR: 2GB"
@@ -70,6 +77,7 @@ class QGraphicsScene;
 class QGraphicsView;
 class objectDetection;
 class opencvWorker;
+class poseEstimation;
 class shoppingBasket;
 class tfliteWorker;
 class QElapsedTimer;
@@ -78,14 +86,14 @@ class videoWorker;
 
 namespace Ui { class MainWindow; } //Needed for mainwindow.ui
 
-enum Mode { SB, OD };
+enum Mode { SB, OD, PE };
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent, QString cameraLocation, QString labelLocation,
+    MainWindow(QWidget *parent, QString boardName, QString cameraLocation, QString labelLocation,
                QString modelLocation, Mode mode, QString pricesFile);
 
 public slots:
@@ -110,10 +118,12 @@ private slots:
     void on_actionTensorflow_Lite_XNNPack_delegate_triggered();
     void on_actionShopping_Basket_triggered();
     void on_actionObject_Detection_triggered();
+    void on_actionPose_Estimation_triggered();
     void on_actionHardware_triggered();
     void on_actionExit_triggered();
     void on_actionLoad_Camera_triggered();
     void on_actionLoad_File_triggered();
+    void on_pushButtonSwitchAIModel_clicked();
 
 private:
     void createTfWorker();
@@ -122,6 +132,7 @@ private:
     void errorPopup(QString errorMessage, int errorCode);
     void remakeTfWorker();
     void setupObjectDetectMode();
+    void setupPoseEstimateMode();
     void setupShoppingMode();
     void disconnectSignals();
     void checkInputMode();
@@ -138,6 +149,7 @@ private:
     opencvWorker *cvWorker;
     shoppingBasket *shoppingBasketMode;
     objectDetection *objectDetectMode;
+    poseEstimation *poseEstimatMode;
     tfliteWorker *tfWorker;
     QEventLoop *qeventLoop;
     QString boardInfo;

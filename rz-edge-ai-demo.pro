@@ -25,6 +25,7 @@ SOURCES += \
     mainwindow.cpp \
     objectdetection.cpp \
     opencvworker.cpp \
+    poseestimation.cpp \
     shoppingbasket.cpp \
     tfliteworker.cpp \
     videoworker.cpp
@@ -34,6 +35,7 @@ HEADERS += \
     mainwindow.h \
     objectdetection.h \
     opencvworker.h \
+    poseestimation.h \
     shoppingbasket.h \
     tfliteworker.h \
     videoworker.h

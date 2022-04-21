@@ -19,6 +19,7 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QFileInfo>
+#include <QSysInfo>
 
 #include "mainwindow.h"
 
@@ -30,7 +31,7 @@ int main(int argc, char *argv[])
     QCommandLineOption labelOption (QStringList() << "l" << "label", "Choose a label for selected demo mode.", "file");
     QCommandLineOption modelOption (QStringList() << "m" << "model", "Choose a model for selected demo mode.", "file");
     QCommandLineOption modeOption (QStringList() << "s" << "start-mode",
-                                   "Choose a mode to start the application in: [shopping-basket|object-detection].", "mode", QString("object-detection"));
+                                   "Choose a mode to start the application in: [shopping-basket|object-detection|pose-estimation].", "mode", QString("object-detection"));
     QCommandLineOption pricesOption (QStringList() << "p" << "prices-file",
                                    "Choose a text file listing the prices to use for the shopping basket mode", "file", PRICES_DIRECTORY_DEFAULT);
     QString cameraLocation;
@@ -38,11 +39,16 @@ int main(int argc, char *argv[])
     QString modelLocation;
     QString modeString;
     QString pricesLocation;
+    QString boardName;
+    QSysInfo systemInfo;
     Mode mode = OD;
     QString applicationDescription =
     "Selecting Demo Mode\n"
     "Demo Mode->Object Detection: Object Detection Mode.\n"
-    "Demo Mode->Shopping Basket: Shopping Basket Mode.\n\n"
+    "Demo Mode->Shopping Basket: Shopping Basket Mode.\n"
+    "Demo Mode->Pose Estimation: Pose Estimation Mode*.\n\n"
+    " * The Pose Estimation mode is currently only supported on the\n"
+    "   RZ/G2L and RZ/G2LC platforms.\n\n"
     "Required Hardware:\n"
     "  Camera: Currently the Google Coral Mipi camera is supported,\n"
     "          but should work with any UVC compatible USB camera.\n\n"
@@ -67,6 +73,15 @@ int main(int argc, char *argv[])
     "  Process Basket: Pauses the live camera feed, grabs the frame and runs inference.\n"
     "  Next Basket: Clears inference results and resumes live camera feed.\n"
     "  Input->Load Image: Load a static image file.\n\n"
+    "Pose Estimation Mode\n"
+    "  Draws lines to connect identified joints and facial features, displays the total FPS\n"
+    "  and inference time.\n\n"
+    "Buttons:\n"
+    "  Use Thunder/Lightning: Change between Lightning and Thunder MoveNet models.\n"
+    "  Start Inference/Stop Inference: Starts the live camera feed/media file,\n"
+    "                                  grabs the frame and runs inference or just\n"
+    "                                  displays the live camera feed/media file.\n"
+    "  Input->Load Image/Video: Load an image or video file.\n\n"
     "Common Mode Buttons:\n"
     "  Input->Load Camera Feed: Removes media file and resumes live camera feed.\n"
     "  Inference Engine->TensorFlow Lite + ArmNN delegate: Run inference using TensorFlow\n"
@@ -86,6 +101,7 @@ int main(int argc, char *argv[])
     "  Model:\n"
     "    Object Detection Mode: mobilenet_ssd_v2_coco_quant_postprocess.tflite\n"
     "    Shopping Basket Mode: shoppingBasketDemo.tflite\n"
+    "    Pose Estimation Mode: lite-model_movenet_singlepose_lightning_tflite_int8_4.tflite\n"
     "  Mode Specific Files:\n"
     "    Shopping Basket Prices: shoppingBasketDemo_prices.txt\n\n"
 
@@ -108,20 +124,32 @@ int main(int argc, char *argv[])
     pricesLocation = parser.value(pricesOption);
     modeString = parser.value(modeOption);
 
-    if (modeString == "shopping-basket")
-        mode = SB;
-    else if (modeString == "object-detection")
-        mode = OD;
-    else
-        qWarning("Warning: unknown demo mode requested, starting in default mode...");
+    boardName = systemInfo.machineHostName();
 
-    if (!QFileInfo(modelLocation).isFile()) {
+    if (modeString == "shopping-basket") {
+        mode = SB;
+    } else if (modeString == "object-detection") {
+        mode = OD;
+    } else if (modeString == "pose-estimation") {
+        /* Check if platform supports pose estimation mode */
+        if (boardName == G2E_PLATFORM || boardName == G2M_PLATFORM) {
+            qWarning("Warning: platform being used does not support Pose Estimation mode, starting in default mode...");
+            mode = OD;
+        } else {
+            mode = PE;
+            modelLocation = MODEL_DIRECTORY_PE_L;
+        }
+    } else {
+        qWarning("Warning: unknown demo mode requested, starting in default mode...");
+    }
+
+    if (!QFileInfo(labelLocation).isFile()) {
         if (!labelLocation.isEmpty())
             qWarning("Warning: label file does not exist, using default label file...");
 
         if (mode == SB)
             labelLocation = LABEL_DIRECTORY_SB;
-        else if (mode == OD)
+        else
             labelLocation = LABEL_DIRECTORY_OD;
     }
 
@@ -131,12 +159,12 @@ int main(int argc, char *argv[])
 
         if (mode == SB)
             modelLocation = MODEL_DIRECTORY_SB;
-        else if (mode == OD)
+        else
             modelLocation = MODEL_DIRECTORY_OD;
     }
 
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    MainWindow w(nullptr, cameraLocation, labelLocation, modelLocation, mode, pricesLocation);
+    MainWindow w(nullptr, boardName, cameraLocation, labelLocation, modelLocation, mode, pricesLocation);
     w.show();
     return a.exec();
 }

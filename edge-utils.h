@@ -30,6 +30,7 @@
 
 #define STACK_WIDGET_INDEX_SB 0
 #define STACK_WIDGET_INDEX_OD 1
+#define STACK_WIDGET_INDEX_PE 2
 
 enum Input { cameraMode, imageMode, videoMode };
 

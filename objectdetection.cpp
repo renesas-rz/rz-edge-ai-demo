@@ -37,6 +37,7 @@ objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList)
 
     uiOD->actionShopping_Basket->setDisabled(false);
     uiOD->actionObject_Detection->setDisabled(true);
+    uiOD->actionPose_Estimation->setDisabled(false);
     uiOD->actionLoad_Camera->setDisabled(true);
     uiOD->actionLoad_File->setText(TEXT_LOAD_FILE);
 

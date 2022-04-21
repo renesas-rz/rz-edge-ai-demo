@@ -23,7 +23,6 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSplashScreen>
-#include <QSysInfo>
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -32,10 +31,11 @@
 #include "ui_mainwindow.h"
 #include "objectdetection.h"
 #include "opencvworker.h"
+#include "poseestimation.h"
 #include "videoworker.h"
 #include "shoppingbasket.h"
 
-MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLocation,
+MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocation, QString labelLocation,
                        QString modelLocation, Mode mode, QString pricesFile)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
@@ -91,12 +91,13 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
 
     qRegisterMetaType<QVector<float> >("QVector<float>");
 
-    QSysInfo systemInfo;
-
-    if (systemInfo.machineHostName() == "hihope-rzg2m") {
+    if (boardName == "hihope-rzg2m") {
         setWindowTitle("RZ Edge AI Demo - RZ/G2M");
         boardInfo = G2M_HW_INFO;
         board = G2M;
+
+        /* Make pose estimation mode option not visible */
+        ui->actionPose_Estimation->setVisible(false);
 
         if (cameraLocation.isEmpty()) {
             if(QDir("/dev/v4l/by-id").exists())
@@ -105,7 +106,7 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
                 cameraLocation = QString("/dev/video0");
         }
 
-    } else if (systemInfo.machineHostName() == "smarc-rzg2l") {
+    } else if (boardName == "smarc-rzg2l") {
         setWindowTitle("RZ Edge AI Demo - RZ/G2L");
         boardInfo = G2L_HW_INFO;
         board = G2L;
@@ -113,7 +114,7 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
         if (cameraLocation.isEmpty())
             cameraLocation = QString("/dev/video0");
 
-    } else if (systemInfo.machineHostName() == "smarc-rzg2lc") {
+    } else if (boardName == "smarc-rzg2lc") {
         setWindowTitle("RZ Edge AI Demo - RZ/G2LC");
         boardInfo = G2LC_HW_INFO;
         board = G2LC;
@@ -121,10 +122,13 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
         if (cameraLocation.isEmpty())
             cameraLocation = QString("/dev/video0");
 
-    } else if (systemInfo.machineHostName() == "ek874") {
+    } else if (boardName == "ek874") {
         setWindowTitle("RZ Edge AI Demo - RZ/G2E");
         boardInfo = G2E_HW_INFO;
         board = G2E;
+
+        /* Make pose estimation mode option not visible */
+        ui->actionPose_Estimation->setVisible(false);
 
         if (cameraLocation.isEmpty()) {
             if(QDir("/dev/v4l/by-id").exists())
@@ -164,6 +168,15 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
             modelSB = MODEL_DIRECTORY_SB;
 
             setupObjectDetectMode();
+        } else if (demoMode == PE) {
+            /* Set default parameters for other modes */
+            labelSB = LABEL_DIRECTORY_SB;
+            modelSB = MODEL_DIRECTORY_SB;
+
+            labelOD = LABEL_DIRECTORY_OD;
+            modelOD = MODEL_DIRECTORY_OD;
+
+            setupPoseEstimateMode();
         }
 
         /* Limit camera loop speed if using mipi camera to save on CPU
@@ -212,6 +225,23 @@ void MainWindow::setupShoppingMode()
     connect(shoppingBasketMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
     connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, const cv::Mat&)),
             shoppingBasketMode, SLOT(runInference(QVector<float>,int,cv::Mat)));
+}
+
+void MainWindow::setupPoseEstimateMode()
+{
+    demoMode = PE;
+    updateAIModelLabel();
+
+    poseEstimatMode = new poseEstimation(ui);
+
+    connect(this, SIGNAL(stopInference()), poseEstimatMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
+    connect(ui->pushButtonStartStopPose, SIGNAL(pressed()), poseEstimatMode, SLOT(triggerInference()));
+    connect(poseEstimatMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
+    connect(poseEstimatMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
+    connect(poseEstimatMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
+    connect(poseEstimatMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
+    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, const cv::Mat&)),
+            poseEstimatMode, SLOT(runInference(QVector<float>, int, cv::Mat)));
 }
 
 void MainWindow::createVideoWorker()
@@ -314,6 +344,9 @@ void MainWindow::drawMatToView(const cv::Mat& matInput)
     if ((!cvWorker->getUsingMipi() && inputMode == cameraMode) || (inputMode == imageMode))
         image = image.scaled(800, 600, Qt::AspectRatioMode::KeepAspectRatio);
 
+    if (demoMode == PE)
+        poseEstimatMode->setFrameDims(image.height(), image.width());
+
     scene->addPixmap(image);
     scene->setSceneRect(image.rect());
 }
@@ -367,6 +400,9 @@ void MainWindow::remakeTfWorker()
         setupShoppingMode();
     } else if (demoMode == OD) {
         setupObjectDetectMode();
+        emit stopInference();
+    } else if (demoMode == PE) {
+        setupPoseEstimateMode();
         emit stopInference();
     }
 
@@ -433,7 +469,7 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (demoMode == OD)
+    if (demoMode == OD || demoMode == PE)
         cvWorker->useCameraMode();
 
     event->accept();
@@ -442,8 +478,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::on_actionShopping_Basket_triggered()
 {
     /* Store objection detection label and model being used */
-    labelOD = labelPath;
-    modelOD = modelPath;
+    if (demoMode == OD) {
+        labelOD = labelPath;
+        modelOD = modelPath;
+    }
 
     inputMode = cameraMode;
     modelPath = modelSB;
@@ -468,8 +506,10 @@ void MainWindow::on_actionShopping_Basket_triggered()
 void MainWindow::on_actionObject_Detection_triggered()
 {
     /* Store shopping basket label and model being used */
-    labelSB = labelPath;
-    modelSB = modelPath;
+    if (demoMode == SB) {
+        labelSB = labelPath;
+        modelSB = modelPath;
+    }
 
     inputMode = cameraMode;
     modelPath = modelOD;
@@ -487,6 +527,50 @@ void MainWindow::on_actionObject_Detection_triggered()
     ui->menuInput->menuAction()->setVisible(true);
     cvWorker->useCameraMode();
     vidWorker->StartVideo();
+}
+
+void MainWindow::on_actionPose_Estimation_triggered()
+{
+    if (demoMode == SB) {
+        labelSB = labelPath;
+        modelSB = modelPath;
+    } else if (demoMode == OD) {
+        labelOD = labelPath;
+        modelOD = modelPath;
+    }
+
+    modelPath = MODEL_DIRECTORY_PE_L;
+    inputMode = cameraMode;
+    iterations = 1;
+
+    delete tfWorker;
+
+    createTfWorker();
+    disconnectSignals();
+    setupPoseEstimateMode();
+
+    ui->menuInput->menuAction()->setVisible(true);
+    ui->pushButtonSwitchAIModel->setText("Use\nThunder");
+    cvWorker->useCameraMode();
+    vidWorker->StartVideo();
+}
+
+void MainWindow::on_pushButtonSwitchAIModel_clicked()
+{
+    emit stopInference();
+
+    if (modelPath == MODEL_DIRECTORY_PE_T) {
+        modelPath = MODEL_DIRECTORY_PE_L;
+
+        ui->pushButtonSwitchAIModel->setText("Use\nThunder");
+    } else {
+        modelPath = MODEL_DIRECTORY_PE_T;
+
+        ui->pushButtonSwitchAIModel->setText("Use\nLightning");
+    }
+
+    remakeTfWorker();
+    checkInputMode();
 }
 
 void MainWindow::loadAIModel()
@@ -573,7 +657,7 @@ void MainWindow::on_actionLoad_File_triggered()
 
     connect(this, SIGNAL(fileLoaded()), qeventLoop, SLOT(quit()));
 
-    if (demoMode == OD)
+    if (demoMode == OD || demoMode == PE)
         emit stopInference();
 
     vidWorker->StopVideo();
@@ -584,7 +668,7 @@ void MainWindow::on_actionLoad_File_triggered()
 
     mediaFileFilter = IMAGE_FILE_FILTER;
 
-    if (demoMode == OD)
+    if (demoMode == OD || demoMode == PE)
         mediaFileFilter += VIDEO_FILE_FILTER;
 
     dialog.setNameFilter(mediaFileFilter);
@@ -607,17 +691,12 @@ void MainWindow::on_actionLoad_File_triggered()
     if (dialog.selectedNameFilter().contains("Images")) {
         inputMode = imageMode;
         cvWorker->useImageMode(mediaFilePath);
-
-        if (demoMode == OD)
-            objectDetectMode->setImageMode();
-        else if (demoMode == SB)
-            shoppingBasketMode->setImageMode(true);
     } else if (dialog.selectedNameFilter().contains("Videos")) {
         inputMode = videoMode;
         cvWorker->useVideoMode(mediaFilePath);
-        objectDetectMode->setVideoMode();
     }
 
+    checkInputMode();
     getImageFrame();
     emit fileLoaded();
     ui->labelTotalFps->setText(TEXT_TOTAL_FPS);
@@ -665,11 +744,10 @@ void MainWindow::on_actionLoad_Camera_triggered()
 
     ui->actionLoad_Camera->setEnabled(false);
     cvWorker->useCameraMode();
-
-    if (demoMode == OD)
-        emit stopInference();
-
     checkInputMode();
+
+    if (demoMode == OD || demoMode == PE)
+        emit stopInference();
 }
 
 void MainWindow::checkInputMode()
@@ -677,17 +755,25 @@ void MainWindow::checkInputMode()
     /* Check to see if a media file is currently loaded */
     if (inputMode == videoMode) {
         vidWorker->StopVideo();
-        objectDetectMode->setVideoMode();
+
+        if (demoMode == OD)
+            objectDetectMode->setVideoMode();
+        else if (demoMode == PE)
+            poseEstimatMode->setVideoMode();
     } else if (inputMode == imageMode) {
         if (demoMode == OD)
             objectDetectMode->setImageMode();
         else if (demoMode == SB)
             shoppingBasketMode->setImageMode(true);
+        else if (demoMode == PE)
+            poseEstimatMode->setImageMode();
     } else {
         if (demoMode == OD)
             objectDetectMode->setCameraMode();
         else if (demoMode == SB)
             shoppingBasketMode->setImageMode(false);
+        else if (demoMode == PE)
+            poseEstimatMode->setCameraMode();
     }
 }
 
@@ -701,5 +787,9 @@ void MainWindow::disconnectSignals()
         objectDetectMode->disconnect();
 
         delete objectDetectMode;
+    } else if (demoMode == PE) {
+        poseEstimatMode->disconnect();
+
+        delete poseEstimatMode;
     }
 }
