@@ -76,7 +76,6 @@ std::vector<float> shoppingBasket::readPricesFile(QString pricesPath)
 
     while (!pricesFile.atEnd()) {
         fileLine = pricesFile.readLine();
-        fileLine.remove(QRegularExpression("^\\s*\\d*\\s*"));
         fileLine.remove(QRegularExpression("\n"));
         prices.push_back(fileLine.toFloat());
     }
