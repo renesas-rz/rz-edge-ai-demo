@@ -363,14 +363,12 @@ void MainWindow::remakeTfWorker()
 
     if (demoMode == SB) {
         setupShoppingMode();
-
-        if (inputMode == imageMode)
-            shoppingBasketMode->setImageMode(true);
     } else if (demoMode == OD) {
         setupObjectDetectMode();
-        checkInputMode();
         emit stopInference();
     }
+
+    checkInputMode();
 }
 
 void MainWindow::on_actionEnable_ArmNN_Delegate_triggered()
@@ -659,13 +657,10 @@ void MainWindow::on_actionLoad_Camera_triggered()
     ui->actionLoad_Camera->setEnabled(false);
     cvWorker->useCameraMode();
 
-    if (demoMode == OD) {
-	emit stopInference();
+    if (demoMode == OD)
+        emit stopInference();
 
-        objectDetectMode->setCameraMode();
-    } else if (demoMode == SB) {
-        shoppingBasketMode->setImageMode(false);
-    }
+    checkInputMode();
 }
 
 void MainWindow::checkInputMode()
