@@ -440,7 +440,7 @@ AI Model</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>0</y>
+        <y>10</y>
         <width>179</width>
         <height>35</height>
        </rect>
@@ -555,7 +555,7 @@ AI Model</string>
     <property name="geometry">
      <rect>
       <x>940</x>
-      <y>50</y>
+      <y>74</y>
       <width>198</width>
       <height>29</height>
      </rect>
@@ -579,7 +579,7 @@ AI Model</string>
     <property name="geometry">
      <rect>
       <x>940</x>
-      <y>50</y>
+      <y>73</y>
       <width>401</width>
       <height>61</height>
      </rect>
@@ -592,7 +592,7 @@ AI Model</string>
     </property>
     <property name="font">
      <font>
-      <pointsize>19</pointsize>
+      <pointsize>16</pointsize>
      </font>
     </property>
     <property name="text">
@@ -603,7 +603,7 @@ AI Model</string>
     <property name="geometry">
      <rect>
       <x>940</x>
-      <y>100</y>
+      <y>110</y>
       <width>179</width>
       <height>35</height>
      </rect>
@@ -624,6 +624,54 @@ AI Model</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelAIModel">
+    <property name="geometry">
+     <rect>
+      <x>940</x>
+      <y>21</y>
+      <width>401</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+      <horstretch>1</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>19</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>AI Model: </string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelAIModelFilename">
+    <property name="geometry">
+     <rect>
+      <x>940</x>
+      <y>36</y>
+      <width>401</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+      <horstretch>1</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Model_name</string>
     </property>
    </widget>
   </widget>

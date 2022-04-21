@@ -125,6 +125,7 @@ private:
     void setupShoppingMode();
     void disconnectSignals();
     void checkInputMode();
+    void updateAIModelLabel();
     QStringList readLabelFile(QString labelPath);
 
     Ui::MainWindow *ui;

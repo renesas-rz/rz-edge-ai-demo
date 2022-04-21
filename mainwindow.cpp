@@ -178,6 +178,7 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
 void MainWindow::setupObjectDetectMode()
 {
     demoMode = OD;
+    updateAIModelLabel();
 
     objectDetectMode = new objectDetection(ui, labelFileList);
 
@@ -196,6 +197,7 @@ void MainWindow::setupObjectDetectMode()
 void MainWindow::setupShoppingMode()
 {
     demoMode = SB;
+    updateAIModelLabel();
 
     shoppingBasketMode = new shoppingBasket(ui, labelFileList, pricesPath);
 
@@ -626,6 +628,13 @@ void MainWindow::on_actionLoad_File_triggered()
 void MainWindow::getImageFrame()
 {
     emit sendMatToDraw(*cvWorker->getImage(1));
+}
+
+void MainWindow::updateAIModelLabel()
+{
+    QString modelName = modelPath.section('/', -1);
+
+    ui->labelAIModelFilename->setText(modelName);
 }
 
 QStringList MainWindow::readLabelFile(QString labelPath)
