@@ -24,19 +24,14 @@
 #include <chrono>
 #include <opencv2/videoio.hpp>
 
-#define BUTTON_BLUE "background-color: rgba(42, 40, 157);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
-#define BUTTON_RED "background-color: rgba(255, 0, 0);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
+#include "edge-utils.h"
 
-#define TEXT_INFERENCE "Inference Time: "
 #define TEXT_LOAD_FILE "Load Image/Video"
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"
-#define TEXT_TOTAL_FPS "Total FPS: "
 
 class QGraphicsScene;
 
 namespace Ui { class MainWindow; }
-
-enum InputOD { cameraModeOD, imageModeOD, videoModeOD };
 
 class objectDetection : public QObject
 {
@@ -77,7 +72,7 @@ private:
     bool continuousMode;
     QStringList labelList;
     std::chrono::high_resolution_clock::time_point startTime;
-    InputOD inputModeOD;
+    Input inputModeOD;
 };
 
 #endif // OBJECTDETECTION_H

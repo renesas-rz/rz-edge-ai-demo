@@ -34,6 +34,8 @@
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
 
+#include "edge-utils.h"
+
 #include <string.h>
 
 #include <QObject>
@@ -41,7 +43,6 @@
 Q_DECLARE_METATYPE(cv::Mat)
 
 enum Board { G2E, G2L, G2LC, G2M, Unknown };
-enum InputOpenCV { cameraInput, imageInput, videoInput };
 
 class opencvWorker : public QObject
 {
@@ -85,7 +86,7 @@ private:
     cv::Mat imageFile;
     cv::VideoCapture *videoFile;
     std::string cameraInitialization;
-    InputOpenCV inputOpenCV;
+    Input inputOpenCV;
 };
 
 #endif // OPENCVCAPTUREWORKER_H

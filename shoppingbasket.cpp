@@ -28,11 +28,11 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QS
 {
     QFont font;
     uiSB = ui;
-    inputModeSB = cameraModeSB;
+    inputModeSB = cameraMode;
     labelList = labelFileList;
     costs = readPricesFile(pricesFile);
 
-    font.setPointSize(14);
+    font.setPointSize(EDGE_FONT_SIZE);
 
     uiSB->actionShopping_Basket->setDisabled(true);
     uiSB->actionObject_Detection->setDisabled(false);
@@ -43,8 +43,8 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QS
     uiSB->labelDemoMode->setText("Mode: Shopping Basket");
     uiSB->labelTotalItems->setText(TEXT_TOTAL_ITEMS);
 
-    uiSB->stackedWidgetLeft->setCurrentIndex(0);
-    uiSB->stackedWidgetRight->setCurrentIndex(0);
+    uiSB->stackedWidgetLeft->setCurrentIndex(STACK_WIDGET_INDEX_SB);
+    uiSB->stackedWidgetRight->setCurrentIndex(STACK_WIDGET_INDEX_SB);
 
     uiSB->tableWidget->verticalHeader()->setDefaultSectionSize(25);
     uiSB->tableWidget->setHorizontalHeaderLabels({"Item", "Price"});
@@ -117,7 +117,7 @@ void shoppingBasket::nextBasket()
     uiSB->labelInference->setText(TEXT_INFERENCE);
     uiSB->labelTotalItems->setText(TEXT_TOTAL_ITEMS);
 
-    if (inputModeSB == imageModeSB)
+    if (inputModeSB == imageMode)
         emit getStaticImage();
     else
         emit startVideo();
@@ -125,7 +125,7 @@ void shoppingBasket::nextBasket()
 
 void shoppingBasket::processBasket()
 {
-    if (inputModeSB == cameraModeSB)
+    if (inputModeSB == cameraMode)
         emit stopVideo();
 
     setProcessButton(false);
@@ -216,12 +216,12 @@ void shoppingBasket::runInference(QVector<float> receivedTensor, int receivedTim
 void shoppingBasket::setImageMode(bool imageStatus)
 {
     if (imageStatus) {
-        inputModeSB = imageModeSB;
+        inputModeSB = imageMode;
         uiSB->actionLoad_File->setText(TEXT_LOAD_NEW_IMAGE);
 
         emit getStaticImage();
     } else {
-        inputModeSB = cameraModeSB;
+        inputModeSB = cameraMode;
         uiSB->actionLoad_File->setText(TEXT_LOAD_IMAGE);
 
         emit startVideo();

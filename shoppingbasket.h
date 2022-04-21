@@ -21,10 +21,8 @@
 #include <QMainWindow>
 #include <opencv2/videoio.hpp>
 
-#define BUTTON_BLUE "background-color: rgba(42, 40, 157);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
-#define BUTTON_GREYED_OUT "background-color: rgba(42, 40, 157, 90);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
+#include "edge-utils.h"
 
-#define TEXT_INFERENCE "Inference Time: "
 #define TEXT_LOAD_IMAGE "Load Image"
 #define TEXT_LOAD_NEW_IMAGE "Load New Image"
 #define TEXT_TOTAL_ITEMS "Total Items: "
@@ -34,8 +32,6 @@
 class QGraphicsScene;
 
 namespace Ui { class MainWindow; }
-
-enum InputSB { cameraModeSB, imageModeSB };
 
 class shoppingBasket  : public QObject
 {
@@ -72,7 +68,7 @@ private:
     std::vector<float> costs;
     QString currency;
     QStringList labelList;
-    InputSB inputModeSB;
+    Input inputModeSB;
 };
 
 #endif // SHOPPINGBASKET_H

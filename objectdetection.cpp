@@ -32,7 +32,7 @@ objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList)
     QFont font;
 
     uiOD = ui;
-    inputModeOD = cameraModeOD;
+    inputModeOD = cameraMode;
     labelList = labelFileList;
 
     uiOD->actionShopping_Basket->setDisabled(false);
@@ -44,7 +44,7 @@ objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList)
     uiOD->labelDemoMode->setText("Mode: Object Detection");
     uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
 
-    font.setPointSize(14);
+    font.setPointSize(EDGE_FONT_SIZE);
     uiOD->tableWidgetOD->verticalHeader()->setDefaultSectionSize(25);
     uiOD->tableWidgetOD->setHorizontalHeaderLabels({"Object Name", "Count"});
     uiOD->tableWidgetOD->horizontalHeader()->setFont(font);
@@ -55,8 +55,8 @@ objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList)
     uiOD->tableWidgetOD->horizontalHeader()->setStretchLastSection(true);
     uiOD->tableWidgetOD->setRowCount(0);
 
-    uiOD->stackedWidgetLeft->setCurrentIndex(1);
-    uiOD->stackedWidgetRight->setCurrentIndex(1);
+    uiOD->stackedWidgetLeft->setCurrentIndex(STACK_WIDGET_INDEX_OD);
+    uiOD->stackedWidgetRight->setCurrentIndex(STACK_WIDGET_INDEX_OD);
 
     setButtonState(true);
 }
@@ -78,7 +78,7 @@ void objectDetection::setButtonState(bool enable)
 
 void objectDetection::triggerInference()
 {
-    if (inputModeOD == imageModeOD) {
+    if (inputModeOD == imageMode) {
         continuousMode = false;
 
         stopVideo();
@@ -99,7 +99,7 @@ void objectDetection::triggerInference()
 
             setButtonState(true);
 
-            if (inputModeOD == videoModeOD) {
+            if (inputModeOD == videoMode) {
                 stopVideo();
             } else {
                 startVideo();
@@ -193,7 +193,7 @@ void objectDetection::updateObjectList(const QVector<float> receivedList)
 
 void objectDetection::setCameraMode()
 {
-    inputModeOD = cameraModeOD;
+    inputModeOD = cameraMode;
 
     uiOD->actionLoad_Camera->setEnabled(false);
     uiOD->actionLoad_File->setText(TEXT_LOAD_FILE);
@@ -201,7 +201,7 @@ void objectDetection::setCameraMode()
 
 void objectDetection::setImageMode()
 {
-    inputModeOD = imageModeOD;
+    inputModeOD = imageMode;
 
     uiOD->actionLoad_Camera->setEnabled(true);
     uiOD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
@@ -209,7 +209,7 @@ void objectDetection::setImageMode()
 
 void objectDetection::setVideoMode()
 {
-    inputModeOD = videoModeOD;
+    inputModeOD = videoMode;
 
     uiOD->actionLoad_Camera->setEnabled(true);
     uiOD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
@@ -246,6 +246,6 @@ void objectDetection::stopContinuousMode()
     uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
     uiOD->tableWidgetOD->setRowCount(0);
 
-    if (inputModeOD != videoModeOD)
+    if (inputModeOD != videoMode)
         emit startVideo();
 }

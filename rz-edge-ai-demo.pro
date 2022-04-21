@@ -30,6 +30,7 @@ SOURCES += \
     videoworker.cpp
 
 HEADERS += \
+    edge-utils.h \
     mainwindow.h \
     objectdetection.h \
     opencvworker.h \

@@ -22,6 +22,7 @@
 #include <opencv2/videoio.hpp>
 
 #include "tfliteworker.h"
+#include "edge-utils.h"
 
 #define TEXT_CAMERA_INIT_STATUS_ERROR "Camera Error!\n\n No camera detected, please check connection and relaunch application.\n\nApplication will now close."
 #define TEXT_CAMERA_OPENING_ERROR "Camera Error!\n\n Camera not Opening, please check connection and relaunch application.\n\nApplication will now close."
@@ -77,7 +78,6 @@ class videoWorker;
 
 namespace Ui { class MainWindow; } //Needed for mainwindow.ui
 
-enum Input { cameraMode, imageMode, videoMode };
 enum Mode { SB, OD };
 
 class MainWindow : public QMainWindow

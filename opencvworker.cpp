@@ -34,7 +34,7 @@ opencvWorker::opencvWorker(QString cameraLocation, Board board)
 {
     webcamName = cameraLocation.toStdString();
     connectionAttempts = 0;
-    inputOpenCV = cameraInput;
+    inputOpenCV = cameraMode;
     videoCodecs = true;
 
     setupCamera();
@@ -180,10 +180,10 @@ opencvWorker::~opencvWorker() {
 
 cv::Mat* opencvWorker::getImage(unsigned int iterations)
 {
-    if (inputOpenCV == imageInput) {
+    if (inputOpenCV == imageMode) {
         /* For image file input, read image from file */
         picture = cv::imread(imagePath.toStdString());
-    } else if (inputOpenCV == videoInput) {
+    } else if (inputOpenCV == videoMode) {
         /* For video file input, grab the current frame from the video playback device */
         getVideoFileFrame();
 
@@ -226,14 +226,14 @@ void opencvWorker::getVideoFileFrame()
 void opencvWorker::useImageMode(QString imageFilePath)
 {
     checkVideoFile();
-    inputOpenCV = imageInput;
+    inputOpenCV = imageMode;
     imagePath = imageFilePath;
 }
 
 void opencvWorker::useCameraMode()
 {
     checkVideoFile();
-    inputOpenCV = cameraInput;
+    inputOpenCV = cameraMode;
 }
 
 void opencvWorker::useVideoMode(QString videoFilePath)
@@ -241,7 +241,7 @@ void opencvWorker::useVideoMode(QString videoFilePath)
     QString videoDecodePipeline;
 
     checkVideoFile();
-    inputOpenCV = videoInput;
+    inputOpenCV = videoMode;
     videoLoadedPath = videoFilePath;
     setVideoDims();
 
@@ -263,7 +263,7 @@ void opencvWorker::useVideoMode(QString videoFilePath)
 void opencvWorker::checkVideoFile()
 {
     /* Close video file capture device */
-    if (inputOpenCV == videoInput)
+    if (inputOpenCV == videoMode)
         videoFile->release();
 }
 
