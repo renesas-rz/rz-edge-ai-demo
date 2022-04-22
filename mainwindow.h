@@ -32,7 +32,7 @@
 
 #define LABEL_DIRECTORY_PATH "/opt/rz-edge-ai-demo/labels/"
 #define LABEL_DIRECTORY_OD "/opt/rz-edge-ai-demo/labels/mobilenet_ssd_v2_coco_quant_postprocess_labels.txt"
-#define LABEL_DIRECTORY_SB_PRICES "/opt/rz-edge-ai-demo/labels/shoppingBasketDemo_prices.txt"
+#define LABEL_DIRECTORY_SB_PRICES "/opt/rz-edge-ai-demo/prices/shoppingBasketDemo_prices.txt"
 #define MEDIA_DIRECTORY_PATH "/opt/rz-edge-ai-demo/media/"
 #define MODEL_DIRECTORY_PATH "/opt/rz-edge-ai-demo/models/"
 #define MODEL_DIRECTORY_OD "/opt/rz-edge-ai-demo/models/mobilenet_ssd_v2_coco_quant_postprocess.tflite"
