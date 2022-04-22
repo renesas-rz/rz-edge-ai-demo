@@ -42,7 +42,7 @@ opencvWorker::opencvWorker(QString cameraLocation, Board board)
             cameraInitialization = G2M_CAM_INIT;
         else if (board == G2E)
             cameraInitialization = G2E_CAM_INIT;
-        else if (board == G2L)
+        else if (board == G2L || board == G2LC)
             cameraInitialization = G2L_CAM_INIT;
     }
 

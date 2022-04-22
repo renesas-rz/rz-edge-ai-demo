@@ -32,7 +32,7 @@
 
 Q_DECLARE_METATYPE(cv::Mat)
 
-enum Board { G2E, G2L, G2M, Unknown };
+enum Board { G2E, G2L, G2LC, G2M, Unknown };
 enum InputOpenCV { cameraInput, imageInput, videoInput };
 
 class opencvWorker : public QObject

@@ -120,7 +120,7 @@ MainWindow::MainWindow(QWidget *parent, QString cameraLocation, QString labelLoc
     } else if (systemInfo.machineHostName() == "smarc-rzg2lc") {
         setWindowTitle("RZ Edge AI Demo - RZ/G2LC");
         boardInfo = G2LC_HW_INFO;
-        board = G2L;
+        board = G2LC;
 
         if (cameraLocation.isEmpty())
             cameraLocation = QString("/dev/video0");
