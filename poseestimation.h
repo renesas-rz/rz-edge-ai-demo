@@ -59,8 +59,8 @@ signals:
 private:
     void setButtonState(bool enable);
     QVector<float> sortTensor(const QVector<float> receivedTensor);
-    void drawLimbs(const QVector<float>& outputTensor);
-    void connectLimbs(int limb1, int limb2);
+    void drawLimbs(const QVector<float>& outputTensor, bool updateGraphicalView);
+    void connectLimbs(int limb1, int limb2, bool drawGraphicalViewLimbs);
     void displayTotalFps(int totalProcessTime);
     void timeTotalFps(bool startingTimer);
 

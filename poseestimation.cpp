@@ -67,6 +67,9 @@ poseEstimation::poseEstimation(Ui::MainWindow *ui)
 
     uiPE->stackedWidgetLeft->setCurrentIndex(STACK_WIDGET_INDEX_PE);
     uiPE->stackedWidgetRight->setCurrentIndex(STACK_WIDGET_INDEX_PE);
+
+    QGraphicsScene *scenePointProjection = new QGraphicsScene(this);
+    uiPE->graphicsViewPointProjection->setScene(scenePointProjection);
 }
 
 void poseEstimation::setButtonState(bool enable)
@@ -107,40 +110,56 @@ QVector<float> poseEstimation::sortTensor(const QVector<float> receivedTensor)
     return sortedTensor;
 }
 
-void poseEstimation::drawLimbs(const QVector<float> &outputTensor)
+void poseEstimation::drawLimbs(const QVector<float> &outputTensor, bool updateGraphicalView)
 {
     QPen pen;
     xCoordinate = QVector<float>();
     yCoordinate = QVector<float>();
+    int displayWidth;
+    int displayHeight;
 
     QGraphicsScene *scene = uiPE->graphicsView->scene();
+    QGraphicsScene *scenePointProjection = uiPE->graphicsViewPointProjection->scene();
+
+    pen.setWidth(PEN_WIDTH);
+
+    if (updateGraphicalView) {
+        /* Scale the dimensions down by 2 */
+        displayHeight = frameHeight / 2;
+        displayWidth = frameWidth / 2;
+
+        scenePointProjection->clear();
+    } else {
+        displayHeight = frameHeight;
+        displayWidth = frameWidth;
+    }
 
     /* Save x and y coordinates in separate vectors */
     for (int i = 0; i < outputTensor.size(); i += 3) {
-        float y = outputTensor[i] * float(frameHeight);
-        float x = outputTensor[i + 1] * float(frameWidth);
+        float y = outputTensor[i] * float(displayHeight);
+        float x = outputTensor[i + 1] * float(displayWidth);
 
         xCoordinate.push_back(x);
         yCoordinate.push_back(y);
     }
 
     /* Draw lines between the joints */
-    connectLimbs(NOSE, LEFT_EYE);
-    connectLimbs(NOSE, RIGHT_EYE);
-    connectLimbs(LEFT_EYE, LEFT_EAR);
-    connectLimbs(RIGHT_EYE, RIGHT_EAR);
-    connectLimbs(LEFT_SHOULDER, RIGHT_SHOULDER);
-    connectLimbs(LEFT_SHOULDER, LEFT_ELBOW);
-    connectLimbs(LEFT_SHOULDER, LEFT_HIP);
-    connectLimbs(RIGHT_SHOULDER, RIGHT_ELBOW);
-    connectLimbs(RIGHT_SHOULDER, RIGHT_HIP);
-    connectLimbs(LEFT_ELBOW, LEFT_WRIST);
-    connectLimbs(RIGHT_ELBOW, RIGHT_WRIST);
-    connectLimbs(LEFT_HIP, RIGHT_HIP);
-    connectLimbs(LEFT_HIP, LEFT_KNEE);
-    connectLimbs(LEFT_KNEE, LEFT_ANKLE);
-    connectLimbs(RIGHT_HIP, RIGHT_KNEE);
-    connectLimbs(RIGHT_KNEE, RIGHT_ANKLE);
+    connectLimbs(NOSE, LEFT_EYE, updateGraphicalView);
+    connectLimbs(NOSE, RIGHT_EYE, updateGraphicalView);
+    connectLimbs(LEFT_EYE, LEFT_EAR, updateGraphicalView);
+    connectLimbs(RIGHT_EYE, RIGHT_EAR, updateGraphicalView);
+    connectLimbs(LEFT_SHOULDER, RIGHT_SHOULDER, updateGraphicalView);
+    connectLimbs(LEFT_SHOULDER, LEFT_ELBOW, updateGraphicalView);
+    connectLimbs(LEFT_SHOULDER, LEFT_HIP, updateGraphicalView);
+    connectLimbs(RIGHT_SHOULDER, RIGHT_ELBOW, updateGraphicalView);
+    connectLimbs(RIGHT_SHOULDER, RIGHT_HIP, updateGraphicalView);
+    connectLimbs(LEFT_ELBOW, LEFT_WRIST, updateGraphicalView);
+    connectLimbs(RIGHT_ELBOW, RIGHT_WRIST, updateGraphicalView);
+    connectLimbs(LEFT_HIP, RIGHT_HIP, updateGraphicalView);
+    connectLimbs(LEFT_HIP, LEFT_KNEE, updateGraphicalView);
+    connectLimbs(LEFT_KNEE, LEFT_ANKLE, updateGraphicalView);
+    connectLimbs(RIGHT_HIP, RIGHT_KNEE, updateGraphicalView);
+    connectLimbs(RIGHT_KNEE, RIGHT_ANKLE, updateGraphicalView);
 
     /* Draw dots on each detected joint */
     for (int i = 0; i <= RIGHT_ANKLE; i ++) {
@@ -151,12 +170,16 @@ void poseEstimation::drawLimbs(const QVector<float> &outputTensor)
 
         pen.setColor(DOT_COLOUR);
 
-        if (x >= 0 && y >= 0)
-            scene->addEllipse(x, y, PEN_WIDTH, PEN_WIDTH, pen, brush);
+        if (x >= 0 && y >= 0) {
+            if (updateGraphicalView)
+                scenePointProjection->addEllipse(x, y, PEN_WIDTH, PEN_WIDTH, pen, brush);
+            else
+                scene->addEllipse(x, y, PEN_WIDTH, PEN_WIDTH, pen, brush);
+        }
     }
 }
 
-void poseEstimation::connectLimbs(int limb1, int limb2)
+void poseEstimation::connectLimbs(int limb1, int limb2, bool drawGraphicalViewLimbs)
 {
     QPen pen;
 
@@ -165,8 +188,11 @@ void poseEstimation::connectLimbs(int limb1, int limb2)
 
     if (std::isnan(xCoordinate[limb1]) == false && std::isnan(yCoordinate[limb1]) == false) {
         if (std::isnan(xCoordinate[limb2]) == false && std::isnan(yCoordinate[limb2]) == false) {
-            uiPE->graphicsView->scene()->addLine(xCoordinate[limb1], yCoordinate[limb1], xCoordinate[limb2], yCoordinate[limb2], pen);
-        }
+                    if (drawGraphicalViewLimbs)
+                    uiPE->graphicsViewPointProjection->scene()->addLine(xCoordinate[limb1], yCoordinate[limb1], xCoordinate[limb2], yCoordinate[limb2], pen);
+                    else
+            		uiPE->graphicsView->scene()->addLine(xCoordinate[limb1], yCoordinate[limb1], xCoordinate[limb2], yCoordinate[limb2], pen);
+    	}
     }
 }
 
@@ -186,7 +212,9 @@ void poseEstimation::runInference(const QVector<float> &receivedTensor, int rece
         setButtonState(true);
     }
 
-    drawLimbs(outputTensor);
+    /* Draw onto image first then the graphical view */
+    drawLimbs(outputTensor, false);
+    drawLimbs(outputTensor, true);
 }
 
 void poseEstimation::stopContinuousMode()
@@ -198,6 +226,7 @@ void poseEstimation::stopContinuousMode()
 
     uiPE->labelInference->setText(TEXT_INFERENCE);
     uiPE->labelTotalFpsPose->setText(TEXT_TOTAL_FPS);
+    uiPE->graphicsViewPointProjection->scene()->clear();
 
     if (inputModePE != videoMode)
         emit startVideo();
@@ -251,6 +280,7 @@ void poseEstimation::triggerInference()
                 startVideo();
                 uiPE->labelInference->setText(TEXT_INFERENCE);
                 uiPE->labelTotalFpsPose->setText(TEXT_TOTAL_FPS);
+                uiPE->graphicsViewPointProjection->scene()->clear();
             }
         }
     }
