@@ -70,6 +70,9 @@ std::vector<float> shoppingBasket::readPricesFile(QString pricesPath)
     if (!pricesFile.open(QIODevice::ReadOnly | QIODevice::Text))
         qFatal("%s could not be opened.", pricesPath.toStdString().c_str());
 
+    currency = pricesFile.readLine();
+    currency.remove(QRegularExpression("\n"));
+
     while (!pricesFile.atEnd()) {
         fileLine = pricesFile.readLine();
         fileLine.remove(QRegularExpression("\n"));
@@ -188,7 +191,7 @@ void shoppingBasket::runInference(QVector<float> receivedTensor, int receivedTim
         uiSB->tableWidget->insertRow(uiSB->tableWidget->rowCount());
         uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, 0, item);
         uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, 1,
-        price = new QTableWidgetItem("£" + QString::number(
+        price = new QTableWidgetItem(currency + QString::number(
                 double(costs[labelList.indexOf(labelListSorted.at(i))]), 'f', 2)));
         price->setTextAlignment(Qt::AlignRight);
     }
@@ -200,7 +203,7 @@ void shoppingBasket::runInference(QVector<float> receivedTensor, int receivedTim
     item->setTextAlignment(Qt::AlignBottom | Qt::AlignRight);
     uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, 0, item);
 
-    item = new QTableWidgetItem("£" + QString::number(double(totalCost), 'f', 2));
+    item = new QTableWidgetItem(currency + QString::number(double(totalCost), 'f', 2));
     item->setTextAlignment(Qt::AlignBottom | Qt::AlignRight);
     uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, 1, item);
 

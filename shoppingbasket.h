@@ -70,6 +70,7 @@ private:
     QStringList labelListSorted;
     QVector<float> outputTensor;
     std::vector<float> costs;
+    QString currency;
     QStringList labelList;
     InputSB inputModeSB;
 };

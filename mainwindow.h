@@ -37,7 +37,7 @@
 #define MODEL_DIRECTORY_PATH "/opt/rz-edge-ai-demo/models/"
 #define MODEL_DIRECTORY_OD "/opt/rz-edge-ai-demo/models/mobilenet_ssd_v2_coco_quant_postprocess.tflite"
 #define MODEL_DIRECTORY_SB "/opt/rz-edge-ai-demo/models/shoppingBasketDemo.tflite"
-#define PRICES_DIRECTORY_DEFAULT "/opt/rz-edge-ai-demo/prices/shoppingBasketDemo_prices.txt"
+#define PRICES_DIRECTORY_DEFAULT "/opt/rz-edge-ai-demo/prices/shoppingBasketDemo_prices_gbp.txt"
 #define PRICES_DIRECTORY_PATH "/opt/rz-edge-ai-demo/prices/"
 #define RENESAS_RZ_LOGO_DIRECTORY "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
 #define SPLASH_SCREEN_DIRECTORY "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
