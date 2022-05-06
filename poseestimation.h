@@ -49,10 +49,7 @@ public slots:
 
 signals:
     void getFrame();
-    void getLimbs(const QVector<float> &receivedTensor);
-    void restartVideo();
     void sendMatToView(const cv::Mat&receivedMat);
-    void setPlayIcon(bool state);
     void startVideo();
     void stopVideo();
 
