@@ -43,7 +43,7 @@ public:
     void setFrameDims(int height, int width);
 
 public slots:
-    void runInference(const QVector<float>& receivedTensor, int receivedTimeElapsed, const cv::Mat &receivedMat);
+    void runInference(const QVector<float>& receivedTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat);
     void stopContinuousMode();
     void triggerInference();
 
@@ -55,7 +55,7 @@ signals:
 
 private:
     void setButtonState(bool enable);
-    QVector<float> sortTensor(const QVector<float> receivedTensor);
+    QVector<float> sortTensor(const QVector<float> receivedTensor, int receivedStride);
     void drawLimbs(const QVector<float>& outputTensor, bool updateGraphicalView);
     void connectLimbs(int limb1, int limb2, bool drawGraphicalViewLimbs);
     void displayTotalFps(int totalProcessTime);

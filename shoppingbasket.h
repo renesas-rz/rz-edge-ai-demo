@@ -42,7 +42,7 @@ public:
     void setImageMode(bool imageStatus);
 
 public slots:
-    void runInference(QVector<float> receivedTensor, int receivedTimeElapsed, const cv::Mat&receivedMat);
+    void runInference(QVector<float> receivedTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat&receivedMat);
 
 signals:
     void getFrame();
@@ -60,7 +60,7 @@ private:
     void setNextButton(bool enable);
     void setProcessButton(bool enable);
     std::vector<float> readPricesFile(QString pricesPath);
-    QVector<float> sortTensor(QVector<float> &receivedTensor);
+    QVector<float> sortTensor(QVector<float> &receivedTensor, int receivedStride);
 
     Ui::MainWindow *uiSB;
     QStringList labelListSorted;

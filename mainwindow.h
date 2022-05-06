@@ -86,8 +86,6 @@ class videoWorker;
 
 namespace Ui { class MainWindow; } //Needed for mainwindow.ui
 
-enum Mode { SB, OD, PE };
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

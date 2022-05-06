@@ -94,8 +94,10 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
 {
     cv::Mat sentImageMat;
     std::chrono::high_resolution_clock::time_point startTime, stopTime;
+    QVector<int> outputTensorCount;
     int timeElapsed;
     int input;
+    int itemStride;
 
     if(sentMat.empty()) {
         qWarning("Received invalid image path, cannot run inference");
@@ -124,13 +126,30 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
         /* Total number of data elements */
         int outputCount = tfliteInterpreter->output_tensor(i)->bytes / dataSize;
 
+        outputTensorCount.push_back(outputCount);
+
         for (int k = 0; k < outputCount; k++) {
                 float output = tfliteInterpreter->typed_output_tensor<float>(i)[k];
                 outputTensor.push_back(output);
         }
     }
 
+    /* Set the item stride based on demo mode being used */
+    if (modeSelected == PE) {
+        itemStride = outputTensorCount.takeLast();
+    } else {
+        /* The final output is unused for object detection/recognition models */
+        outputTensorCount.removeLast();
+
+        itemStride = outputTensorCount.takeLast();
+    }
+
     timeElapsed = int(std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
-    emit sendOutputTensor(outputTensor, timeElapsed, sentMat);
+    emit sendOutputTensor(outputTensor, itemStride, timeElapsed, sentMat);
     outputTensor.clear();
+}
+
+void tfliteWorker::setDemoMode(Mode demoMode)
+{
+    modeSelected = demoMode;
 }

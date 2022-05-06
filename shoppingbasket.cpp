@@ -140,25 +140,24 @@ void shoppingBasket::processBasket()
     emit getFrame();
 }
 
-QVector<float> shoppingBasket::sortTensor(QVector<float> &receivedTensor)
+QVector<float> shoppingBasket::sortTensor(QVector<float> &receivedTensor, int receivedStride)
 {
     QVector<float> sortedTensor = QVector<float>();
-    int itemStride = (int) receivedTensor.last();
 
     /* The final output tensor of the model is unused in this demo mode */
     receivedTensor.removeLast();
 
-    for(int i = itemStride; i > 0; i--) {
+    for(int i = receivedStride; i > 0; i--) {
         float confidenceLevel = receivedTensor.at(receivedTensor.size() - i);
 
         /* Only include the item if the confidence level is at threshold */
         if (confidenceLevel > DETECT_THRESHOLD && confidenceLevel <= float(1.0)) {
             /* Box points */
             for(int j = 0; j < BOX_POINTS; j++)
-                sortedTensor.push_back(receivedTensor.at((itemStride - i) * BOX_POINTS + j));
+                sortedTensor.push_back(receivedTensor.at((receivedStride - i) * BOX_POINTS + j));
 
             /* Item ID */
-            sortedTensor.push_back(receivedTensor.at(receivedTensor.size() - (itemStride * 2) + (itemStride - i)));
+            sortedTensor.push_back(receivedTensor.at(receivedTensor.size() - (receivedStride * 2) + (receivedStride - i)));
 
             /* Confidence level */
             sortedTensor.push_back(confidenceLevel);
@@ -168,12 +167,12 @@ QVector<float> shoppingBasket::sortTensor(QVector<float> &receivedTensor)
     return sortedTensor;
 }
 
-void shoppingBasket::runInference(QVector<float> receivedTensor, int receivedTimeElapsed, const cv::Mat &receivedMat)
+void shoppingBasket::runInference(QVector<float> receivedTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat)
 {
     QTableWidgetItem* item;
     QTableWidgetItem* price;
     float totalCost = 0;
-    outputTensor = sortTensor(receivedTensor);
+    outputTensor = sortTensor(receivedTensor, receivedStride);
 
     uiSB->tableWidget->setRowCount(0);
     labelListSorted.clear();

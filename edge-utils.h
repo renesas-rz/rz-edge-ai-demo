@@ -33,5 +33,6 @@
 #define STACK_WIDGET_INDEX_PE 2
 
 enum Input { cameraMode, imageMode, videoMode };
+enum Mode { SB, OD, PE };
 
 #endif // EDGEUTILS_H

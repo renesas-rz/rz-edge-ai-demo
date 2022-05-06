@@ -21,6 +21,8 @@
 
 #include <tensorflow/lite/kernels/register.h>
 
+#include "edge-utils.h"
+
 #include <QObject>
 #include <QVector>
 
@@ -36,15 +38,17 @@ public:
     tfliteWorker(QString modelLocation, Delegate armnnDelegate, int defaultThreads);
     ~tfliteWorker();
     void receiveImage(const cv::Mat&);
+    void setDemoMode(Mode demoMode);
 
 signals:
-    void sendOutputTensor(const QVector<float>&, int, const cv::Mat&);
+    void sendOutputTensor(const QVector<float>&, int, int, const cv::Mat&);
 
 private:
     std::unique_ptr<tflite::Interpreter> tfliteInterpreter;
     std::unique_ptr<tflite::FlatBufferModel> tfliteModel;
     std::string modelName;
     Delegate delegateType;
+    Mode modeSelected;
 #ifdef DUNFELL
     TfLiteDelegate* xnnpack_delegate;
 #endif

@@ -191,6 +191,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
 void MainWindow::setupObjectDetectMode()
 {
     demoMode = OD;
+    tfWorker->setDemoMode(demoMode);
     updateAIModelLabel();
 
     objectDetectMode = new objectDetection(ui, labelFileList);
@@ -203,13 +204,14 @@ void MainWindow::setupObjectDetectMode()
     connect(objectDetectMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
     connect(objectDetectMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
     connect(objectDetectMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
-    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, const cv::Mat&)),
-            objectDetectMode, SLOT(runInference(QVector<float>,int,cv::Mat)));
+    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, int, const cv::Mat&)),
+            objectDetectMode, SLOT(runInference(QVector<float>, int, int, cv::Mat)));
 }
 
 void MainWindow::setupShoppingMode()
 {
     demoMode = SB;
+    tfWorker->setDemoMode(demoMode);
     updateAIModelLabel();
 
     shoppingBasketMode = new shoppingBasket(ui, labelFileList, pricesPath);
@@ -223,13 +225,14 @@ void MainWindow::setupShoppingMode()
     connect(shoppingBasketMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
     connect(shoppingBasketMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
     connect(shoppingBasketMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
-    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, const cv::Mat&)),
-            shoppingBasketMode, SLOT(runInference(QVector<float>,int,cv::Mat)));
+    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, int, const cv::Mat&)),
+            shoppingBasketMode, SLOT(runInference(QVector<float>, int, int, cv::Mat)));
 }
 
 void MainWindow::setupPoseEstimateMode()
 {
     demoMode = PE;
+    tfWorker->setDemoMode(demoMode);
     updateAIModelLabel();
 
     poseEstimatMode = new poseEstimation(ui);
@@ -240,8 +243,8 @@ void MainWindow::setupPoseEstimateMode()
     connect(poseEstimatMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
     connect(poseEstimatMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
     connect(poseEstimatMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
-    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, const cv::Mat&)),
-            poseEstimatMode, SLOT(runInference(QVector<float>, int, cv::Mat)));
+    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, int, const cv::Mat&)),
+            poseEstimatMode, SLOT(runInference(QVector<float>, int, int, cv::Mat)));
 }
 
 void MainWindow::createVideoWorker()

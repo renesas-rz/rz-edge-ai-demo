@@ -87,13 +87,13 @@ void poseEstimation::setButtonState(bool enable)
     qApp->processEvents(QEventLoop::WaitForMoreEvents);
 }
 
-QVector<float> poseEstimation::sortTensor(const QVector<float> receivedTensor)
+QVector<float> poseEstimation::sortTensor(const QVector<float> receivedTensor, int receivedStride)
 {
     QVector<float> sortedTensor = QVector<float>();
 
     float nanValue = std::nanf("NAN");
 
-    for(int i = 0; i < receivedTensor.size(); i += 3) {
+    for(int i = 0; i < receivedStride; i += 3) {
         float confidenceLevel = receivedTensor.at(i + 2);
 
         if (confidenceLevel > DETECT_THRESHOLD && confidenceLevel <= 1.0) {
@@ -196,9 +196,9 @@ void poseEstimation::connectLimbs(int limb1, int limb2, bool drawGraphicalViewLi
     }
 }
 
-void poseEstimation::runInference(const QVector<float> &receivedTensor, int receivedTimeElapsed, const cv::Mat &receivedMat)
+void poseEstimation::runInference(const QVector<float> &receivedTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat)
 {
-    outputTensor = sortTensor(receivedTensor);
+    outputTensor = sortTensor(receivedTensor, receivedStride);
 
     uiPE->labelInference->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
 
