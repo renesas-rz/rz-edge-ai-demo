@@ -63,7 +63,7 @@ poseEstimation::poseEstimation(Ui::MainWindow *ui)
 
     uiPE->labelInference->setText(TEXT_INFERENCE);
     uiPE->labelDemoMode->setText("Mode: Pose Estimation");
-    uiPE->labelTotalFps->setText(TEXT_TOTAL_FPS);
+    uiPE->labelTotalFpsPose->setText(TEXT_TOTAL_FPS);
 
     uiPE->stackedWidgetLeft->setCurrentIndex(STACK_WIDGET_INDEX_PE);
     uiPE->stackedWidgetRight->setCurrentIndex(STACK_WIDGET_INDEX_PE);
