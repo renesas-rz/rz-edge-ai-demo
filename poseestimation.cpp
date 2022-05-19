@@ -20,39 +20,37 @@
 #include "ui_mainwindow.h"
 
 #include <cmath>
+#include <math.h>
 
 #include <QEventLoop>
 #include <QGraphicsScene>
 #include <QGraphicsTextItem>
 
+#define BLAZE_POSE_INPUT_SIZE 256.0
+
 #define DETECT_THRESHOLD 0.3
 
-#define NOSE 0
-#define LEFT_EYE 1
-#define RIGHT_EYE 2
-#define LEFT_EAR 3
-#define RIGHT_EAR 4
-#define LEFT_SHOULDER 5
-#define RIGHT_SHOULDER 6
-#define LEFT_ELBOW 7
-#define RIGHT_ELBOW 8
-#define LEFT_WRIST 9
-#define RIGHT_WRIST 10
-#define LEFT_HIP 11
-#define RIGHT_HIP 12
-#define LEFT_KNEE 13
-#define RIGHT_KNEE 14
-#define LEFT_ANKLE 15
-#define RIGHT_ANKLE 16
+enum MoveNetPoints { NOSE, LEFT_EYE, RIGHT_EYE, LEFT_EAR, RIGHT_EAR, LEFT_SHOULDER, RIGHT_SHOULDER,
+                     LEFT_ELBOW, RIGHT_ELBOW, LEFT_WRIST, RIGHT_WRIST, LEFT_HIP, RIGHT_HIP, LEFT_KNEE,
+                     RIGHT_KNEE, LEFT_ANKLE, RIGHT_ANKLE};
+
+enum BlazePosePoints { BP_NOSE, BP_LEFT_EYE_INNER, BP_LEFT_EYE, BP_LEFT_EYE_OUTER, BP_RIGHT_EYE_INNER,
+                       BP_RIGHT_EYE, BP_RIGHT_EYE_OUTER, BP_LEFT_EAR, BP_RIGHT_EAR, BP_LEFT_MOUTH,
+                       BP_RIGHT_MOUTH, BP_LEFT_SHOULDER, BP_RIGHT_SHOULDER, BP_LEFT_ELBOW, BP_RIGHT_ELBOW,
+                       BP_LEFT_WRIST, BP_RIGHT_WRIST, BP_LEFT_PINKY, BP_RIGHT_PINKY, BP_LEFT_INDEX, BP_RIGHT_INDEX,
+                       BP_LEFT_THUMB, BP_RIGHT_THUMB, BP_LEFT_HIP, BP_RIGHT_HIP, BP_LEFT_KNEE, BP_RIGHT_KNEE,
+                       BP_LEFT_ANKLE, BP_RIGHT_ANKLE, BP_LEFT_HEEL, BP_RIGHT_HEEL, BP_LEFT_FOOT_INDEX,
+                       BP_RIGHT_FOOT_INDEX };
 
 #define PEN_WIDTH 2
 #define DOT_COLOUR Qt::green
 #define LINE_COLOUR Qt::red
 
-poseEstimation::poseEstimation(Ui::MainWindow *ui)
+poseEstimation::poseEstimation(Ui::MainWindow *ui, PoseModel poseModel)
 {
     uiPE = ui;
     inputModePE = cameraMode;
+    poseModelSet = poseModel;
     buttonState = true;
 
     uiPE->actionShopping_Basket->setDisabled(false);
@@ -87,7 +85,7 @@ void poseEstimation::setButtonState(bool enable)
     qApp->processEvents(QEventLoop::WaitForMoreEvents);
 }
 
-QVector<float> poseEstimation::sortTensor(const QVector<float> receivedTensor, int receivedStride)
+QVector<float> poseEstimation::sortTensorMoveNet(const QVector<float> receivedTensor, int receivedStride)
 {
     QVector<float> sortedTensor = QVector<float>();
 
@@ -109,8 +107,33 @@ QVector<float> poseEstimation::sortTensor(const QVector<float> receivedTensor, i
 
     return sortedTensor;
 }
+QVector<float> poseEstimation::sortTensorBlazePose(const QVector<float> receivedTensor, int receivedStride)
+{
+    QVector<float> sortedTensor = QVector<float>();
 
-void poseEstimation::drawLimbs(const QVector<float> &outputTensor, bool updateGraphicalView)
+    float nanValue = std::nanf("NAN");
+
+    for(int i = 0; i < receivedStride; i += 5) {
+        float confidenceValue = receivedTensor.at(i + 4);
+
+        /* Calculate confidence probability by applying sigmoid function */
+        float confidenceLevel = 1 / (1 + exp(-confidenceValue));
+
+        if (confidenceLevel > 0.5 && confidenceLevel <= 1.0) {
+            sortedTensor.push_back(receivedTensor.at(i + 1)); // y-coordinate
+            sortedTensor.push_back(receivedTensor.at(i));     // x-coordinate
+            sortedTensor.push_back(confidenceLevel);          // presence confidence
+        } else {
+            sortedTensor.push_back(nanValue);
+            sortedTensor.push_back(nanValue);
+            sortedTensor.push_back(nanValue);
+        }
+     }
+
+    return sortedTensor;
+}
+
+void poseEstimation::drawLimbsMoveNet(const QVector<float> &outputTensor, bool updateGraphicalView)
 {
     QPen pen;
     xCoordinate = QVector<float>();
@@ -179,6 +202,98 @@ void poseEstimation::drawLimbs(const QVector<float> &outputTensor, bool updateGr
     }
 }
 
+void poseEstimation::drawLimbsBlazePose(const QVector<float> &outputTensor, bool updateGraphicalView)
+{
+    QPen pen;
+    xCoordinate = QVector<float>();
+    yCoordinate = QVector<float>();
+    int displayWidth;
+    int displayHeight;
+
+    QGraphicsScene *scene = uiPE->graphicsView->scene();
+    QGraphicsScene *scenePointProjection = uiPE->graphicsViewPointProjection->scene();
+
+    pen.setWidth(PEN_WIDTH);
+
+    if (updateGraphicalView) {
+        /* Scale the dimensions down by 2 */
+        displayHeight = frameHeight / 2;
+        displayWidth = frameWidth / 2;
+
+        scenePointProjection->clear();
+    } else {
+        displayHeight = frameHeight;
+        displayWidth = frameWidth;
+    }
+
+    float widthMultiplier = float(displayWidth) / BLAZE_POSE_INPUT_SIZE;
+    float heightMultiplier = float(displayHeight) / BLAZE_POSE_INPUT_SIZE;
+
+    /* Save x and y coordinates in separate vectors */
+    for (int i = 0; i < outputTensor.size(); i += 3) {
+        float y = outputTensor[i] * heightMultiplier;
+        float x = outputTensor[i + 1] * widthMultiplier;
+
+        xCoordinate.push_back(x);
+        yCoordinate.push_back(y);
+    }
+
+    /* Draw lines between the joints */
+    connectLimbs(BP_NOSE, BP_LEFT_EYE_INNER, updateGraphicalView);
+    connectLimbs(BP_LEFT_EYE_INNER, BP_LEFT_EYE, updateGraphicalView);
+    connectLimbs(BP_LEFT_EYE, BP_LEFT_EYE_OUTER, updateGraphicalView);
+    connectLimbs(BP_LEFT_EYE_OUTER, BP_LEFT_EAR, updateGraphicalView);
+    connectLimbs(BP_NOSE, BP_RIGHT_EYE_INNER, updateGraphicalView);
+    connectLimbs(BP_RIGHT_EYE_INNER, BP_RIGHT_EYE, updateGraphicalView);
+    connectLimbs(BP_RIGHT_EYE, BP_RIGHT_EYE_OUTER, updateGraphicalView);
+    connectLimbs(BP_RIGHT_EYE_OUTER, BP_RIGHT_EAR, updateGraphicalView);
+    connectLimbs(BP_NOSE, BP_LEFT_EYE, updateGraphicalView);
+    connectLimbs(BP_LEFT_MOUTH, BP_RIGHT_MOUTH, updateGraphicalView);
+    connectLimbs(BP_LEFT_SHOULDER, BP_RIGHT_SHOULDER, updateGraphicalView);
+    connectLimbs(BP_LEFT_SHOULDER, BP_LEFT_ELBOW, updateGraphicalView);
+    connectLimbs(BP_LEFT_ELBOW, BP_LEFT_WRIST, updateGraphicalView);
+    connectLimbs(BP_LEFT_WRIST, BP_LEFT_THUMB, updateGraphicalView);
+    connectLimbs(BP_LEFT_WRIST, BP_LEFT_INDEX, updateGraphicalView);
+    connectLimbs(BP_LEFT_WRIST, BP_LEFT_PINKY, updateGraphicalView);
+    connectLimbs(BP_LEFT_INDEX, BP_LEFT_PINKY, updateGraphicalView);
+    connectLimbs(BP_RIGHT_SHOULDER, BP_RIGHT_ELBOW, updateGraphicalView);
+    connectLimbs(BP_RIGHT_ELBOW, BP_RIGHT_WRIST, updateGraphicalView);
+    connectLimbs(BP_RIGHT_WRIST, BP_RIGHT_THUMB, updateGraphicalView);
+    connectLimbs(BP_RIGHT_WRIST, BP_RIGHT_INDEX, updateGraphicalView);
+    connectLimbs(BP_RIGHT_WRIST, BP_RIGHT_PINKY, updateGraphicalView);
+    connectLimbs(BP_RIGHT_INDEX, BP_RIGHT_PINKY, updateGraphicalView);
+    connectLimbs(BP_LEFT_SHOULDER, BP_LEFT_HIP, updateGraphicalView);
+    connectLimbs(BP_RIGHT_SHOULDER, BP_RIGHT_HIP, updateGraphicalView);
+    connectLimbs(BP_LEFT_HIP, BP_RIGHT_HIP, updateGraphicalView);
+    connectLimbs(BP_LEFT_HIP, BP_LEFT_KNEE, updateGraphicalView);
+    connectLimbs(BP_LEFT_KNEE, BP_LEFT_ANKLE, updateGraphicalView);
+    connectLimbs(BP_LEFT_ANKLE, BP_LEFT_HEEL, updateGraphicalView);
+    connectLimbs(BP_LEFT_ANKLE, BP_LEFT_FOOT_INDEX, updateGraphicalView);
+    connectLimbs(BP_LEFT_HEEL, BP_LEFT_FOOT_INDEX, updateGraphicalView);
+    connectLimbs(BP_RIGHT_HIP, BP_RIGHT_KNEE, updateGraphicalView);
+    connectLimbs(BP_RIGHT_KNEE, BP_RIGHT_ANKLE, updateGraphicalView);
+    connectLimbs(BP_RIGHT_ANKLE, BP_RIGHT_HEEL, updateGraphicalView);
+    connectLimbs(BP_RIGHT_ANKLE, BP_RIGHT_FOOT_INDEX, updateGraphicalView);
+    connectLimbs(BP_RIGHT_HEEL, BP_RIGHT_FOOT_INDEX, updateGraphicalView);
+
+    /* Draw dots on each detected joint */
+    for (int i = 0; i <= BP_RIGHT_FOOT_INDEX; i ++) {
+        QBrush brush;
+
+        float x = xCoordinate[i];
+        float y = yCoordinate[i];
+
+        pen.setColor(DOT_COLOUR);
+
+        if (x >= 0 && y >= 0) {
+            if (updateGraphicalView)
+                scenePointProjection->addEllipse(x, y, PEN_WIDTH, PEN_WIDTH, pen, brush);
+            else
+                scene->addEllipse(x, y, PEN_WIDTH, PEN_WIDTH, pen, brush);
+        }
+    }
+}
+
 void poseEstimation::connectLimbs(int limb1, int limb2, bool drawGraphicalViewLimbs)
 {
     QPen pen;
@@ -198,7 +313,10 @@ void poseEstimation::connectLimbs(int limb1, int limb2, bool drawGraphicalViewLi
 
 void poseEstimation::runInference(const QVector<float> &receivedTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat)
 {
-    outputTensor = sortTensor(receivedTensor, receivedStride);
+    if (poseModelSet == BlazePose)
+        outputTensor = sortTensorBlazePose(receivedTensor, receivedStride);
+    else
+        outputTensor = sortTensorMoveNet(receivedTensor, receivedStride);
 
     uiPE->labelInference->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
 
@@ -213,8 +331,13 @@ void poseEstimation::runInference(const QVector<float> &receivedTensor, int rece
     }
 
     /* Draw onto image first then the graphical view */
-    drawLimbs(outputTensor, false);
-    drawLimbs(outputTensor, true);
+    if (poseModelSet == BlazePose) {
+        drawLimbsBlazePose(outputTensor, false);
+        drawLimbsBlazePose(outputTensor, true);
+    } else {
+        drawLimbsMoveNet(outputTensor, false);
+        drawLimbsMoveNet(outputTensor, true);
+    }
 }
 
 void poseEstimation::stopContinuousMode()

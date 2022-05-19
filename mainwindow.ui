@@ -392,7 +392,7 @@ Inference</string>
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButtonSwitchAIModel">
+     <widget class="QPushButton" name="pushButtonLoadPoseModel">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -430,8 +430,8 @@ border-style: outset;
 </string>
       </property>
       <property name="text">
-       <string>Use
-Thunder</string>
+       <string>Load
+AI Model</string>
       </property>
       <property name="checkable">
        <bool>true</bool>

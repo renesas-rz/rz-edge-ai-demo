@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     "  Draws lines to connect identified joints and facial features, displays the total FPS,\n"
     "  inference time, and displays a 2-D Point Projection of the identified pose.\n\n"
     "Buttons:\n"
-    "  Use Thunder/Lightning: Change between Lightning and Thunder MoveNet models.\n"
+    "  Load AI Model: Load a different pose model. Currently supported: MoveNet, BlazePose.\n"
     "  Start Inference/Stop Inference: Starts the live camera feed/media file,\n"
     "                                  grabs the frame and runs inference or just\n"
     "                                  displays the live camera feed/media file.\n"
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
             mode = OD;
         } else {
             mode = PE;
-            modelLocation = MODEL_PATH_PE_MOVE_NET_L;
+            modelLocation = MODEL_PATH_PE_BLAZE_POSE_LITE;
         }
     } else {
         qWarning("Warning: unknown demo mode requested, starting in default mode...");

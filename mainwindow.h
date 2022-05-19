@@ -42,6 +42,9 @@
 #define PRICES_DIRECTORY "/opt/rz-edge-ai-demo/prices/"
 #define MODEL_PATH_PE_MOVE_NET_T "/opt/rz-edge-ai-demo/models/lite-model_movenet_singlepose_thunder_tflite_int8_4.tflite"
 #define MODEL_PATH_PE_MOVE_NET_L "/opt/rz-edge-ai-demo/models/lite-model_movenet_singlepose_lightning_tflite_int8_4.tflite"
+#define MODEL_PATH_PE_BLAZE_POSE_LITE "/opt/rz-edge-ai-demo/models/pose_landmark_lite.tflite"
+#define MODEL_PATH_PE_BLAZE_POSE_HEAVY "/opt/rz-edge-ai-demo/models/pose_landmark_heavy.tflite"
+#define MODEL_PATH_PE_BLAZE_POSE_FULL "/opt/rz-edge-ai-demo/models/pose_landmark_full.tflite"
 #define RENESAS_RZ_LOGO_PATH "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
 #define SPLASH_SCREEN_PATH "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
 
@@ -122,7 +125,7 @@ private slots:
     void on_actionExit_triggered();
     void on_actionLoad_Camera_triggered();
     void on_actionLoad_File_triggered();
-    void on_pushButtonSwitchAIModel_clicked();
+    void on_pushButtonLoadPoseModel_clicked();
 
 private:
     void createTfWorker();
@@ -136,6 +139,7 @@ private:
     void disconnectSignals();
     void checkInputMode();
     void updateAIModelLabel();
+    void setPoseEstimateDelegateType();
     QStringList readLabelFile(QString labelPath);
 
     Ui::MainWindow *ui;
@@ -155,6 +159,7 @@ private:
     QString modelPath;
     QString pricesPath;
     QString modelOD;
+    QString modelPE;
     QString modelSB;
     QString labelPath;
     QString labelOD;

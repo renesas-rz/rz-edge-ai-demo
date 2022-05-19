@@ -109,7 +109,22 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
 
     cv::resize(sentMat, sentImageMat, cv::Size(wantedHeight, wantedWidth));
 
-    memcpy(tfliteInterpreter->typed_tensor<uint8_t>(input), sentImageMat.data, sentImageMat.total() * sentImageMat.elemSize());
+    if (tfliteInterpreter->tensor(input)->type == kTfLiteFloat32) {
+        /*
+         * Convert cv::Mat data type from 8-bit unsigned char to 32-bit float.
+         * The data of the image needs to be divided by 255.0f as CV_8UC3 ranges
+         * from 0 to 255, whereas CV_32FC3 ranges from 0 to 1
+         */
+        sentImageMat.convertTo(sentImageMat, CV_32FC3, SCALE_FACTOR_UCHAR_TO_FLOAT);
+
+        memcpy(tfliteInterpreter->typed_tensor<float>(input), sentImageMat.data, sentImageMat.total() * sentImageMat.elemSize());
+    } else if (tfliteInterpreter->tensor(input)->type == kTfLiteUInt8) {
+        memcpy(tfliteInterpreter->typed_tensor<uint8_t>(input), sentImageMat.data, sentImageMat.total() * sentImageMat.elemSize());
+    } else {
+        qWarning("Model data type currently not supported!");
+        emit sendInferenceWarning(WARNING_UNSUPPORTED_DATA_TYPE);
+        return;
+    }
 
     startTime = std::chrono::high_resolution_clock::now();
 
@@ -145,7 +160,7 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
 
     /* Set the item stride based on demo mode being used */
     if (modeSelected == PE) {
-        itemStride = outputTensorCount.takeLast();
+        itemStride = outputTensorCount.takeFirst();
     } else {
         /* The final output is unused for object detection/recognition models */
         outputTensorCount.removeLast();

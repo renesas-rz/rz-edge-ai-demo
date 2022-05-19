@@ -30,6 +30,9 @@
 
 #define WARNING_IMAGE_RETREIVAL "Received invalid image path, could not run inference"
 #define WARNING_INVOKE "Failed to run invoke"
+#define WARNING_UNSUPPORTED_DATA_TYPE "Model data type currently not supported"
+
+#define SCALE_FACTOR_UCHAR_TO_FLOAT (1/255.0F)
 
 enum Delegate { armNN, xnnpack, none };
 

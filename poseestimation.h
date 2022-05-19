@@ -26,17 +26,22 @@
 
 #include "edge-utils.h"
 
+#define IDENTIFIER_MOVE_NET "lite-model_movenet_singlepose"
+#define IDENTIFIER_BLAZE_POSE "pose_landmark"
+
 #define TEXT_LOAD_FILE "Load Image/Video"
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"
 
 namespace Ui { class MainWindow; }
+
+enum PoseModel { MoveNet, BlazePose };
 
 class poseEstimation : public QObject
 {
     Q_OBJECT
 
 public:
-    poseEstimation(Ui::MainWindow *ui);
+    poseEstimation(Ui::MainWindow *ui, PoseModel poseModel);
     void setCameraMode();
     void setImageMode();
     void setVideoMode();
@@ -55,14 +60,17 @@ signals:
 
 private:
     void setButtonState(bool enable);
-    QVector<float> sortTensor(const QVector<float> receivedTensor, int receivedStride);
-    void drawLimbs(const QVector<float>& outputTensor, bool updateGraphicalView);
+    QVector<float> sortTensorMoveNet(const QVector<float> receivedTensor, int receivedStride);
+    QVector<float> sortTensorBlazePose(const QVector<float> receivedTensor, int receivedStride);
+    void drawLimbsMoveNet(const QVector<float>& outputTensor, bool updateGraphicalView);
+    void drawLimbsBlazePose(const QVector<float>& outputTensor, bool updateGraphicalView);
     void connectLimbs(int limb1, int limb2, bool drawGraphicalViewLimbs);
     void displayTotalFps(int totalProcessTime);
     void timeTotalFps(bool startingTimer);
 
     Ui::MainWindow *uiPE;
     Input inputModePE;
+    PoseModel poseModelSet;
     QVector<float> outputTensor;
     QVector<float> xCoordinate;
     QVector<float> yCoordinate;

@@ -76,8 +76,12 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    ui->actionEnable_ArmNN_Delegate->setEnabled(false);
-    ui->actionTensorFlow_Lite->setEnabled(true);
+    if (demoMode == PE) {
+        setPoseEstimateDelegateType();
+    } else {
+        ui->actionEnable_ArmNN_Delegate->setEnabled(false);
+        ui->actionTensorFlow_Lite->setEnabled(true);
+    }
 
 #ifndef DUNFELL
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(false);
@@ -157,15 +161,19 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
         createTfWorker();
 
         if (demoMode == SB) {
-            /* Set default object detection parameters */
+            /* Set default parameters for other modes */
             labelOD = LABEL_PATH_OD;
             modelOD = MODEL_PATH_OD;
 
+            modelPE = MODEL_PATH_PE_BLAZE_POSE_LITE;
+
             setupShoppingMode();
         } else if (demoMode == OD) {
-            /* Set default shopping basket parameters */
+            /* Set default parameters for other modes*/
             labelSB = LABEL_PATH_SB;
             modelSB = MODEL_PATH_SB;
+
+            modelPE = MODEL_PATH_PE_BLAZE_POSE_LITE;
 
             setupObjectDetectMode();
         } else if (demoMode == PE) {
@@ -231,11 +239,17 @@ void MainWindow::setupShoppingMode()
 
 void MainWindow::setupPoseEstimateMode()
 {
+    PoseModel poseModel;
     demoMode = PE;
     tfWorker->setDemoMode(demoMode);
     updateAIModelLabel();
 
-    poseEstimateMode = new poseEstimation(ui);
+    if (modelPath.contains(IDENTIFIER_MOVE_NET))
+        poseModel = MoveNet;
+    else
+        poseModel = BlazePose;
+
+    poseEstimateMode = new poseEstimation(ui, poseModel);
 
     connect(this, SIGNAL(stopInference()), poseEstimateMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
     connect(ui->pushButtonStartStopPose, SIGNAL(pressed()), poseEstimateMode, SLOT(triggerInference()));
@@ -263,6 +277,22 @@ void MainWindow::createTfWorker()
     tfWorker = new tfliteWorker(modelPath, delegateType, inferenceThreads);
 
     connect(tfWorker, SIGNAL(sendInferenceWarning(QString)), this, SLOT(inferenceWarning(QString)));
+}
+
+void MainWindow::setPoseEstimateDelegateType()
+{
+    /*
+     * Don't use ArmNN delegate when using BlazePose models
+     * as it does not currently support Const Tensors as inputs for Conv2d
+     */
+    if (modelPath.contains(IDENTIFIER_MOVE_NET) && delegateType != armNN) {
+        ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+    } else if (modelPath.contains(IDENTIFIER_BLAZE_POSE)) {
+        delegateType = none;
+        ui->actionEnable_ArmNN_Delegate->setEnabled(false);
+        ui->actionTensorFlow_Lite->setEnabled(false);
+        ui->labelDelegate->setText("TensorFlow Lite");
+    }
 }
 
 void MainWindow::ShowVideo()
@@ -433,7 +463,13 @@ void MainWindow::on_actionTensorflow_Lite_XNNPack_delegate_triggered()
 {
     delegateType = xnnpack;
 
-    ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+    /*
+     * Only enable ArmNN delegate when not using BlazePose models
+     * as it does not currently support Const Tensors as inputs for Conv2d
+     */
+    if (!(modelPath.contains(IDENTIFIER_BLAZE_POSE)))
+        ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+
     ui->actionTensorFlow_Lite->setEnabled(true);
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(false);
     ui->labelDelegate->setText("TensorFlow Lite + XNNPack Delegate");
@@ -445,7 +481,13 @@ void MainWindow::on_actionTensorFlow_Lite_triggered()
 {
     delegateType = none;
 
-    ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+    /*
+     * Only enable ArmNN delegate when not using BlazePose models
+     * as it does not currently support Const Tensors as inputs for Conv2d
+     */
+    if (!(modelPath.contains(IDENTIFIER_BLAZE_POSE)))
+        ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+
     ui->actionTensorFlow_Lite->setEnabled(false);
 #ifdef DUNFELL
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(true);
@@ -496,10 +538,19 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_actionShopping_Basket_triggered()
 {
-    /* Store objection detection label and model being used */
+    /* Store previous demo modes label and model */
     if (demoMode == OD) {
         labelOD = labelPath;
         modelOD = modelPath;
+    } else if (demoMode == PE) {
+        modelPE = modelPath;
+
+        /*
+         * Only enable ArmNN delegate when switching from BlazePose models
+         * as it does not currently support Const Tensors as inputs for Conv2d
+         */
+        if (modelPath.contains(IDENTIFIER_BLAZE_POSE))
+            ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
 
     inputMode = cameraMode;
@@ -524,10 +575,19 @@ void MainWindow::on_actionShopping_Basket_triggered()
 
 void MainWindow::on_actionObject_Detection_triggered()
 {
-    /* Store shopping basket label and model being used */
+    /* Store previous demo modes label and model */
     if (demoMode == SB) {
         labelSB = labelPath;
         modelSB = modelPath;
+    } else if (demoMode == PE) {
+        modelPE = modelPath;
+
+        /*
+         * Only enable ArmNN delegate when switching from BlazePose models
+         * as it does not currently support Const Tensors as inputs for Conv2d
+         */
+        if (modelPath.contains(IDENTIFIER_BLAZE_POSE))
+            ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
 
     inputMode = cameraMode;
@@ -550,6 +610,7 @@ void MainWindow::on_actionObject_Detection_triggered()
 
 void MainWindow::on_actionPose_Estimation_triggered()
 {
+    /* Store previous demo modes label and model */
     if (demoMode == SB) {
         labelSB = labelPath;
         modelSB = modelPath;
@@ -558,38 +619,21 @@ void MainWindow::on_actionPose_Estimation_triggered()
         modelOD = modelPath;
     }
 
-    modelPath = MODEL_PATH_PE_MOVE_NET_L;
+    modelPath = modelPE;
     inputMode = cameraMode;
     iterations = 1;
 
-    delete tfWorker;
+    setPoseEstimateDelegateType();
 
+    delete tfWorker;
     createTfWorker();
+
     disconnectSignals();
     setupPoseEstimateMode();
 
     ui->menuInput->menuAction()->setVisible(true);
-    ui->pushButtonSwitchAIModel->setText("Use\nThunder");
     cvWorker->useCameraMode();
     vidWorker->StartVideo();
-}
-
-void MainWindow::on_pushButtonSwitchAIModel_clicked()
-{
-    emit stopInference();
-
-    if (modelPath == MODEL_PATH_PE_MOVE_NET_T) {
-        modelPath = MODEL_PATH_PE_MOVE_NET_L;
-
-        ui->pushButtonSwitchAIModel->setText("Use\nThunder");
-    } else {
-        modelPath = MODEL_PATH_PE_MOVE_NET_T;
-
-        ui->pushButtonSwitchAIModel->setText("Use\nLightning");
-    }
-
-    remakeTfWorker();
-    checkInputMode();
 }
 
 void MainWindow::loadAIModel()
@@ -659,6 +703,51 @@ void MainWindow::loadAIModel()
 
         setupShoppingMode();
     }
+
+    dialog.close();
+    checkInputMode();
+    modelLoaded();
+    qeventLoop->exec();
+}
+
+void MainWindow::on_pushButtonLoadPoseModel_clicked()
+{
+    QStringList supportedModels = { MODEL_PATH_PE_MOVE_NET_L, MODEL_PATH_PE_MOVE_NET_T, MODEL_PATH_PE_BLAZE_POSE_FULL,
+                                    MODEL_PATH_PE_BLAZE_POSE_HEAVY, MODEL_PATH_PE_BLAZE_POSE_LITE };
+
+    qeventLoop = new QEventLoop;
+    QFileDialog dialog(this);
+
+    connect(this, SIGNAL(modelLoaded()), qeventLoop, SLOT(quit()));
+
+    emit stopInference();
+
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setDirectory(MODEL_DIRECTORY);
+    dialog.setNameFilter("TFLite Files (*tflite)");
+    dialog.setViewMode(QFileDialog::Detail);
+
+    modelPath.clear();
+
+    if (dialog.exec())
+        modelPath = dialog.selectedFiles().at(0);
+
+    /* Check if pose model selected is supported */
+    if (!(supportedModels.contains(modelPath))) {
+        if (modelPath.isEmpty())
+            qWarning("Warning: Model file path not provided");
+        else
+            qWarning("Warning: Unsupported pose model selected");
+
+        modelPath = MODEL_PATH_PE_BLAZE_POSE_LITE;
+    }
+
+    setPoseEstimateDelegateType();
+
+    delete tfWorker;
+    createTfWorker();
+    disconnectSignals();
+    setupPoseEstimateMode();
 
     dialog.close();
     checkInputMode();
