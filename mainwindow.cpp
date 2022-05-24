@@ -261,6 +261,8 @@ void MainWindow::createTfWorker()
      * RZ/G2M is 2 */
     int inferenceThreads = 2;
     tfWorker = new tfliteWorker(modelPath, delegateType, inferenceThreads);
+
+    connect(tfWorker, SIGNAL(sendInferenceWarning(QString)), this, SLOT(inferenceWarning(QString)));
 }
 
 void MainWindow::ShowVideo()
@@ -452,6 +454,20 @@ void MainWindow::on_actionTensorFlow_Lite_triggered()
     ui->labelDelegate->setText("TensorFlow Lite");
 
     remakeTfWorker();
+}
+
+void MainWindow::inferenceWarning(QString warningMessage)
+{
+    QMessageBox *msgBox = new QMessageBox(QMessageBox::Critical, "Warning", warningMessage,
+                                 QMessageBox::NoButton, this, Qt::Dialog | Qt::FramelessWindowHint);
+    msgBox->setFont(font);
+    msgBox->exec();
+
+    /* Reset the GUI after showing inference warning */
+    if (demoMode == OD || demoMode == PE)
+        emit stopInference();
+    else
+        checkInputMode();
 }
 
 void MainWindow::errorPopup(QString errorMessage, int errorCode)

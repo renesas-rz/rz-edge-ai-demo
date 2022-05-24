@@ -110,6 +110,7 @@ private slots:
     void drawMatToView(const cv::Mat& matInput);
     void getImageFrame();
     void loadAIModel();
+    void inferenceWarning(QString warningMessage);
     void on_actionLicense_triggered();
     void on_actionEnable_ArmNN_Delegate_triggered();
     void on_actionTensorFlow_Lite_triggered();

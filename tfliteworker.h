@@ -28,6 +28,9 @@
 
 #include <opencv2/videoio.hpp>
 
+#define WARNING_IMAGE_RETREIVAL "Received invalid image path, could not run inference"
+#define WARNING_INVOKE "Failed to run invoke"
+
 enum Delegate { armNN, xnnpack, none };
 
 class tfliteWorker : public QObject
@@ -42,6 +45,7 @@ public:
 
 signals:
     void sendOutputTensor(const QVector<float>&, int, int, const cv::Mat&);
+    void sendInferenceWarning(QString warningMessage);
 
 private:
     std::unique_ptr<tflite::Interpreter> tfliteInterpreter;

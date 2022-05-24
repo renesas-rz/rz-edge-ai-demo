@@ -100,7 +100,8 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
     int itemStride;
 
     if(sentMat.empty()) {
-        qWarning("Received invalid image path, cannot run inference");
+        qWarning(WARNING_IMAGE_RETREIVAL);
+        emit sendInferenceWarning(WARNING_IMAGE_RETREIVAL);
         return;
     }
 
@@ -111,7 +112,15 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
     memcpy(tfliteInterpreter->typed_tensor<uint8_t>(input), sentImageMat.data, sentImageMat.total() * sentImageMat.elemSize());
 
     startTime = std::chrono::high_resolution_clock::now();
-    tfliteInterpreter->Invoke();
+
+    if (tfliteInterpreter->Invoke() != kTfLiteOk) {
+        stopTime = std::chrono::high_resolution_clock::now();
+
+        qWarning(WARNING_INVOKE);
+        emit sendInferenceWarning(WARNING_INVOKE);
+        return;
+    }
+
     stopTime = std::chrono::high_resolution_clock::now();
 
     /* Cycle through each output tensor and store all data */
