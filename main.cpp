@@ -109,6 +109,8 @@ int main(int argc, char *argv[])
     "  0: Successful exit\n"
     "  1: Camera initialisation failed\n"
     "  2: Camera stopped working";
+    QStringList supportedPoseModels = { MODEL_PATH_PE_MOVE_NET_L, MODEL_PATH_PE_MOVE_NET_T, MODEL_PATH_PE_BLAZE_POSE_FULL,
+                                    	MODEL_PATH_PE_BLAZE_POSE_HEAVY, MODEL_PATH_PE_BLAZE_POSE_LITE };
 
     parser.addOption(cameraOption);
     parser.addOption(labelOption);
@@ -137,15 +139,14 @@ int main(int argc, char *argv[])
             mode = OD;
         } else {
             mode = PE;
-            modelLocation = MODEL_PATH_PE_BLAZE_POSE_LITE;
         }
     } else {
         qWarning("Warning: unknown demo mode requested, starting in default mode...");
     }
 
     if (!QFileInfo(labelLocation).isFile()) {
-        if (!labelLocation.isEmpty())
-            qWarning("Warning: label file does not exist, using default label file...");
+        if (mode != PE && !labelLocation.isEmpty())
+                qWarning("Warning: label file does not exist, using default label file...");
 
         if (mode == SB)
             labelLocation = LABEL_PATH_SB;
@@ -154,13 +155,20 @@ int main(int argc, char *argv[])
     }
 
     if (!QFileInfo(modelLocation).isFile()) {
-        if (!modelLocation.isEmpty())
+        if (mode != PE && !modelLocation.isEmpty())
             qWarning("Warning: AI model does not exist, using default AI model...");
 
         if (mode == SB)
             modelLocation = MODEL_PATH_SB;
-        else
+        else if (mode == OD)
             modelLocation = MODEL_PATH_OD;
+    }
+
+    if (mode == PE && !(supportedPoseModels.contains(QFileInfo(modelLocation).absoluteFilePath()))) {
+        if (!modelLocation.isEmpty())
+            qWarning("Warning: unsupported pose model selected, using default Pose model");
+
+        modelLocation = MODEL_PATH_PE_BLAZE_POSE_LITE;
     }
 
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

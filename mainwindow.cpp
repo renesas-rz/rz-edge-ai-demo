@@ -76,7 +76,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    if (demoMode == PE) {
+    if (demoMode == PE && modelPath.contains(IDENTIFIER_BLAZE_POSE)) {
         setPoseEstimateDelegateType();
     } else {
         ui->actionEnable_ArmNN_Delegate->setEnabled(false);
