@@ -147,7 +147,7 @@ private:
     opencvWorker *cvWorker;
     shoppingBasket *shoppingBasketMode;
     objectDetection *objectDetectMode;
-    poseEstimation *poseEstimatMode;
+    poseEstimation *poseEstimateMode;
     tfliteWorker *tfWorker;
     QEventLoop *qeventLoop;
     QString boardInfo;

@@ -235,16 +235,16 @@ void MainWindow::setupPoseEstimateMode()
     tfWorker->setDemoMode(demoMode);
     updateAIModelLabel();
 
-    poseEstimatMode = new poseEstimation(ui);
+    poseEstimateMode = new poseEstimation(ui);
 
-    connect(this, SIGNAL(stopInference()), poseEstimatMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
-    connect(ui->pushButtonStartStopPose, SIGNAL(pressed()), poseEstimatMode, SLOT(triggerInference()));
-    connect(poseEstimatMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
-    connect(poseEstimatMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
-    connect(poseEstimatMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
-    connect(poseEstimatMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
+    connect(this, SIGNAL(stopInference()), poseEstimateMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
+    connect(ui->pushButtonStartStopPose, SIGNAL(pressed()), poseEstimateMode, SLOT(triggerInference()));
+    connect(poseEstimateMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
+    connect(poseEstimateMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
+    connect(poseEstimateMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
+    connect(poseEstimateMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
     connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, int, const cv::Mat&)),
-            poseEstimatMode, SLOT(runInference(QVector<float>, int, int, cv::Mat)));
+            poseEstimateMode, SLOT(runInference(QVector<float>, int, int, cv::Mat)));
 }
 
 void MainWindow::createVideoWorker()
@@ -348,7 +348,7 @@ void MainWindow::drawMatToView(const cv::Mat& matInput)
         image = image.scaled(800, 600, Qt::AspectRatioMode::KeepAspectRatio);
 
     if (demoMode == PE)
-        poseEstimatMode->setFrameDims(image.height(), image.width());
+        poseEstimateMode->setFrameDims(image.height(), image.width());
 
     scene->addPixmap(image);
     scene->setSceneRect(image.rect());
@@ -762,21 +762,21 @@ void MainWindow::checkInputMode()
         if (demoMode == OD)
             objectDetectMode->setVideoMode();
         else if (demoMode == PE)
-            poseEstimatMode->setVideoMode();
+            poseEstimateMode->setVideoMode();
     } else if (inputMode == imageMode) {
         if (demoMode == OD)
             objectDetectMode->setImageMode();
         else if (demoMode == SB)
             shoppingBasketMode->setImageMode(true);
         else if (demoMode == PE)
-            poseEstimatMode->setImageMode();
+            poseEstimateMode->setImageMode();
     } else {
         if (demoMode == OD)
             objectDetectMode->setCameraMode();
         else if (demoMode == SB)
             shoppingBasketMode->setImageMode(false);
         else if (demoMode == PE)
-            poseEstimatMode->setCameraMode();
+            poseEstimateMode->setCameraMode();
     }
 }
 
@@ -791,8 +791,8 @@ void MainWindow::disconnectSignals()
 
         delete objectDetectMode;
     } else if (demoMode == PE) {
-        poseEstimatMode->disconnect();
+        poseEstimateMode->disconnect();
 
-        delete poseEstimatMode;
+        delete poseEstimateMode;
     }
 }
