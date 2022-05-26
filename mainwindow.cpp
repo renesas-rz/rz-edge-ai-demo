@@ -45,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     demoMode = mode;
     pricesPath = pricesFile;
 
-    QPixmap splashScreenImage(SPLASH_SCREEN_DIRECTORY);
+    QPixmap splashScreenImage(SPLASH_SCREEN_PATH);
 
     QSplashScreen *splashScreen = new QSplashScreen(splashScreenImage);
     splashScreen->setAttribute(Qt::WA_DeleteOnClose, true);
@@ -86,7 +86,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     connect(this, SIGNAL(sendMatToDraw(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
 
     QPixmap rzLogo;
-    rzLogo.load(RENESAS_RZ_LOGO_DIRECTORY);
+    rzLogo.load(RENESAS_RZ_LOGO_PATH);
     ui->labelRzLogo->setPixmap(rzLogo);
 
     qRegisterMetaType<QVector<float> >("QVector<float>");
@@ -158,23 +158,23 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
 
         if (demoMode == SB) {
             /* Set default object detection parameters */
-            labelOD = LABEL_DIRECTORY_OD;
-            modelOD = MODEL_DIRECTORY_OD;
+            labelOD = LABEL_PATH_OD;
+            modelOD = MODEL_PATH_OD;
 
             setupShoppingMode();
         } else if (demoMode == OD) {
             /* Set default shopping basket parameters */
-            labelSB = LABEL_DIRECTORY_SB;
-            modelSB = MODEL_DIRECTORY_SB;
+            labelSB = LABEL_PATH_SB;
+            modelSB = MODEL_PATH_SB;
 
             setupObjectDetectMode();
         } else if (demoMode == PE) {
             /* Set default parameters for other modes */
-            labelSB = LABEL_DIRECTORY_SB;
-            modelSB = MODEL_DIRECTORY_SB;
+            labelSB = LABEL_PATH_SB;
+            modelSB = MODEL_PATH_SB;
 
-            labelOD = LABEL_DIRECTORY_OD;
-            modelOD = MODEL_DIRECTORY_OD;
+            labelOD = LABEL_PATH_OD;
+            modelOD = MODEL_PATH_OD;
 
             setupPoseEstimateMode();
         }
@@ -542,7 +542,7 @@ void MainWindow::on_actionPose_Estimation_triggered()
         modelOD = modelPath;
     }
 
-    modelPath = MODEL_DIRECTORY_PE_L;
+    modelPath = MODEL_PATH_PE_MOVE_NET_L;
     inputMode = cameraMode;
     iterations = 1;
 
@@ -562,12 +562,12 @@ void MainWindow::on_pushButtonSwitchAIModel_clicked()
 {
     emit stopInference();
 
-    if (modelPath == MODEL_DIRECTORY_PE_T) {
-        modelPath = MODEL_DIRECTORY_PE_L;
+    if (modelPath == MODEL_PATH_PE_MOVE_NET_T) {
+        modelPath = MODEL_PATH_PE_MOVE_NET_L;
 
         ui->pushButtonSwitchAIModel->setText("Use\nThunder");
     } else {
-        modelPath = MODEL_DIRECTORY_PE_T;
+        modelPath = MODEL_PATH_PE_MOVE_NET_T;
 
         ui->pushButtonSwitchAIModel->setText("Use\nLightning");
     }
@@ -587,7 +587,7 @@ void MainWindow::loadAIModel()
         emit stopInference();
 
     dialog.setFileMode(QFileDialog::AnyFile);
-    dialog.setDirectory(MODEL_DIRECTORY_PATH);
+    dialog.setDirectory(MODEL_DIRECTORY);
     dialog.setNameFilter("TFLite Files (*tflite)");
     dialog.setViewMode(QFileDialog::Detail);
 
@@ -599,12 +599,12 @@ void MainWindow::loadAIModel()
     /* Set default model if model path is empty */
     if (modelPath.isEmpty()) {
         if (demoMode == OD)
-            modelPath = MODEL_DIRECTORY_OD;
+            modelPath = MODEL_PATH_OD;
         else if (demoMode == SB)
-            modelPath = MODEL_DIRECTORY_SB;
+            modelPath = MODEL_PATH_SB;
     }
 
-    dialog.setDirectory(LABEL_DIRECTORY_PATH);
+    dialog.setDirectory(LABEL_DIRECTORY);
     dialog.setNameFilter("Text Files (*txt)");
 
     labelPath.clear();
@@ -615,9 +615,9 @@ void MainWindow::loadAIModel()
     /* Set default label if label path is empty */
     if (labelPath.isEmpty()) {
         if (demoMode == OD)
-            labelPath = LABEL_DIRECTORY_OD;
+            labelPath = LABEL_PATH_OD;
         else if (demoMode == SB)
-            labelPath = LABEL_DIRECTORY_SB;
+            labelPath = LABEL_PATH_SB;
     }
 
     labelFileList = readLabelFile(labelPath);
@@ -630,7 +630,7 @@ void MainWindow::loadAIModel()
         setupObjectDetectMode();
     } else if (demoMode == SB) {
         /* Prices file selection */
-        dialog.setDirectory(PRICES_DIRECTORY_PATH);
+        dialog.setDirectory(PRICES_DIRECTORY);
         dialog.setNameFilter("Text Files (*txt)");
 
         pricesPath.clear();
@@ -639,7 +639,7 @@ void MainWindow::loadAIModel()
             pricesPath = dialog.selectedFiles().at(0);
 
         if (pricesPath.isEmpty())
-            pricesPath = PRICES_DIRECTORY_DEFAULT;
+            pricesPath = PRICES_PATH_DEFAULT;
 
         setupShoppingMode();
     }
@@ -667,7 +667,7 @@ void MainWindow::on_actionLoad_File_triggered()
 
     dialog.setFileMode(QFileDialog::AnyFile);
     dialog.setViewMode(QFileDialog::Detail);
-    dialog.setDirectory(MEDIA_DIRECTORY_PATH);
+    dialog.setDirectory(MEDIA_DIRECTORY);
 
     mediaFileFilter = IMAGE_FILE_FILTER;
 

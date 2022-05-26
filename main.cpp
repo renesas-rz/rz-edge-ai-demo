@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     QCommandLineOption modeOption (QStringList() << "s" << "start-mode",
                                    "Choose a mode to start the application in: [shopping-basket|object-detection|pose-estimation].", "mode", QString("object-detection"));
     QCommandLineOption pricesOption (QStringList() << "p" << "prices-file",
-                                   "Choose a text file listing the prices to use for the shopping basket mode", "file", PRICES_DIRECTORY_DEFAULT);
+                                   "Choose a text file listing the prices to use for the shopping basket mode", "file", PRICES_PATH_DEFAULT);
     QString cameraLocation;
     QString labelLocation;
     QString modelLocation;
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
             mode = OD;
         } else {
             mode = PE;
-            modelLocation = MODEL_DIRECTORY_PE_L;
+            modelLocation = MODEL_PATH_PE_MOVE_NET_L;
         }
     } else {
         qWarning("Warning: unknown demo mode requested, starting in default mode...");
@@ -148,9 +148,9 @@ int main(int argc, char *argv[])
             qWarning("Warning: label file does not exist, using default label file...");
 
         if (mode == SB)
-            labelLocation = LABEL_DIRECTORY_SB;
+            labelLocation = LABEL_PATH_SB;
         else
-            labelLocation = LABEL_DIRECTORY_OD;
+            labelLocation = LABEL_PATH_OD;
     }
 
     if (!QFileInfo(modelLocation).isFile()) {
@@ -158,9 +158,9 @@ int main(int argc, char *argv[])
             qWarning("Warning: AI model does not exist, using default AI model...");
 
         if (mode == SB)
-            modelLocation = MODEL_DIRECTORY_SB;
+            modelLocation = MODEL_PATH_SB;
         else
-            modelLocation = MODEL_DIRECTORY_OD;
+            modelLocation = MODEL_PATH_OD;
     }
 
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
