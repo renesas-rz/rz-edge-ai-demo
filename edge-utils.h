@@ -32,6 +32,7 @@
 #define STACK_WIDGET_INDEX_OD 1
 #define STACK_WIDGET_INDEX_PE 2
 
+enum Board { G2E, G2L, G2LC, G2M, Unknown };
 enum Input { cameraMode, imageMode, videoMode };
 enum Mode { SB, OD, PE };
 

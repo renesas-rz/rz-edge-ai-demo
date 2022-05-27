@@ -42,8 +42,6 @@
 
 Q_DECLARE_METATYPE(cv::Mat)
 
-enum Board { G2E, G2L, G2LC, G2M, Unknown };
-
 class opencvWorker : public QObject
 {
     Q_OBJECT

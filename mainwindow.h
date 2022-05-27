@@ -166,6 +166,7 @@ private:
     QString labelSB;
     QStringList labelFileList;
     videoWorker *vidWorker;
+    Board board;
     Input inputMode;
     Mode demoMode;
 };

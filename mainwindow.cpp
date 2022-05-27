@@ -40,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
-    Board board = Unknown;
+    board = Unknown;
     inputMode = cameraMode;
     demoMode = mode;
     pricesPath = pricesFile;
@@ -76,12 +76,8 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    if (demoMode == PE && modelPath.contains(IDENTIFIER_BLAZE_POSE)) {
-        setPoseEstimateDelegateType();
-    } else {
-        ui->actionEnable_ArmNN_Delegate->setEnabled(false);
-        ui->actionTensorFlow_Lite->setEnabled(true);
-    }
+    ui->actionEnable_ArmNN_Delegate->setEnabled(false);
+    ui->actionTensorFlow_Lite->setEnabled(true);
 
 #ifndef DUNFELL
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(false);
@@ -100,16 +96,12 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
         boardInfo = G2M_HW_INFO;
         board = G2M;
 
-        /* Make pose estimation mode option not visible */
-        ui->actionPose_Estimation->setVisible(false);
-
         if (cameraLocation.isEmpty()) {
             if(QDir("/dev/v4l/by-id").exists())
                 cameraLocation = QDir("/dev/v4l/by-id").entryInfoList(QDir::NoDotAndDotDot).at(0).absoluteFilePath();
             else
                 cameraLocation = QString("/dev/video0");
         }
-
     } else if (boardName == "smarc-rzg2l") {
         setWindowTitle("RZ Edge AI Demo - RZ/G2L");
         boardInfo = G2L_HW_INFO;
@@ -117,7 +109,6 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
 
         if (cameraLocation.isEmpty())
             cameraLocation = QString("/dev/video0");
-
     } else if (boardName == "smarc-rzg2lc") {
         setWindowTitle("RZ Edge AI Demo - RZ/G2LC");
         boardInfo = G2LC_HW_INFO;
@@ -131,9 +122,6 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
         boardInfo = G2E_HW_INFO;
         board = G2E;
 
-        /* Make pose estimation mode option not visible */
-        ui->actionPose_Estimation->setVisible(false);
-
         if (cameraLocation.isEmpty()) {
             if(QDir("/dev/v4l/by-id").exists())
                 cameraLocation = QDir("/dev/v4l/by-id").entryInfoList(QDir::NoDotAndDotDot).at(0).absoluteFilePath();
@@ -144,6 +132,9 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
         setWindowTitle("RZ Edge AI Demo");
         boardInfo = HW_INFO_WARNING;
     }
+
+    if (demoMode == PE)
+        setPoseEstimateDelegateType();
 
     qRegisterMetaType<cv::Mat>();
     cvWorker = new opencvWorker(cameraLocation, board);
@@ -282,12 +273,15 @@ void MainWindow::createTfWorker()
 void MainWindow::setPoseEstimateDelegateType()
 {
     /*
-     * Don't use ArmNN delegate when using BlazePose models
-     * as it does not currently support Const Tensors as inputs for Conv2d
+     * Only enable ArmNN delegate when not using BlazePose models on the
+     * RZ/G2L and RZ/G2LC platforms as it does not currently support Const
+     * Tensors as inputs for Conv2d
      */
-    if (modelPath.contains(IDENTIFIER_MOVE_NET) && delegateType != armNN) {
+    if (modelPath.contains(IDENTIFIER_MOVE_NET) && delegateType != armNN && (board == G2L || board == G2LC)) {
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
-    } else if (modelPath.contains(IDENTIFIER_BLAZE_POSE)) {
+    } else if (modelPath.contains(IDENTIFIER_MOVE_NET) && delegateType == armNN && (board == G2L || board == G2LC)) {
+        delegateType = armNN;
+    } else {
         delegateType = none;
         ui->actionEnable_ArmNN_Delegate->setEnabled(false);
         ui->actionTensorFlow_Lite->setEnabled(false);
@@ -485,7 +479,7 @@ void MainWindow::on_actionTensorFlow_Lite_triggered()
      * Only enable ArmNN delegate when not using BlazePose models
      * as it does not currently support Const Tensors as inputs for Conv2d
      */
-    if (!(modelPath.contains(IDENTIFIER_BLAZE_POSE)))
+    if (!(((board == G2E || board == G2M) || modelPath.contains(IDENTIFIER_BLAZE_POSE)) && demoMode == PE))
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
 
     ui->actionTensorFlow_Lite->setEnabled(false);
@@ -549,7 +543,7 @@ void MainWindow::on_actionShopping_Basket_triggered()
          * Only enable ArmNN delegate when switching from BlazePose models
          * as it does not currently support Const Tensors as inputs for Conv2d
          */
-        if (modelPath.contains(IDENTIFIER_BLAZE_POSE))
+        if ((board == G2E || board == G2M) || modelPath.contains(IDENTIFIER_BLAZE_POSE))
             ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
 
@@ -586,7 +580,7 @@ void MainWindow::on_actionObject_Detection_triggered()
          * Only enable ArmNN delegate when switching from BlazePose models
          * as it does not currently support Const Tensors as inputs for Conv2d
          */
-        if (modelPath.contains(IDENTIFIER_BLAZE_POSE))
+        if ((board == G2E || board == G2M) || modelPath.contains(IDENTIFIER_BLAZE_POSE))
             ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
 

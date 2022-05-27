@@ -46,9 +46,7 @@ int main(int argc, char *argv[])
     "Selecting Demo Mode\n"
     "Demo Mode->Object Detection: Object Detection Mode.\n"
     "Demo Mode->Shopping Basket: Shopping Basket Mode.\n"
-    "Demo Mode->Pose Estimation: Pose Estimation Mode*.\n\n"
-    " * The Pose Estimation mode is currently only supported on the\n"
-    "   RZ/G2L and RZ/G2LC platforms.\n\n"
+    "Demo Mode->Pose Estimation: Pose Estimation Mode.\n\n"
     "Required Hardware:\n"
     "  Camera: Currently the Google Coral Mipi camera is supported,\n"
     "          but should work with any UVC compatible USB camera.\n\n"
@@ -128,21 +126,14 @@ int main(int argc, char *argv[])
 
     boardName = systemInfo.machineHostName();
 
-    if (modeString == "shopping-basket") {
+    if (modeString == "shopping-basket")
         mode = SB;
-    } else if (modeString == "object-detection") {
+    else if (modeString == "object-detection")
         mode = OD;
-    } else if (modeString == "pose-estimation") {
-        /* Check if platform supports pose estimation mode */
-        if (boardName == G2E_PLATFORM || boardName == G2M_PLATFORM) {
-            qWarning("Warning: platform being used does not support Pose Estimation mode, starting in default mode...");
-            mode = OD;
-        } else {
-            mode = PE;
-        }
-    } else {
+    else if (modeString == "pose-estimation")
+        mode = PE;
+    else
         qWarning("Warning: unknown demo mode requested, starting in default mode...");
-    }
 
     if (!QFileInfo(labelLocation).isFile()) {
         if (mode != PE && !labelLocation.isEmpty())
