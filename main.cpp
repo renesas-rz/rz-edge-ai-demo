@@ -72,10 +72,14 @@ int main(int argc, char *argv[])
     "  Next Basket: Clears inference results and resumes live camera feed.\n"
     "  Input->Load Image: Load a static image file.\n\n"
     "Pose Estimation Mode\n"
-    "  Draws lines to connect identified joints and facial features, displays the total FPS,\n"
-    "  inference time, and displays a 2-D Point Projection of the identified pose.\n\n"
+    "  BlazePose, MoveNet: Draws lines to connect identified joints and facial features,\n"
+    "                      displays the total FPS, inference time, and displays a 2-D Point\n"
+    "                      Projection of the identified pose.\n\n"
+    "  HandPose: Draws lines to connect identified hand-knuckle points, displays the total FPS,\n"
+    "            inference time, and displays a 2-D Point Projection of the identified features.\n\n"
     "Buttons:\n"
-    "  Load AI Model: Load a different pose model. Currently supported: MoveNet, BlazePose.\n"
+    "  Load AI Model: Load a different pose model. Currently supported: MoveNet, BlazePose,\n"
+    "                                                                   HandPose.\n"
     "  Start Inference/Stop Inference: Starts the live camera feed/media file,\n"
     "                                  grabs the frame and runs inference or just\n"
     "                                  displays the live camera feed/media file.\n"
@@ -108,7 +112,8 @@ int main(int argc, char *argv[])
     "  1: Camera initialisation failed\n"
     "  2: Camera stopped working";
     QStringList supportedPoseModels = { MODEL_PATH_PE_MOVE_NET_L, MODEL_PATH_PE_MOVE_NET_T, MODEL_PATH_PE_BLAZE_POSE_FULL,
-                                    	MODEL_PATH_PE_BLAZE_POSE_HEAVY, MODEL_PATH_PE_BLAZE_POSE_LITE };
+                                        MODEL_PATH_PE_BLAZE_POSE_HEAVY, MODEL_PATH_PE_BLAZE_POSE_LITE,
+                                        MODEL_PATH_PE_HAND_POSE_FULL, MODEL_PATH_PE_HAND_POSE_LITE };
 
     parser.addOption(cameraOption);
     parser.addOption(labelOption);

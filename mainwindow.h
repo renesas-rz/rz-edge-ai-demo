@@ -45,6 +45,8 @@
 #define MODEL_PATH_PE_BLAZE_POSE_LITE "/opt/rz-edge-ai-demo/models/pose_landmark_lite.tflite"
 #define MODEL_PATH_PE_BLAZE_POSE_HEAVY "/opt/rz-edge-ai-demo/models/pose_landmark_heavy.tflite"
 #define MODEL_PATH_PE_BLAZE_POSE_FULL "/opt/rz-edge-ai-demo/models/pose_landmark_full.tflite"
+#define MODEL_PATH_PE_HAND_POSE_LITE "/opt/rz-edge-ai-demo/models/hand_landmark_lite.tflite"
+#define MODEL_PATH_PE_HAND_POSE_FULL "/opt/rz-edge-ai-demo/models/hand_landmark_full.tflite"
 #define RENESAS_RZ_LOGO_PATH "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
 #define SPLASH_SCREEN_PATH "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
 

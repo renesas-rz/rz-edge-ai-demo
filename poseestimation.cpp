@@ -27,6 +27,9 @@
 #include <QGraphicsTextItem>
 
 #define BLAZE_POSE_INPUT_SIZE 256.0
+#define HAND_POSE_INPUT_SIZE 224.0
+
+#define HAND_POSE_CONFIDENCE_INDEX 63
 
 #define DETECT_THRESHOLD 0.3
 
@@ -42,9 +45,18 @@ enum BlazePosePoints { BP_NOSE, BP_LEFT_EYE_INNER, BP_LEFT_EYE, BP_LEFT_EYE_OUTE
                        BP_LEFT_ANKLE, BP_RIGHT_ANKLE, BP_LEFT_HEEL, BP_RIGHT_HEEL, BP_LEFT_FOOT_INDEX,
                        BP_RIGHT_FOOT_INDEX };
 
+enum HandPosePoints { HP_WRIST, HP_THUMB_CMC, HP_THUMB_MCP, HP_THUMB_IP, HP_THUMB_TIP, HP_INDEX_FINGER_MCP,
+                      HP_INDEX_FINGER_PIP, HP_INDEX_FINGER_DIP, HP_INDEX_FINGER_TIP, HP_MIDDLE_FINGER_MCP,
+                      HP_MIDDLE_FINGER_PIP, HP_MIDDLE_FINGER_DIP, HP_MIDDLE_FINGER_TIP, HP_RING_FINGER_MCP,
+                      HP_RING_FINGER_PIP, HP_RING_FINGER_DIP, HP_RING_FINGER_TIP, HP_PINKY_MCP, HP_PINKY_PIP,
+                      HP_PINKY_DIP, HP_PINKY_TIP };
+
 #define PEN_WIDTH 2
+#define PEN_WIDTH_HAND_POSE 3
 #define DOT_COLOUR Qt::green
+#define DOT_COLOUR_HAND_POSE Qt::green
 #define LINE_COLOUR Qt::red
+#define LINE_COLOUR_HAND_POSE Qt::blue
 
 poseEstimation::poseEstimation(Ui::MainWindow *ui, PoseModel poseModel)
 {
@@ -125,6 +137,27 @@ QVector<float> poseEstimation::sortTensorBlazePose(const QVector<float> received
             sortedTensor.push_back(confidenceLevel);          // presence confidence
         } else {
             sortedTensor.push_back(nanValue);
+            sortedTensor.push_back(nanValue);
+            sortedTensor.push_back(nanValue);
+        }
+     }
+
+    return sortedTensor;
+}
+
+QVector<float> poseEstimation::sortTensorHandPose(const QVector<float> receivedTensor, int receivedStride)
+{
+    QVector<float> sortedTensor = QVector<float>();
+
+    float nanValue = std::nanf("NAN");
+    float confidenceValue = receivedTensor.at(HAND_POSE_CONFIDENCE_INDEX);
+
+    for(int i = 0; i < receivedStride; i += 3) {
+
+        if (confidenceValue > 0.5 && confidenceValue <= 1.0) {
+            sortedTensor.push_back(receivedTensor.at(i + 1)); // y-coordinate
+            sortedTensor.push_back(receivedTensor.at(i));     // x-coordinate
+        } else {
             sortedTensor.push_back(nanValue);
             sortedTensor.push_back(nanValue);
         }
@@ -294,12 +327,94 @@ void poseEstimation::drawLimbsBlazePose(const QVector<float> &outputTensor, bool
     }
 }
 
+void poseEstimation::drawLimbsHandPose(const QVector<float> &outputTensor, bool updateGraphicalView)
+{
+    QPen pen;
+    xCoordinate = QVector<float>();
+    yCoordinate = QVector<float>();
+    int displayWidth;
+    int displayHeight;
+
+    QGraphicsScene *scene = uiPE->graphicsView->scene();
+    QGraphicsScene *scenePointProjection = uiPE->graphicsViewPointProjection->scene();
+
+    pen.setWidth(PEN_WIDTH_HAND_POSE);
+
+    if (updateGraphicalView) {
+        /* Scale the dimensions down by 2 */
+        displayHeight = frameHeight / 2;
+        displayWidth = frameWidth / 2;
+
+        scenePointProjection->clear();
+    } else {
+        displayHeight = frameHeight;
+        displayWidth = frameWidth;
+    }
+
+    float widthMultiplier = float(displayWidth) / HAND_POSE_INPUT_SIZE;
+    float heightMultiplier = float(displayHeight) / HAND_POSE_INPUT_SIZE;
+
+    /* Save x and y coordinates in separate vectors */
+    for (int i = 0; i < outputTensor.size(); i += 2) {
+        float y = outputTensor[i] * heightMultiplier;
+        float x = outputTensor[i + 1] * widthMultiplier;
+
+        xCoordinate.push_back(x);
+        yCoordinate.push_back(y);
+    }
+
+    /* Draw lines between the hand-knuckle coordinates */
+    connectLimbs(HP_WRIST, HP_THUMB_CMC, updateGraphicalView);
+    connectLimbs(HP_THUMB_CMC, HP_THUMB_MCP, updateGraphicalView);
+    connectLimbs(HP_THUMB_MCP, HP_THUMB_IP, updateGraphicalView);
+    connectLimbs(HP_THUMB_IP, HP_THUMB_TIP, updateGraphicalView);
+    connectLimbs(HP_WRIST, HP_INDEX_FINGER_MCP, updateGraphicalView);
+    connectLimbs(HP_INDEX_FINGER_MCP, HP_INDEX_FINGER_PIP, updateGraphicalView);
+    connectLimbs(HP_INDEX_FINGER_PIP, HP_INDEX_FINGER_DIP, updateGraphicalView);
+    connectLimbs(HP_INDEX_FINGER_DIP, HP_INDEX_FINGER_TIP, updateGraphicalView);
+    connectLimbs(HP_INDEX_FINGER_MCP, HP_MIDDLE_FINGER_MCP, updateGraphicalView);
+    connectLimbs(HP_MIDDLE_FINGER_MCP, HP_MIDDLE_FINGER_PIP, updateGraphicalView);
+    connectLimbs(HP_MIDDLE_FINGER_PIP, HP_MIDDLE_FINGER_DIP, updateGraphicalView);
+    connectLimbs(HP_MIDDLE_FINGER_DIP, HP_MIDDLE_FINGER_TIP, updateGraphicalView);
+    connectLimbs(HP_MIDDLE_FINGER_MCP, HP_RING_FINGER_MCP, updateGraphicalView);
+    connectLimbs(HP_RING_FINGER_MCP, HP_RING_FINGER_PIP, updateGraphicalView);
+    connectLimbs(HP_RING_FINGER_PIP, HP_RING_FINGER_DIP, updateGraphicalView);
+    connectLimbs(HP_RING_FINGER_DIP, HP_RING_FINGER_TIP, updateGraphicalView);
+    connectLimbs(HP_RING_FINGER_MCP, HP_PINKY_MCP, updateGraphicalView);
+    connectLimbs(HP_PINKY_MCP, HP_PINKY_PIP, updateGraphicalView);
+    connectLimbs(HP_PINKY_PIP, HP_PINKY_DIP, updateGraphicalView);
+    connectLimbs(HP_PINKY_DIP, HP_PINKY_TIP, updateGraphicalView);
+    connectLimbs(HP_PINKY_MCP, HP_WRIST, updateGraphicalView);
+
+    /* Draw dots on each detected hand-knuckle coordinates */
+    for (int i = 0; i <= HP_PINKY_TIP; i ++) {
+        QBrush brush;
+
+        float x = xCoordinate[i];
+        float y = yCoordinate[i];
+
+        pen.setColor(DOT_COLOUR_HAND_POSE);
+
+        if (x >= 0 && y >= 0) {
+            if (updateGraphicalView)
+                scenePointProjection->addEllipse(x, y, PEN_WIDTH_HAND_POSE, PEN_WIDTH_HAND_POSE, pen, brush);
+            else
+                scene->addEllipse(x, y, PEN_WIDTH_HAND_POSE, PEN_WIDTH_HAND_POSE, pen, brush);
+        }
+    }
+}
+
 void poseEstimation::connectLimbs(int limb1, int limb2, bool drawGraphicalViewLimbs)
 {
     QPen pen;
 
-    pen.setWidth(PEN_WIDTH);
-    pen.setColor(LINE_COLOUR);
+    if (poseModelSet == HandPose) {
+        pen.setWidth(PEN_WIDTH_HAND_POSE);
+        pen.setColor(LINE_COLOUR_HAND_POSE);
+    } else {
+        pen.setWidth(PEN_WIDTH);
+        pen.setColor(LINE_COLOUR);
+    }
 
     if (std::isnan(xCoordinate[limb1]) == false && std::isnan(yCoordinate[limb1]) == false) {
         if (std::isnan(xCoordinate[limb2]) == false && std::isnan(yCoordinate[limb2]) == false) {
@@ -313,10 +428,12 @@ void poseEstimation::connectLimbs(int limb1, int limb2, bool drawGraphicalViewLi
 
 void poseEstimation::runInference(const QVector<float> &receivedTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat)
 {
-    if (poseModelSet == BlazePose)
-        outputTensor = sortTensorBlazePose(receivedTensor, receivedStride);
-    else
+    if (poseModelSet == MoveNet)
         outputTensor = sortTensorMoveNet(receivedTensor, receivedStride);
+    else if (poseModelSet == HandPose)
+        outputTensor = sortTensorHandPose(receivedTensor, receivedStride);
+    else
+        outputTensor = sortTensorBlazePose(receivedTensor, receivedStride);
 
     uiPE->labelInference->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
 
@@ -331,12 +448,15 @@ void poseEstimation::runInference(const QVector<float> &receivedTensor, int rece
     }
 
     /* Draw onto image first then the graphical view */
-    if (poseModelSet == BlazePose) {
-        drawLimbsBlazePose(outputTensor, false);
-        drawLimbsBlazePose(outputTensor, true);
-    } else {
+    if (poseModelSet == MoveNet) {
         drawLimbsMoveNet(outputTensor, false);
         drawLimbsMoveNet(outputTensor, true);
+    } else if (poseModelSet == HandPose) {
+        drawLimbsHandPose(outputTensor, false);
+        drawLimbsHandPose(outputTensor, true);
+    } else {
+        drawLimbsBlazePose(outputTensor, false);
+        drawLimbsBlazePose(outputTensor, true);
     }
 }
 

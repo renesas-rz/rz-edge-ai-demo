@@ -237,6 +237,8 @@ void MainWindow::setupPoseEstimateMode()
 
     if (modelPath.contains(IDENTIFIER_MOVE_NET))
         poseModel = MoveNet;
+    else if (modelPath.contains(IDENTIFIER_HAND_POSE))
+        poseModel = HandPose;
     else
         poseModel = BlazePose;
 
@@ -273,7 +275,7 @@ void MainWindow::createTfWorker()
 void MainWindow::setPoseEstimateDelegateType()
 {
     /*
-     * Only enable ArmNN delegate when not using BlazePose models on the
+     * Only enable ArmNN delegate when not using BlazePose/HandPose models on the
      * RZ/G2L and RZ/G2LC platforms as it does not currently support Const
      * Tensors as inputs for Conv2d
      */
@@ -458,10 +460,10 @@ void MainWindow::on_actionTensorflow_Lite_XNNPack_delegate_triggered()
     delegateType = xnnpack;
 
     /*
-     * Only enable ArmNN delegate when not using BlazePose models
+     * Only enable ArmNN delegate when not using BlazePose/HandPose models
      * as it does not currently support Const Tensors as inputs for Conv2d
      */
-    if (!(modelPath.contains(IDENTIFIER_BLAZE_POSE)))
+    if (!(modelPath.contains(IDENTIFIER_BLAZE_POSE) || modelPath.contains(IDENTIFIER_HAND_POSE)))
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
 
     ui->actionTensorFlow_Lite->setEnabled(true);
@@ -476,10 +478,10 @@ void MainWindow::on_actionTensorFlow_Lite_triggered()
     delegateType = none;
 
     /*
-     * Only enable ArmNN delegate when not using BlazePose models
+     * Only enable ArmNN delegate when not using BlazePose/HandPose models
      * as it does not currently support Const Tensors as inputs for Conv2d
      */
-    if (!(((board == G2E || board == G2M) || modelPath.contains(IDENTIFIER_BLAZE_POSE)) && demoMode == PE))
+    if (!(((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET)) && demoMode == PE))
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
 
     ui->actionTensorFlow_Lite->setEnabled(false);
@@ -540,10 +542,10 @@ void MainWindow::on_actionShopping_Basket_triggered()
         modelPE = modelPath;
 
         /*
-         * Only enable ArmNN delegate when switching from BlazePose models
+         * Only enable ArmNN delegate when switching from BlazePose/HandPose models
          * as it does not currently support Const Tensors as inputs for Conv2d
          */
-        if ((board == G2E || board == G2M) || modelPath.contains(IDENTIFIER_BLAZE_POSE))
+        if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET))
             ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
 
@@ -577,10 +579,10 @@ void MainWindow::on_actionObject_Detection_triggered()
         modelPE = modelPath;
 
         /*
-         * Only enable ArmNN delegate when switching from BlazePose models
+         * Only enable ArmNN delegate when switching from BlazePose/HandPose models
          * as it does not currently support Const Tensors as inputs for Conv2d
          */
-        if ((board == G2E || board == G2M) || modelPath.contains(IDENTIFIER_BLAZE_POSE))
+        if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET))
             ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
 
@@ -707,7 +709,8 @@ void MainWindow::loadAIModel()
 void MainWindow::on_pushButtonLoadPoseModel_clicked()
 {
     QStringList supportedModels = { MODEL_PATH_PE_MOVE_NET_L, MODEL_PATH_PE_MOVE_NET_T, MODEL_PATH_PE_BLAZE_POSE_FULL,
-                                    MODEL_PATH_PE_BLAZE_POSE_HEAVY, MODEL_PATH_PE_BLAZE_POSE_LITE };
+                                    MODEL_PATH_PE_BLAZE_POSE_HEAVY, MODEL_PATH_PE_BLAZE_POSE_LITE,
+                                    MODEL_PATH_PE_HAND_POSE_FULL, MODEL_PATH_PE_HAND_POSE_LITE };
 
     qeventLoop = new QEventLoop;
     QFileDialog dialog(this);

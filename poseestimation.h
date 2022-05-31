@@ -28,13 +28,14 @@
 
 #define IDENTIFIER_MOVE_NET "lite-model_movenet_singlepose"
 #define IDENTIFIER_BLAZE_POSE "pose_landmark"
+#define IDENTIFIER_HAND_POSE "hand_landmark"
 
 #define TEXT_LOAD_FILE "Load Image/Video"
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"
 
 namespace Ui { class MainWindow; }
 
-enum PoseModel { MoveNet, BlazePose };
+enum PoseModel { MoveNet, BlazePose, HandPose };
 
 class poseEstimation : public QObject
 {
@@ -62,8 +63,10 @@ private:
     void setButtonState(bool enable);
     QVector<float> sortTensorMoveNet(const QVector<float> receivedTensor, int receivedStride);
     QVector<float> sortTensorBlazePose(const QVector<float> receivedTensor, int receivedStride);
+    QVector<float> sortTensorHandPose(const QVector<float> receivedTensor, int receivedStride);
     void drawLimbsMoveNet(const QVector<float>& outputTensor, bool updateGraphicalView);
     void drawLimbsBlazePose(const QVector<float>& outputTensor, bool updateGraphicalView);
+    void drawLimbsHandPose(const QVector<float>& outputTensor, bool updateGraphicalView);
     void connectLimbs(int limb1, int limb2, bool drawGraphicalViewLimbs);
     void displayTotalFps(int totalProcessTime);
     void timeTotalFps(bool startingTimer);
