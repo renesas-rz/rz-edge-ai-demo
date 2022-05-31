@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     "  Model:\n"
     "    Object Detection Mode: mobilenet_ssd_v2_coco_quant_postprocess.tflite\n"
     "    Shopping Basket Mode: shoppingBasketDemo.tflite\n"
-    "    Pose Estimation Mode: lite-model_movenet_singlepose_lightning_tflite_int8_4.tflite\n"
+    "    Pose Estimation Mode: pose_landmark_lite.tflite\n"
     "  Mode Specific Files:\n"
     "    Shopping Basket Prices: shoppingBasketDemo_prices.txt\n\n"
 
