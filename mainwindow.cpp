@@ -279,15 +279,17 @@ void MainWindow::setPoseEstimateDelegateType()
      * RZ/G2L and RZ/G2LC platforms as it does not currently support Const
      * Tensors as inputs for Conv2d
      */
-    if (modelPath.contains(IDENTIFIER_MOVE_NET) && delegateType != armNN && (board == G2L || board == G2LC)) {
+    if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET)) {
+        if (delegateType == armNN) {
+            delegateType = none;
+            ui->actionEnable_ArmNN_Delegate->setEnabled(false);
+            ui->actionTensorFlow_Lite->setEnabled(false);
+            ui->labelDelegate->setText("TensorFlow Lite");
+        } else {
+            ui->actionEnable_ArmNN_Delegate->setEnabled(false);
+        }
+    } else if (modelPath.contains(IDENTIFIER_MOVE_NET) && delegateType != armNN) {
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
-    } else if (modelPath.contains(IDENTIFIER_MOVE_NET) && delegateType == armNN && (board == G2L || board == G2LC)) {
-        delegateType = armNN;
-    } else {
-        delegateType = none;
-        ui->actionEnable_ArmNN_Delegate->setEnabled(false);
-        ui->actionTensorFlow_Lite->setEnabled(false);
-        ui->labelDelegate->setText("TensorFlow Lite");
     }
 }
 
