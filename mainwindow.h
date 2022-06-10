@@ -47,6 +47,7 @@
 #define MODEL_PATH_PE_BLAZE_POSE_FULL "/opt/rz-edge-ai-demo/models/pose_landmark_full.tflite"
 #define MODEL_PATH_PE_HAND_POSE_LITE "/opt/rz-edge-ai-demo/models/hand_landmark_lite.tflite"
 #define MODEL_PATH_PE_HAND_POSE_FULL "/opt/rz-edge-ai-demo/models/hand_landmark_full.tflite"
+#define MODEL_PATH_FD_FACE_LANDMARK "/opt/rz-edge-ai-demo/models/face_landmark.tflite"
 #define RENESAS_RZ_LOGO_PATH "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
 #define SPLASH_SCREEN_PATH "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
 
@@ -80,6 +81,7 @@
 
 class QGraphicsScene;
 class QGraphicsView;
+class faceDetection;
 class objectDetection;
 class opencvWorker;
 class poseEstimation;
@@ -123,6 +125,7 @@ private slots:
     void on_actionShopping_Basket_triggered();
     void on_actionObject_Detection_triggered();
     void on_actionPose_Estimation_triggered();
+    void on_actionFace_Detection_triggered();
     void on_actionHardware_triggered();
     void on_actionExit_triggered();
     void on_actionLoad_Camera_triggered();
@@ -135,6 +138,7 @@ private:
     void createVideoWorker();
     void errorPopup(QString errorMessage, int errorCode);
     void remakeTfWorker();
+    void setupFaceDetectMode();
     void setupObjectDetectMode();
     void setupPoseEstimateMode();
     void setupShoppingMode();
@@ -142,6 +146,7 @@ private:
     void checkInputMode();
     void updateAIModelLabel();
     void setPoseEstimateDelegateType();
+    void setFaceDetectDelegateType();
     QStringList readLabelFile(QString labelPath);
 
     Ui::MainWindow *ui;
@@ -155,6 +160,7 @@ private:
     shoppingBasket *shoppingBasketMode;
     objectDetection *objectDetectMode;
     poseEstimation *poseEstimateMode;
+    faceDetection *faceDetectMode;
     tfliteWorker *tfWorker;
     QEventLoop *qeventLoop;
     QString boardInfo;

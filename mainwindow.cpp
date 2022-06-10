@@ -29,6 +29,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "facedetection.h"
 #include "objectdetection.h"
 #include "opencvworker.h"
 #include "poseestimation.h"
@@ -135,6 +136,8 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
 
     if (demoMode == PE)
         setPoseEstimateDelegateType();
+    else if (demoMode == FD)
+        setFaceDetectDelegateType();
 
     qRegisterMetaType<cv::Mat>();
     cvWorker = new opencvWorker(cameraLocation, board);
@@ -176,6 +179,17 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
             modelOD = MODEL_PATH_OD;
 
             setupPoseEstimateMode();
+        } else if (demoMode == FD) {
+            /* Set default parameters for other modes */
+            labelSB = LABEL_PATH_SB;
+            modelSB = MODEL_PATH_SB;
+
+            labelOD = LABEL_PATH_OD;
+            modelOD = MODEL_PATH_OD;
+
+            modelPE = MODEL_PATH_PE_BLAZE_POSE_LITE;
+
+            setupFaceDetectMode();
         }
 
         /* Limit camera loop speed if using mipi camera to save on CPU
@@ -254,6 +268,24 @@ void MainWindow::setupPoseEstimateMode()
             poseEstimateMode, SLOT(runInference(QVector<float>, int, int, cv::Mat)));
 }
 
+void MainWindow::setupFaceDetectMode()
+{
+    demoMode = FD;
+    tfWorker->setDemoMode(demoMode);
+    updateAIModelLabel();
+
+    faceDetectMode = new faceDetection(ui);
+
+    connect(this, SIGNAL(stopInference()), faceDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
+    connect(ui->pushButtonStartStopFace, SIGNAL(pressed()), faceDetectMode, SLOT(triggerInference()));
+    connect(faceDetectMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
+    connect(faceDetectMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
+    connect(faceDetectMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
+    connect(faceDetectMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
+    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, int, const cv::Mat&)),
+            faceDetectMode, SLOT(runInference(QVector<float>, int, int, cv::Mat)));
+}
+
 void MainWindow::createVideoWorker()
 {
     vidWorker = new videoWorker();
@@ -290,6 +322,22 @@ void MainWindow::setPoseEstimateDelegateType()
         }
     } else if (modelPath.contains(IDENTIFIER_MOVE_NET) && delegateType != armNN) {
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+    }
+}
+
+void MainWindow::setFaceDetectDelegateType()
+{
+    /*
+     * Do not enable ArmNN delegate when not using Face Detection mode on all
+     * platforms as it does not currently support Const Tensors as inputs for Conv2d
+     */
+    if (delegateType == armNN) {
+        delegateType = none;
+        ui->actionEnable_ArmNN_Delegate->setEnabled(false);
+        ui->actionTensorFlow_Lite->setEnabled(false);
+        ui->labelDelegate->setText("TensorFlow Lite");
+    } else {
+        ui->actionEnable_ArmNN_Delegate->setEnabled(false);
     }
 }
 
@@ -375,10 +423,12 @@ void MainWindow::drawMatToView(const cv::Mat& matInput)
     scene->clear();
 
     if ((!cvWorker->getUsingMipi() && inputMode == cameraMode) || (inputMode == imageMode))
-        image = image.scaled(800, 600, Qt::AspectRatioMode::KeepAspectRatio);
+        image = image.scaled(GRAPHICS_VIEW_WIDTH, GRAPHICS_VIEW_HEIGHT, Qt::AspectRatioMode::KeepAspectRatio);
 
     if (demoMode == PE)
         poseEstimateMode->setFrameDims(image.height(), image.width());
+    else if (demoMode == FD)
+        faceDetectMode->setFrameDims(image.height(), image.width());
 
     scene->addPixmap(image);
     scene->setSceneRect(image.rect());
@@ -437,6 +487,9 @@ void MainWindow::remakeTfWorker()
     } else if (demoMode == PE) {
         setupPoseEstimateMode();
         emit stopInference();
+    } else if (demoMode == FD) {
+        setupFaceDetectMode();
+        emit stopInference();
     }
 
     checkInputMode();
@@ -461,11 +514,11 @@ void MainWindow::on_actionTensorflow_Lite_XNNPack_delegate_triggered()
 {
     delegateType = xnnpack;
 
-    /*
-     * Only enable ArmNN delegate when not using BlazePose/HandPose models
-     * as it does not currently support Const Tensors as inputs for Conv2d
-     */
-    if (!(modelPath.contains(IDENTIFIER_BLAZE_POSE) || modelPath.contains(IDENTIFIER_HAND_POSE)))
+    if (demoMode == PE)
+        setPoseEstimateDelegateType();
+    else if (demoMode == FD)
+        setFaceDetectDelegateType();
+    else
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
 
     ui->actionTensorFlow_Lite->setEnabled(true);
@@ -479,11 +532,11 @@ void MainWindow::on_actionTensorFlow_Lite_triggered()
 {
     delegateType = none;
 
-    /*
-     * Only enable ArmNN delegate when not using BlazePose/HandPose models
-     * as it does not currently support Const Tensors as inputs for Conv2d
-     */
-    if (!(((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET)) && demoMode == PE))
+    if (demoMode == PE)
+        setPoseEstimateDelegateType();
+    else if (demoMode == FD)
+        setFaceDetectDelegateType();
+    else
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
 
     ui->actionTensorFlow_Lite->setEnabled(false);
@@ -549,6 +602,12 @@ void MainWindow::on_actionShopping_Basket_triggered()
          */
         if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET))
             ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+    } else if (demoMode == FD) {
+        /*
+         * If coming from the Face Detection mode, enable ArmNN Delegate which
+         * that mode doesn't support
+         */
+        ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
 
     inputMode = cameraMode;
@@ -586,6 +645,12 @@ void MainWindow::on_actionObject_Detection_triggered()
          */
         if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET))
             ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+    } else if (demoMode == FD) {
+        /*
+         * If coming from the Face Detection mode, enable ArmNN Delegate which
+         * that mode doesn't support
+         */
+        ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
 
     inputMode = cameraMode;
@@ -628,6 +693,36 @@ void MainWindow::on_actionPose_Estimation_triggered()
 
     disconnectSignals();
     setupPoseEstimateMode();
+
+    ui->menuInput->menuAction()->setVisible(true);
+    cvWorker->useCameraMode();
+    vidWorker->StartVideo();
+}
+
+void MainWindow::on_actionFace_Detection_triggered()
+{
+    /* Store previous demo modes label and model */
+    if (demoMode == SB) {
+        labelSB = labelPath;
+        modelSB = modelPath;
+    } else if (demoMode == OD) {
+        labelOD = labelPath;
+        modelOD = modelPath;
+    } else if (demoMode == PE) {
+        modelPE = modelPath;
+    }
+
+    modelPath = MODEL_PATH_FD_FACE_LANDMARK;
+    inputMode = cameraMode;
+    iterations = 1;
+
+    setFaceDetectDelegateType();
+
+    delete tfWorker;
+    createTfWorker();
+
+    disconnectSignals();
+    setupFaceDetectMode();
 
     ui->menuInput->menuAction()->setVisible(true);
     cvWorker->useCameraMode();
@@ -764,7 +859,7 @@ void MainWindow::on_actionLoad_File_triggered()
 
     connect(this, SIGNAL(fileLoaded()), qeventLoop, SLOT(quit()));
 
-    if (demoMode == OD || demoMode == PE)
+    if (demoMode != SB)
         emit stopInference();
 
     vidWorker->StopVideo();
@@ -775,7 +870,7 @@ void MainWindow::on_actionLoad_File_triggered()
 
     mediaFileFilter = IMAGE_FILE_FILTER;
 
-    if (demoMode == OD || demoMode == PE)
+    if (demoMode != SB)
         mediaFileFilter += VIDEO_FILE_FILTER;
 
     dialog.setNameFilter(mediaFileFilter);
@@ -853,7 +948,7 @@ void MainWindow::on_actionLoad_Camera_triggered()
     cvWorker->useCameraMode();
     checkInputMode();
 
-    if (demoMode == OD || demoMode == PE)
+    if (demoMode != SB)
         emit stopInference();
 }
 
@@ -867,6 +962,8 @@ void MainWindow::checkInputMode()
             objectDetectMode->setVideoMode();
         else if (demoMode == PE)
             poseEstimateMode->setVideoMode();
+        else if (demoMode == FD)
+            faceDetectMode->setVideoMode();
     } else if (inputMode == imageMode) {
         if (demoMode == OD)
             objectDetectMode->setImageMode();
@@ -874,6 +971,8 @@ void MainWindow::checkInputMode()
             shoppingBasketMode->setImageMode(true);
         else if (demoMode == PE)
             poseEstimateMode->setImageMode();
+        else if (demoMode == FD)
+            faceDetectMode->setImageMode();
     } else {
         if (demoMode == OD)
             objectDetectMode->setCameraMode();
@@ -881,6 +980,8 @@ void MainWindow::checkInputMode()
             shoppingBasketMode->setImageMode(false);
         else if (demoMode == PE)
             poseEstimateMode->setCameraMode();
+        else if (demoMode == FD)
+            faceDetectMode->setCameraMode();
     }
 }
 
@@ -898,5 +999,9 @@ void MainWindow::disconnectSignals()
         poseEstimateMode->disconnect();
 
         delete poseEstimateMode;
+    } else if (demoMode == FD) {
+        faceDetectMode->disconnect();
+
+        delete faceDetectMode;
     }
 }

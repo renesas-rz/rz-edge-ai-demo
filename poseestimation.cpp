@@ -70,6 +70,7 @@ poseEstimation::poseEstimation(Ui::MainWindow *ui, PoseModel poseModel)
     uiPE->actionShopping_Basket->setDisabled(false);
     uiPE->actionObject_Detection->setDisabled(false);
     uiPE->actionPose_Estimation->setDisabled(true);
+    uiPE->actionFace_Detection->setDisabled(false);
     uiPE->actionLoad_Camera->setDisabled(true);
     uiPE->actionLoad_File->setText(TEXT_LOAD_FILE);
 

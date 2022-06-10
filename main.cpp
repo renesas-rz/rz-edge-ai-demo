@@ -46,7 +46,8 @@ int main(int argc, char *argv[])
     "Selecting Demo Mode\n"
     "Demo Mode->Object Detection: Object Detection Mode.\n"
     "Demo Mode->Shopping Basket: Shopping Basket Mode.\n"
-    "Demo Mode->Pose Estimation: Pose Estimation Mode.\n\n"
+    "Demo Mode->Pose Estimation: Pose Estimation Mode.\n"
+    "Demo Mode->Face Detection: Face Detection Mode.\n\n"
     "Required Hardware:\n"
     "  Camera: Currently the Google Coral Mipi camera is supported,\n"
     "          but should work with any UVC compatible USB camera.\n\n"
@@ -84,6 +85,14 @@ int main(int argc, char *argv[])
     "                                  grabs the frame and runs inference or just\n"
     "                                  displays the live camera feed/media file.\n"
     "  Input->Load Image/Video: Load an image or video file.\n\n"
+    "Face Detection Mode\n"
+    "  Draws lines around the facial regions on the image frame, displays the total FPS,\n"
+    "  inference time and displays a 2-D Point Projection of the identified face mesh\n\n"
+    "Buttons:\n"
+    "  Start Inference/Stop Inference: Starts the live camera feed/media file,\n"
+    "                                  grabs the frame and runs inference or just\n"
+    "                                  displays the live camera feed/media file.\n"
+    "  Input->Load Image/Video: Load an image or video file.\n\n"
     "Common Mode Buttons:\n"
     "  Input->Load Camera Feed: Removes media file and resumes live camera feed.\n"
     "  Inference Engine->TensorFlow Lite + ArmNN delegate: Run inference using TensorFlow\n"
@@ -104,6 +113,7 @@ int main(int argc, char *argv[])
     "    Object Detection Mode: mobilenet_ssd_v2_coco_quant_postprocess.tflite\n"
     "    Shopping Basket Mode: shoppingBasketDemo.tflite\n"
     "    Pose Estimation Mode: pose_landmark_lite.tflite\n"
+    "    Face Detection Mode: face_landmark.tflite\n"
     "  Mode Specific Files:\n"
     "    Shopping Basket Prices: shoppingBasketDemo_prices.txt\n\n"
 
@@ -131,14 +141,22 @@ int main(int argc, char *argv[])
 
     boardName = systemInfo.machineHostName();
 
-    if (modeString == "shopping-basket")
+    if (modeString == "shopping-basket") {
         mode = SB;
-    else if (modeString == "object-detection")
+    } else if (modeString == "object-detection") {
         mode = OD;
-    else if (modeString == "pose-estimation")
+    } else if (modeString == "pose-estimation") {
         mode = PE;
-    else
+    } else if (modeString == "face-detection") {
+        mode = FD;
+
+        if (!modelLocation.isEmpty())
+            qWarning("Warning: face detection mode does not support loading of models, starting mode using Face Landmark model...");
+
+        modelLocation = MODEL_PATH_FD_FACE_LANDMARK;
+    } else {
         qWarning("Warning: unknown demo mode requested, starting in default mode...");
+    }
 
     if (!QFileInfo(labelLocation).isFile()) {
         if (mode != PE && !labelLocation.isEmpty())

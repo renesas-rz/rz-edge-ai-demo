@@ -37,6 +37,7 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QS
     uiSB->actionShopping_Basket->setDisabled(true);
     uiSB->actionObject_Detection->setDisabled(false);
     uiSB->actionPose_Estimation->setDisabled(false);
+    uiSB->actionFace_Detection->setDisabled(false);
     uiSB->actionLoad_Camera->setDisabled(true);
     uiSB->actionLoad_File->setText(TEXT_LOAD_IMAGE);
 

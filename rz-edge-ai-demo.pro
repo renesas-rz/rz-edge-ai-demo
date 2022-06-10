@@ -22,6 +22,7 @@ CONFIG += c++14
 
 SOURCES += \
     edge-utils.cpp \
+    facedetection.cpp \
     main.cpp \
     mainwindow.cpp \
     objectdetection.cpp \
@@ -33,6 +34,7 @@ SOURCES += \
 
 HEADERS += \
     edge-utils.h \
+    facedetection.h \
     mainwindow.h \
     objectdetection.h \
     opencvworker.h \

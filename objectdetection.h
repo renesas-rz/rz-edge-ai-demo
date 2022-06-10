@@ -25,9 +25,6 @@
 
 #include "edge-utils.h"
 
-#define TEXT_LOAD_FILE "Load Image/Video"
-#define TEXT_LOAD_NEW_FILE "Load New Image/Video"
-
 class QGraphicsScene;
 class edgeUtils;
 

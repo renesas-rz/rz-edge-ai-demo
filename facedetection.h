@@ -16,8 +16,8 @@
  * along with the RZ Edge AI Demo.  If not, see <https://www.gnu.org/licenses/>.
  *****************************************************************************************/
 
-#ifndef POSEESTIMATION_H
-#define POSEESTIMATION_H
+#ifndef FACEDETECTION_H
+#define FACEDETECTION_H
 
 #include <QMainWindow>
 
@@ -25,22 +25,16 @@
 
 #include "edge-utils.h"
 
-#define IDENTIFIER_MOVE_NET "lite-model_movenet_singlepose"
-#define IDENTIFIER_BLAZE_POSE "pose_landmark"
-#define IDENTIFIER_HAND_POSE "hand_landmark"
-
 class edgeUtils;
 
 namespace Ui { class MainWindow; }
 
-enum PoseModel { MoveNet, BlazePose, HandPose };
-
-class poseEstimation : public QObject
+class faceDetection : public QObject
 {
     Q_OBJECT
 
 public:
-    poseEstimation(Ui::MainWindow *ui, PoseModel poseModel);
+    faceDetection(Ui::MainWindow *ui);
     void setCameraMode();
     void setImageMode();
     void setVideoMode();
@@ -59,18 +53,13 @@ signals:
 
 private:
     void setButtonState(bool enable);
-    QVector<float> sortTensorMoveNet(const QVector<float> receivedTensor, int receivedStride);
-    QVector<float> sortTensorBlazePose(const QVector<float> receivedTensor, int receivedStride);
-    QVector<float> sortTensorHandPose(const QVector<float> receivedTensor, int receivedStride);
-    void drawLimbsMoveNet(const QVector<float>& outputTensor, bool updateGraphicalView);
-    void drawLimbsBlazePose(const QVector<float>& outputTensor, bool updateGraphicalView);
-    void drawLimbsHandPose(const QVector<float>& outputTensor, bool updateGraphicalView);
-    void connectLimbs(int limb1, int limb2, bool drawGraphicalViewLimbs);
+    QVector<float> sortTensorFaceLandmark(const QVector<float> receivedTensor, int receivedStride);
+    void drawPointsFaceLandmark(const QVector<float>& outputTensor, bool updateGraphicalView);
+    void connectLandmarks(int landmark1, int landmark2, bool drawGraphicalViewLandmarks);
 
-    Ui::MainWindow *uiPE;
-    Input inputModePE;
-    PoseModel poseModelSet;
-    edgeUtils *utilPE;
+    Ui::MainWindow *uiFD;
+    Input inputModeFD;
+    edgeUtils *utilFD;
     QVector<float> outputTensor;
     QVector<float> xCoordinate;
     QVector<float> yCoordinate;
@@ -80,4 +69,4 @@ private:
     int frameWidth;
 };
 
-#endif // POSEESTIMATION_H
+#endif // FACEDETECTION_H

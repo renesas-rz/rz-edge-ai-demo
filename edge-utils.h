@@ -28,17 +28,23 @@
 #define BUTTON_RED "background-color: rgba(255, 0, 0);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
 
 #define TEXT_INFERENCE "Inference Time: "
+#define TEXT_LOAD_FILE "Load Image/Video"
+#define TEXT_LOAD_NEW_FILE "Load New Image/Video"
 #define TEXT_TOTAL_FPS "Total FPS: "
+
+#define GRAPHICS_VIEW_HEIGHT 600
+#define GRAPHICS_VIEW_WIDTH 800
 
 #define EDGE_FONT_SIZE 14
 
 #define STACK_WIDGET_INDEX_SB 0
 #define STACK_WIDGET_INDEX_OD 1
 #define STACK_WIDGET_INDEX_PE 2
+#define STACK_WIDGET_INDEX_FD 3
 
 enum Board { G2E, G2L, G2LC, G2M, Unknown };
 enum Input { cameraMode, imageMode, videoMode };
-enum Mode { SB, OD, PE };
+enum Mode { SB, OD, PE, FD };
 
 class edgeUtils : public QObject
 {
