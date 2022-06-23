@@ -107,7 +107,7 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
 
     input = tfliteInterpreter->inputs()[0];
 
-    cv::resize(sentMat, sentImageMat, cv::Size(wantedHeight, wantedWidth));
+    cv::resize(sentMat, sentImageMat, cv::Size(wantedWidth, wantedHeight));
 
     if (tfliteInterpreter->tensor(input)->type == kTfLiteFloat32) {
         /*
