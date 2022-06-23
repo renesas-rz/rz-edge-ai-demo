@@ -27,15 +27,18 @@
 
 #define DETECT_THRESHOLD 0.5
 
-objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList)
+objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList, QString modelPath, QString inferenceEngine)
 {
     QFont font;
+    QString modelName;
 
     uiOD = ui;
     inputModeOD = cameraMode;
     labelList = labelFileList;
 
     utilOD = new edgeUtils();
+
+    modelName = modelPath.section('/', -1);
 
     uiOD->actionShopping_Basket->setDisabled(false);
     uiOD->actionObject_Detection->setDisabled(true);
@@ -44,7 +47,9 @@ objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList)
     uiOD->actionLoad_Camera->setDisabled(true);
     uiOD->actionLoad_File->setText(TEXT_LOAD_FILE);
 
-    uiOD->labelInference->setText(TEXT_INFERENCE);
+    uiOD->labelAIModelFilenameOD->setText(modelName);
+    uiOD->labelInferenceEngineOD->setText(inferenceEngine);
+    uiOD->labelInferenceTimeOD->setText(TEXT_INFERENCE);
     uiOD->labelDemoMode->setText("Mode: Object Detection");
     uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
 
@@ -107,7 +112,7 @@ void objectDetection::triggerInference()
                 stopVideo();
             } else {
                 startVideo();
-                uiOD->labelInference->setText(TEXT_INFERENCE);
+                uiOD->labelInferenceTimeOD->setText(TEXT_INFERENCE);
                 uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
                 uiOD->tableWidgetOD->setRowCount(0);
             }
@@ -148,7 +153,7 @@ void objectDetection::runInference(QVector<float> receivedTensor, int receivedSt
 
     outputTensor = sortTensor(receivedTensor, receivedStride);
 
-    uiOD->labelInference->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
+    uiOD->labelInferenceTimeOD->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
 
     updateObjectList(outputTensor);
 
@@ -230,7 +235,7 @@ void objectDetection::stopContinuousMode()
     stopVideo();
     setButtonState(true);
 
-    uiOD->labelInference->setText(TEXT_INFERENCE);
+    uiOD->labelInferenceTimeOD->setText(TEXT_INFERENCE);
     uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
     uiOD->tableWidgetOD->setRowCount(0);
 

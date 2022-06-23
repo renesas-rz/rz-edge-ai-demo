@@ -38,8 +38,10 @@ class shoppingBasket  : public QObject
     Q_OBJECT
 
 public:
-    shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QString pricesFile);
+    shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QString pricesFile, QString modelPath, QString inferenceEngine);
     void setImageMode(bool imageStatus);
+    void updateInferenceLabel();
+    void updateModelLabel();
 
 public slots:
     void runInference(QVector<float> receivedTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat&receivedMat);

@@ -25,6 +25,8 @@
 
 #include "edge-utils.h"
 
+#define TEXT_FACE_MODEL "face_landmark.tflite"
+
 class edgeUtils;
 
 namespace Ui { class MainWindow; }
@@ -34,7 +36,7 @@ class faceDetection : public QObject
     Q_OBJECT
 
 public:
-    faceDetection(Ui::MainWindow *ui);
+    faceDetection(Ui::MainWindow *ui, QString inferenceEngine);
     void setCameraMode();
     void setImageMode();
     void setVideoMode();

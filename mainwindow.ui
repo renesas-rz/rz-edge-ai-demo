@@ -496,9 +496,9 @@ Inference</string>
     <property name="geometry">
      <rect>
       <x>930</x>
-      <y>130</y>
+      <y>53</y>
       <width>411</width>
-      <height>481</height>
+      <height>561</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -509,7 +509,7 @@ Inference</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>0</y>
+        <y>87</y>
         <width>141</width>
         <height>31</height>
        </rect>
@@ -527,9 +527,9 @@ Inference</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>30</y>
+        <y>126</y>
         <width>331</width>
-        <height>451</height>
+        <height>431</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -582,13 +582,112 @@ Inference</string>
       <column/>
       <column/>
      </widget>
+     <widget class="QLabel" name="labelInferenceEngineSB">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>19</y>
+        <width>401</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>TensorFlow Lite + ArmNN delegate</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelAIModelFilenameSB">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>-14</y>
+        <width>401</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Model_name</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelInferenceTimeSB">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>56</y>
+        <width>331</width>
+        <height>35</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>19</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Inference Time: </string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelInferenceTitleSB">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>198</width>
+        <height>29</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>19</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Inference Engine:</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="page_ObjectDetectionR">
      <widget class="QLabel" name="labelTotalFps">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>10</y>
+        <y>85</y>
         <width>179</width>
         <height>35</height>
        </rect>
@@ -615,9 +714,9 @@ Inference</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>40</y>
+        <y>126</y>
         <width>331</width>
-        <height>441</height>
+        <height>431</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -670,13 +769,112 @@ Inference</string>
       <column/>
       <column/>
      </widget>
+     <widget class="QLabel" name="labelInferenceEngineOD">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>19</y>
+        <width>401</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>TensorFlow Lite + ArmNN delegate</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelAIModelFilenameOD">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>-14</y>
+        <width>401</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Model_name</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelInferenceTimeOD">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>56</y>
+        <width>331</width>
+        <height>35</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>19</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Inference Time: </string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelInferenceTitleOD">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>198</width>
+        <height>29</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>19</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Inference Engine:</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="page_poseEstimationR">
      <widget class="QLabel" name="labelTotalFpsPose">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>10</y>
+        <y>85</y>
         <width>179</width>
         <height>35</height>
        </rect>
@@ -703,7 +901,7 @@ Inference</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>49</y>
+        <y>126</y>
         <width>330</width>
         <height>431</height>
        </rect>
@@ -734,7 +932,7 @@ Inference</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>47</y>
+        <y>124</y>
         <width>331</width>
         <height>35</height>
        </rect>
@@ -758,13 +956,112 @@ Inference</string>
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
+     <widget class="QLabel" name="labelInferenceEnginePE">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>19</y>
+        <width>401</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>TensorFlow Lite + ArmNN delegate</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelAIModelFilenamePE">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>-14</y>
+        <width>401</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Model_name</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelInferenceTimePE">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>56</y>
+        <width>331</width>
+        <height>35</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>19</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Inference Time: </string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelInferenceTitlePE">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>198</width>
+        <height>29</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>19</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Inference Engine:</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="page_FaceDetectionR">
      <widget class="QLabel" name="labelTotalFpsFace">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>10</y>
+        <y>117</y>
         <width>179</width>
         <height>35</height>
        </rect>
@@ -787,11 +1084,11 @@ Inference</string>
        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
       </property>
      </widget>
-     <widget class="QLabel" name="labelGraphicalViewTitle_2">
+     <widget class="QLabel" name="labelGraphicalViewTitleFD">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>47</y>
+        <y>155</y>
         <width>331</width>
         <height>35</height>
        </rect>
@@ -819,9 +1116,9 @@ Inference</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>49</y>
+        <y>157</y>
         <width>330</width>
-        <height>431</height>
+        <height>400</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -846,9 +1143,112 @@ Inference</string>
        <enum>QAbstractScrollArea::AdjustToContents</enum>
       </property>
      </widget>
+     <widget class="QLabel" name="labelInferenceEngineFD">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>47</y>
+        <width>401</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>TensorFlow Lite + ArmNN delegate</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelAIModelFilenameFD">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>-6</y>
+        <width>401</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Model_name</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelInferenceTimeFD">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>87</y>
+        <width>331</width>
+        <height>35</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>19</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Inference Time: </string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelInferenceTitleFD">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>48</y>
+        <width>198</width>
+        <height>29</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>19</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Inference Engine:</string>
+      </property>
+     </widget>
      <zorder>labelTotalFpsFace</zorder>
      <zorder>graphicsViewPointPlotFace</zorder>
-     <zorder>labelGraphicalViewTitle_2</zorder>
+     <zorder>labelGraphicalViewTitleFD</zorder>
+     <zorder>labelInferenceEngineFD</zorder>
+     <zorder>labelAIModelFilenameFD</zorder>
+     <zorder>labelInferenceTimeFD</zorder>
+     <zorder>labelInferenceTitleFD</zorder>
     </widget>
    </widget>
    <widget class="QLabel" name="labelDemoMode">
@@ -878,86 +1278,11 @@ Inference</string>
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="labelDelegate_2">
-    <property name="geometry">
-     <rect>
-      <x>940</x>
-      <y>74</y>
-      <width>198</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-      <horstretch>1</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>19</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Inference Engine:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="labelDelegate">
-    <property name="geometry">
-     <rect>
-      <x>940</x>
-      <y>73</y>
-      <width>401</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-      <horstretch>1</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>16</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>TensorFlow Lite + ArmNN delegate</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="labelInference">
-    <property name="geometry">
-     <rect>
-      <x>940</x>
-      <y>110</y>
-      <width>331</width>
-      <height>35</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-      <horstretch>1</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>19</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Inference Time: </string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-    </property>
-   </widget>
    <widget class="QLabel" name="labelAIModel">
     <property name="geometry">
      <rect>
       <x>940</x>
-      <y>21</y>
+      <y>24</y>
       <width>401</width>
       <height>61</height>
      </rect>
@@ -975,30 +1300,6 @@ Inference</string>
     </property>
     <property name="text">
      <string>AI Model: </string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="labelAIModelFilename">
-    <property name="geometry">
-     <rect>
-      <x>940</x>
-      <y>36</y>
-      <width>401</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-      <horstretch>1</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>16</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Model_name</string>
     </property>
    </widget>
   </widget>

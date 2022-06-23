@@ -29,7 +29,7 @@
 
 #define DETECT_THRESHOLD_FACE 0.5
 
-faceDetection::faceDetection(Ui::MainWindow *ui)
+faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine)
 {
     uiFD = ui;
     inputModeFD = cameraMode;
@@ -48,7 +48,9 @@ faceDetection::faceDetection(Ui::MainWindow *ui)
     uiFD->actionLoad_Camera->setDisabled(true);
     uiFD->actionLoad_File->setText(TEXT_LOAD_FILE);
 
-    uiFD->labelInference->setText(TEXT_INFERENCE);
+    uiFD->labelAIModelFilenameFD->setText(TEXT_FACE_MODEL);
+    uiFD->labelInferenceEngineFD->setText(inferenceEngine);
+    uiFD->labelInferenceTimeFD->setText(TEXT_INFERENCE);
     uiFD->labelDemoMode->setText("Mode: Face Detection");
     uiFD->labelTotalFpsPose->setText(TEXT_TOTAL_FPS);
 
@@ -219,7 +221,7 @@ void faceDetection::runInference(const QVector<float> &receivedTensor, int recei
 
     outputTensor = sortTensorFaceLandmark(receivedTensor, receivedStride);
 
-    uiFD->labelInference->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
+    uiFD->labelInferenceTimeFD->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
 
     emit sendMatToView(receivedMat);
 
@@ -247,7 +249,7 @@ void faceDetection::stopContinuousMode()
     stopVideo();
     setButtonState(true);
 
-    uiFD->labelInference->setText(TEXT_INFERENCE);
+    uiFD->labelInferenceTimeFD->setText(TEXT_INFERENCE);
     uiFD->labelTotalFpsFace->setText(TEXT_TOTAL_FPS);
     uiFD->graphicsViewPointPlotFace->scene()->clear();
 
@@ -281,7 +283,7 @@ void faceDetection::triggerInference()
                 stopVideo();
             } else {
                 startVideo();
-                uiFD->labelInference->setText(TEXT_INFERENCE);
+                uiFD->labelInferenceTimeFD->setText(TEXT_INFERENCE);
                 uiFD->labelTotalFpsFace->setText(TEXT_TOTAL_FPS);
                 uiFD->graphicsViewPointPlotFace->scene()->clear();
             }

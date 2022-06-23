@@ -51,15 +51,24 @@ enum HandPosePoints { HP_WRIST, HP_THUMB_CMC, HP_THUMB_MCP, HP_THUMB_IP, HP_THUM
 #define PEN_WIDTH 2
 #define PEN_WIDTH_HAND_POSE 3
 
-poseEstimation::poseEstimation(Ui::MainWindow *ui, PoseModel poseModel)
+poseEstimation::poseEstimation(Ui::MainWindow *ui, QString modelPath, QString inferenceEngine)
 {
+    QString modelName;
+
     uiPE = ui;
     inputModePE = cameraMode;
-    poseModelSet = poseModel;
     buttonState = true;
 
     utilPE = new edgeUtils();
 
+    if (modelPath.contains(IDENTIFIER_MOVE_NET))
+        poseModelSet = MoveNet;
+    else if (modelPath.contains(IDENTIFIER_HAND_POSE))
+        poseModelSet = HandPose;
+    else
+        poseModelSet = BlazePose;
+
+    modelName = modelPath.section('/', -1);
     frameHeight = GRAPHICS_VIEW_HEIGHT;
     frameWidth = GRAPHICS_VIEW_WIDTH;
 
@@ -70,7 +79,9 @@ poseEstimation::poseEstimation(Ui::MainWindow *ui, PoseModel poseModel)
     uiPE->actionLoad_Camera->setDisabled(true);
     uiPE->actionLoad_File->setText(TEXT_LOAD_FILE);
 
-    uiPE->labelInference->setText(TEXT_INFERENCE);
+    uiPE->labelAIModelFilenamePE->setText(modelName);
+    uiPE->labelInferenceEnginePE->setText(inferenceEngine);
+    uiPE->labelInferenceTimePE->setText(TEXT_INFERENCE);
     uiPE->labelDemoMode->setText("Mode: Pose Estimation");
     uiPE->labelTotalFpsPose->setText(TEXT_TOTAL_FPS);
 
@@ -441,7 +452,7 @@ void poseEstimation::runInference(const QVector<float> &receivedTensor, int rece
     else
         outputTensor = sortTensorBlazePose(receivedTensor, receivedStride);
 
-    uiPE->labelInference->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
+    uiPE->labelInferenceTimePE->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
 
     emit sendMatToView(receivedMat);
     if (continuousMode) {
@@ -476,7 +487,7 @@ void poseEstimation::stopContinuousMode()
     stopVideo();
     setButtonState(true);
 
-    uiPE->labelInference->setText(TEXT_INFERENCE);
+    uiPE->labelInferenceTimePE->setText(TEXT_INFERENCE);
     uiPE->labelTotalFpsPose->setText(TEXT_TOTAL_FPS);
     uiPE->graphicsViewPointProjection->scene()->clear();
 
@@ -510,7 +521,7 @@ void poseEstimation::triggerInference()
                 stopVideo();
             } else {
                 startVideo();
-                uiPE->labelInference->setText(TEXT_INFERENCE);
+                uiPE->labelInferenceTimePE->setText(TEXT_INFERENCE);
                 uiPE->labelTotalFpsPose->setText(TEXT_TOTAL_FPS);
                 uiPE->graphicsViewPointProjection->scene()->clear();
             }

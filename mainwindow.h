@@ -27,6 +27,9 @@
 #define TEXT_CAMERA_INIT_STATUS_ERROR "Camera Error!\n\n No camera detected, please check connection and relaunch application.\n\nApplication will now close."
 #define TEXT_CAMERA_OPENING_ERROR "Camera Error!\n\n Camera not Opening, please check connection and relaunch application.\n\nApplication will now close."
 #define TEXT_CAMERA_FAILURE_ERROR "Camera Error!\n\n Camera has stopped working, please check the connection and relaunch application.\n\nApplication will now close."
+#define TEXT_INFERENCE_ENGINE_TFLITE "TensorFlow Lite"
+#define TEXT_INFERENCE_ENGINE_ARMNN_DELEGATE "TensorFlow Lite + ArmNN Delegate"
+#define TEXT_INFERENCE_ENGINE_XNNPACK_DELEGATE "TensorFlow Lite + XNNPACK Delegate"
 
 #define IMAGE_FILE_FILTER "Images (*.bmp *.dib *.jpeg *.jpg *.jpe *.png *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif);;"
 #define VIDEO_FILE_FILTER "Videos (*.asf *.avi *.3gp *.mp4 *m4v *.mov *.flv *.mpeg *.mkv *.webm *.mxf *.ogg)"
@@ -142,7 +145,6 @@ private:
     void setupShoppingMode();
     void disconnectSignals();
     void checkInputMode();
-    void updateAIModelLabel();
     void setPoseEstimateDelegateType();
     void setFaceDetectDelegateType();
     QStringList readLabelFile(QString labelPath);
@@ -170,6 +172,7 @@ private:
     QString labelPath;
     QString labelOD;
     QString labelSB;
+    QString inferenceEngine;
     QStringList labelFileList;
     videoWorker *vidWorker;
     Board board;

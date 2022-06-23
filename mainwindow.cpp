@@ -205,9 +205,8 @@ void MainWindow::setupObjectDetectMode()
 {
     demoMode = OD;
     tfWorker->setDemoMode(demoMode);
-    updateAIModelLabel();
 
-    objectDetectMode = new objectDetection(ui, labelFileList);
+    objectDetectMode = new objectDetection(ui, labelFileList, modelPath, inferenceEngine);
 
     connect(this, SIGNAL(stopInference()), objectDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
     connect(ui->pushButtonLoadAIModelOD, SIGNAL(pressed()), this, SLOT(loadAIModel()));
@@ -225,9 +224,8 @@ void MainWindow::setupShoppingMode()
 {
     demoMode = SB;
     tfWorker->setDemoMode(demoMode);
-    updateAIModelLabel();
 
-    shoppingBasketMode = new shoppingBasket(ui, labelFileList, pricesPath);
+    shoppingBasketMode = new shoppingBasket(ui, labelFileList, pricesPath, modelPath, inferenceEngine);
 
     connect(ui->pushButtonLoadAIModelSB, SIGNAL(pressed()), this, SLOT(loadAIModel()));
     connect(ui->pushButtonProcessBasket, SIGNAL(pressed()), shoppingBasketMode, SLOT(processBasket()));
@@ -244,19 +242,10 @@ void MainWindow::setupShoppingMode()
 
 void MainWindow::setupPoseEstimateMode()
 {
-    PoseModel poseModel;
     demoMode = PE;
     tfWorker->setDemoMode(demoMode);
-    updateAIModelLabel();
 
-    if (modelPath.contains(IDENTIFIER_MOVE_NET))
-        poseModel = MoveNet;
-    else if (modelPath.contains(IDENTIFIER_HAND_POSE))
-        poseModel = HandPose;
-    else
-        poseModel = BlazePose;
-
-    poseEstimateMode = new poseEstimation(ui, poseModel);
+    poseEstimateMode = new poseEstimation(ui, modelPath, inferenceEngine);
 
     connect(this, SIGNAL(stopInference()), poseEstimateMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
     connect(ui->pushButtonStartStopPose, SIGNAL(pressed()), poseEstimateMode, SLOT(triggerInference()));
@@ -272,9 +261,8 @@ void MainWindow::setupFaceDetectMode()
 {
     demoMode = FD;
     tfWorker->setDemoMode(demoMode);
-    updateAIModelLabel();
 
-    faceDetectMode = new faceDetection(ui);
+    faceDetectMode = new faceDetection(ui, inferenceEngine);
 
     connect(this, SIGNAL(stopInference()), faceDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
     connect(ui->pushButtonStartStopFace, SIGNAL(pressed()), faceDetectMode, SLOT(triggerInference()));
@@ -302,6 +290,15 @@ void MainWindow::createTfWorker()
     tfWorker = new tfliteWorker(modelPath, delegateType, inferenceThreads);
 
     connect(tfWorker, SIGNAL(sendInferenceWarning(QString)), this, SLOT(inferenceWarning(QString)));
+
+    if (delegateType == armNN)
+        inferenceEngine = TEXT_INFERENCE_ENGINE_ARMNN_DELEGATE;
+    else if (delegateType == none)
+        inferenceEngine = TEXT_INFERENCE_ENGINE_TFLITE;
+    else if (delegateType == xnnpack)
+        inferenceEngine = TEXT_INFERENCE_ENGINE_XNNPACK_DELEGATE;
+    else
+        inferenceEngine = "Unknown inference engine";
 }
 
 void MainWindow::setPoseEstimateDelegateType()
@@ -316,7 +313,6 @@ void MainWindow::setPoseEstimateDelegateType()
             delegateType = none;
             ui->actionEnable_ArmNN_Delegate->setEnabled(false);
             ui->actionTensorFlow_Lite->setEnabled(false);
-            ui->labelDelegate->setText("TensorFlow Lite");
         } else {
             ui->actionEnable_ArmNN_Delegate->setEnabled(false);
         }
@@ -335,7 +331,6 @@ void MainWindow::setFaceDetectDelegateType()
         delegateType = none;
         ui->actionEnable_ArmNN_Delegate->setEnabled(false);
         ui->actionTensorFlow_Lite->setEnabled(false);
-        ui->labelDelegate->setText("TensorFlow Lite");
     } else {
         ui->actionEnable_ArmNN_Delegate->setEnabled(false);
     }
@@ -505,8 +500,6 @@ void MainWindow::on_actionEnable_ArmNN_Delegate_triggered()
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(true);
 #endif
 
-    ui->labelDelegate->setText("TensorFlow Lite + ArmNN delegate");
-
     remakeTfWorker();
 }
 
@@ -523,7 +516,6 @@ void MainWindow::on_actionTensorflow_Lite_XNNPack_delegate_triggered()
 
     ui->actionTensorFlow_Lite->setEnabled(true);
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(false);
-    ui->labelDelegate->setText("TensorFlow Lite + XNNPack Delegate");
 
     remakeTfWorker();
 }
@@ -543,8 +535,6 @@ void MainWindow::on_actionTensorFlow_Lite_triggered()
 #ifdef DUNFELL
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(true);
 #endif
-
-    ui->labelDelegate->setText("TensorFlow Lite");
 
     remakeTfWorker();
 }
@@ -909,13 +899,6 @@ void MainWindow::on_actionLoad_File_triggered()
 void MainWindow::getImageFrame()
 {
     emit sendMatToDraw(*cvWorker->getImage(1));
-}
-
-void MainWindow::updateAIModelLabel()
-{
-    QString modelName = modelPath.section('/', -1);
-
-    ui->labelAIModelFilename->setText(modelName);
 }
 
 QStringList MainWindow::readLabelFile(QString labelPath)

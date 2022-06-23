@@ -35,7 +35,7 @@ class objectDetection : public QObject
      Q_OBJECT
 
 public:
-    objectDetection(Ui::MainWindow *ui, QStringList labelFileList);
+    objectDetection(Ui::MainWindow *ui, QStringList labelFileList, QString modelPath, QString inferenceEngine);
     void setImageMode();
     void setVideoMode();
     void setCameraMode();

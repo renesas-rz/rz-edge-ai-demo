@@ -24,15 +24,18 @@
 #define ITEM_INDEX 4
 #define BOX_POINTS 4
 
-shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QString pricesFile)
+shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QString pricesFile, QString modelPath, QString inferenceEngine)
 {
     QFont font;
+    QString modelName;
+
     uiSB = ui;
     inputModeSB = cameraMode;
     labelList = labelFileList;
     costs = readPricesFile(pricesFile);
 
     font.setPointSize(EDGE_FONT_SIZE);
+    modelName = modelPath.section('/', -1);
 
     uiSB->actionShopping_Basket->setDisabled(true);
     uiSB->actionObject_Detection->setDisabled(false);
@@ -41,7 +44,9 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QS
     uiSB->actionLoad_Camera->setDisabled(true);
     uiSB->actionLoad_File->setText(TEXT_LOAD_IMAGE);
 
-    uiSB->labelInference->setText(TEXT_INFERENCE);
+    uiSB->labelAIModelFilenameSB->setText(modelName);
+    uiSB->labelInferenceEngineSB->setText(inferenceEngine);
+    uiSB->labelInferenceTimeSB->setText(TEXT_INFERENCE);
     uiSB->labelDemoMode->setText("Mode: Shopping Basket");
     uiSB->labelTotalItems->setText(TEXT_TOTAL_ITEMS);
 
@@ -116,7 +121,7 @@ void shoppingBasket::nextBasket()
     setNextButton(false);
 
     uiSB->tableWidget->setRowCount(0);
-    uiSB->labelInference->setText(TEXT_INFERENCE);
+    uiSB->labelInferenceTimeSB->setText(TEXT_INFERENCE);
     uiSB->labelTotalItems->setText(TEXT_TOTAL_ITEMS);
 
     if (inputModeSB == imageMode)
@@ -134,7 +139,7 @@ void shoppingBasket::processBasket()
     setNextButton(true);
 
     uiSB->tableWidget->setRowCount(0);
-    uiSB->labelInference->setText(TEXT_INFERENCE);
+    uiSB->labelInferenceTimeSB->setText(TEXT_INFERENCE);
 
     outputTensor.clear();
 
@@ -197,7 +202,7 @@ void shoppingBasket::runInference(QVector<float> receivedTensor, int receivedStr
         price->setTextAlignment(Qt::AlignRight);
     }
 
-    uiSB->labelInference->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
+    uiSB->labelInferenceTimeSB->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
     uiSB->tableWidget->insertRow(uiSB->tableWidget->rowCount());
 
     item = new QTableWidgetItem("Total Cost:");
@@ -228,7 +233,7 @@ void shoppingBasket::setImageMode(bool imageStatus)
         emit startVideo();
     }
     uiSB->actionLoad_Camera->setEnabled(imageStatus);
-    uiSB->labelInference->setText(TEXT_INFERENCE);
+    uiSB->labelInferenceTimeSB->setText(TEXT_INFERENCE);
     uiSB->labelTotalItems->setText(TEXT_TOTAL_ITEMS);
     uiSB->tableWidget->setRowCount(0);
     setProcessButton(true);

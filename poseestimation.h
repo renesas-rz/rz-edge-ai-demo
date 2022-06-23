@@ -40,7 +40,7 @@ class poseEstimation : public QObject
     Q_OBJECT
 
 public:
-    poseEstimation(Ui::MainWindow *ui, PoseModel poseModel);
+    poseEstimation(Ui::MainWindow *ui, QString modelPath, QString inferenceEngine);
     void setCameraMode();
     void setImageMode();
     void setVideoMode();
