@@ -19,9 +19,6 @@
 #include "poseestimation.h"
 #include "ui_mainwindow.h"
 
-#include <cmath>
-#include <math.h>
-
 #include <QEventLoop>
 #include <QGraphicsScene>
 #include <QGraphicsTextItem>
