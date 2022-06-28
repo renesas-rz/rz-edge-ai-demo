@@ -67,12 +67,12 @@ objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList)
 
 void objectDetection::setButtonState(bool enable)
 {
-    if (enable) {
-        buttonState = true;
+    buttonState = enable;
+
+    if (buttonState) {
         uiOD->pushButtonStartStop->setText("Start\nInference");
         uiOD->pushButtonStartStop->setStyleSheet(BUTTON_BLUE);
     } else {
-        buttonState = false;
         uiOD->pushButtonStartStop->setText("Stop\nInference");
         uiOD->pushButtonStartStop->setStyleSheet(BUTTON_RED);
     }

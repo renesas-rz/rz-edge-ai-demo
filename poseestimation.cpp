@@ -60,6 +60,9 @@ poseEstimation::poseEstimation(Ui::MainWindow *ui, PoseModel poseModel)
 
     utilPE = new edgeUtils();
 
+    frameHeight = GRAPHICS_VIEW_HEIGHT;
+    frameWidth = GRAPHICS_VIEW_WIDTH;
+
     uiPE->actionShopping_Basket->setDisabled(false);
     uiPE->actionObject_Detection->setDisabled(false);
     uiPE->actionPose_Estimation->setDisabled(true);
@@ -80,12 +83,12 @@ poseEstimation::poseEstimation(Ui::MainWindow *ui, PoseModel poseModel)
 
 void poseEstimation::setButtonState(bool enable)
 {
-    if (enable) {
-        buttonState = true;
+    buttonState = enable;
+
+    if (buttonState) {
         uiPE->pushButtonStartStopPose->setText("Start\nInference");
         uiPE->pushButtonStartStopPose->setStyleSheet(BUTTON_BLUE);
     } else {
-        buttonState = false;
         uiPE->pushButtonStartStopPose->setText("Stop\nInference");
         uiPE->pushButtonStartStopPose->setStyleSheet(BUTTON_RED);
     }
@@ -403,6 +406,8 @@ void poseEstimation::drawLimbsHandPose(const QVector<float> &outputTensor, bool 
 void poseEstimation::connectLimbs(int limb1, int limb2, bool drawGraphicalViewLimbs)
 {
     QPen pen;
+    bool nanLimb1;
+    bool nanLimb2;
 
     if (poseModelSet == HandPose) {
         pen.setWidth(PEN_WIDTH_HAND_POSE);
@@ -412,13 +417,16 @@ void poseEstimation::connectLimbs(int limb1, int limb2, bool drawGraphicalViewLi
         pen.setColor(LINE_RED);
     }
 
-    if (std::isnan(xCoordinate[limb1]) == false && std::isnan(yCoordinate[limb1]) == false) {
-        if (std::isnan(xCoordinate[limb2]) == false && std::isnan(yCoordinate[limb2]) == false) {
-                    if (drawGraphicalViewLimbs)
-                    uiPE->graphicsViewPointProjection->scene()->addLine(xCoordinate[limb1], yCoordinate[limb1], xCoordinate[limb2], yCoordinate[limb2], pen);
-                    else
-            		uiPE->graphicsView->scene()->addLine(xCoordinate[limb1], yCoordinate[limb1], xCoordinate[limb2], yCoordinate[limb2], pen);
-    	}
+    nanLimb1 = std::isnan(xCoordinate[limb1]) && std::isnan(yCoordinate[limb1]);
+    nanLimb2 = std::isnan(xCoordinate[limb2]) && std::isnan(yCoordinate[limb2]);
+
+    if (!nanLimb1 || !nanLimb2) {
+        QLine *lineToDraw = new QLine(xCoordinate[limb1], yCoordinate[limb1], xCoordinate[limb2], yCoordinate[limb2]);
+
+        if (drawGraphicalViewLimbs)
+            uiPE->graphicsViewPointProjection->scene()->addLine(*lineToDraw, pen);
+        else
+            uiPE->graphicsView->scene()->addLine(*lineToDraw, pen);
     }
 }
 
