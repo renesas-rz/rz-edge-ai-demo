@@ -65,6 +65,8 @@ poseEstimation::poseEstimation(Ui::MainWindow *ui, PoseModel poseModel)
     poseModelSet = poseModel;
     buttonState = true;
 
+    utilPE = new edgeUtils();
+
     uiPE->actionShopping_Basket->setDisabled(false);
     uiPE->actionObject_Detection->setDisabled(false);
     uiPE->actionPose_Estimation->setDisabled(true);
@@ -428,6 +430,8 @@ void poseEstimation::connectLimbs(int limb1, int limb2, bool drawGraphicalViewLi
 
 void poseEstimation::runInference(const QVector<float> &receivedTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat)
 {
+    float totalFps;
+
     if (poseModelSet == MoveNet)
         outputTensor = sortTensorMoveNet(receivedTensor, receivedStride);
     else if (poseModelSet == HandPose)
@@ -440,8 +444,11 @@ void poseEstimation::runInference(const QVector<float> &receivedTensor, int rece
     emit sendMatToView(receivedMat);
     if (continuousMode) {
         /* Stop Total FPS timer and display it to GUI, then restart timer before getting the next frame */
-        timeTotalFps(false);
-        timeTotalFps(true);
+        utilPE->timeTotalFps(false);
+        totalFps = utilPE->calculateTotalFps();
+        uiPE->labelTotalFpsPose->setText(TEXT_TOTAL_FPS + QString::number(double(totalFps), 'f', 1));
+        utilPE->timeTotalFps(true);
+
         emit getFrame();
     } else {
         setButtonState(true);
@@ -475,26 +482,6 @@ void poseEstimation::stopContinuousMode()
         emit startVideo();
 }
 
-void poseEstimation::timeTotalFps(bool startingTimer)
-{
-    if (startingTimer) {
-        /* Start the timer to measure Total FPS */
-        startTime = std::chrono::high_resolution_clock::now();
-    } else {
-        /* Stop timer, calculate Total FPS and display to GUI */
-        std::chrono::high_resolution_clock::time_point stopTime = std::chrono::high_resolution_clock::now();
-        int timeElapsed = int(std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
-        displayTotalFps(timeElapsed);
-    }
-}
-
-void poseEstimation::displayTotalFps(int totalProcessTime)
-{
-    float totalFps = 1000.0 / totalProcessTime;
-
-    uiPE->labelTotalFpsPose->setText(TEXT_TOTAL_FPS + QString::number(double(totalFps), 'f', 1));
-}
-
 void poseEstimation::triggerInference()
 {
     if (inputModePE == imageMode) {
@@ -508,7 +495,7 @@ void poseEstimation::triggerInference()
         if (buttonState) {
             continuousMode = true;
 
-            timeTotalFps(true);
+            utilPE->timeTotalFps(true);
             setButtonState(false);
             stopVideo();
             emit getFrame();

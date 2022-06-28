@@ -19,6 +19,10 @@
 #ifndef EDGEUTILS_H
 #define EDGEUTILS_H
 
+#include <QObject>
+
+#include <chrono>
+
 #define BUTTON_BLUE "background-color: rgba(42, 40, 157);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
 #define BUTTON_GREYED_OUT "background-color: rgba(42, 40, 157, 90);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
 #define BUTTON_RED "background-color: rgba(255, 0, 0);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
@@ -35,5 +39,18 @@
 enum Board { G2E, G2L, G2LC, G2M, Unknown };
 enum Input { cameraMode, imageMode, videoMode };
 enum Mode { SB, OD, PE };
+
+class edgeUtils : public QObject
+{
+    Q_OBJECT
+
+public:
+    edgeUtils();
+    void timeTotalFps(bool startingTimer);
+    float calculateTotalFps();
+
+    std::chrono::high_resolution_clock::time_point startTime;
+    int totalProcessTime;
+};
 
 #endif // EDGEUTILS_H

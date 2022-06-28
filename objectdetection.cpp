@@ -35,6 +35,8 @@ objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList)
     inputModeOD = cameraMode;
     labelList = labelFileList;
 
+    utilOD = new edgeUtils();
+
     uiOD->actionShopping_Basket->setDisabled(false);
     uiOD->actionObject_Detection->setDisabled(true);
     uiOD->actionPose_Estimation->setDisabled(false);
@@ -90,7 +92,7 @@ void objectDetection::triggerInference()
         if (buttonState) {
             continuousMode = true;
 
-            timeTotalFps(true);
+            utilOD->timeTotalFps(true);
             setButtonState(false);
             stopVideo();
 
@@ -141,6 +143,8 @@ QVector<float> objectDetection::sortTensor(QVector<float> &receivedTensor, int r
 
 void objectDetection::runInference(QVector<float> receivedTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat)
 {
+    float totalFps;
+
     outputTensor = sortTensor(receivedTensor, receivedStride);
 
     uiOD->labelInference->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
@@ -151,8 +155,11 @@ void objectDetection::runInference(QVector<float> receivedTensor, int receivedSt
 
     if (continuousMode) {
         /* Stop Total FPS timer and display it to GUI, then restart timer before getting the next frame */
-        timeTotalFps(false);
-        timeTotalFps(true);
+        utilOD->timeTotalFps(false);
+        totalFps = utilOD->calculateTotalFps();
+        uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS + QString::number(double(totalFps), 'f', 1));
+        utilOD->timeTotalFps(true);
+
         emit getFrame();
     } else {
         setButtonState(true);
@@ -213,26 +220,6 @@ void objectDetection::setVideoMode()
 
     uiOD->actionLoad_Camera->setEnabled(true);
     uiOD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
-}
-
-void objectDetection::timeTotalFps(bool startingTimer)
-{
-    if (startingTimer) {
-        /* Start the timer to measure Total FPS */
-        startTime = std::chrono::high_resolution_clock::now();
-    } else {
-        /* Stop timer, calculate Total FPS and display to GUI */
-        std::chrono::high_resolution_clock::time_point stopTime = std::chrono::high_resolution_clock::now();
-        int timeElapsed = int(std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
-        displayTotalFps(timeElapsed);
-    }
-}
-
-void objectDetection::displayTotalFps(int totalProcessTime)
-{
-    float totalFps = 1000.0/totalProcessTime;
-
-    uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS + QString::number(double(totalFps), 'f', 1));
 }
 
 void objectDetection::stopContinuousMode()

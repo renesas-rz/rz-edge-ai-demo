@@ -21,6 +21,7 @@ QT += core gui multimedia widgets
 CONFIG += c++14
 
 SOURCES += \
+    edge-utils.cpp \
     main.cpp \
     mainwindow.cpp \
     objectdetection.cpp \

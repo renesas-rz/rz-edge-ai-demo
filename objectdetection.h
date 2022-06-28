@@ -21,7 +21,6 @@
 
 #include <QMainWindow>
 
-#include <chrono>
 #include <opencv2/videoio.hpp>
 
 #include "edge-utils.h"
@@ -30,6 +29,7 @@
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"
 
 class QGraphicsScene;
+class edgeUtils;
 
 namespace Ui { class MainWindow; }
 
@@ -59,17 +59,15 @@ private slots:
 
 private:
     void setButtonState(bool enable);
-    void displayTotalFps(int totalProcessTime);
-    void timeTotalFps(bool startingTimer);
     QVector<float> sortTensor(QVector<float> &receivedTensor, int receivedStride);
     void updateObjectList(const QVector<float> receivedList);
 
     Ui::MainWindow *uiOD;
+    edgeUtils *utilOD;
     QVector<float> outputTensor;
     bool buttonState;
     bool continuousMode;
     QStringList labelList;
-    std::chrono::high_resolution_clock::time_point startTime;
     Input inputModeOD;
 };
 

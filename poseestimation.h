@@ -21,7 +21,6 @@
 
 #include <QMainWindow>
 
-#include <chrono>
 #include <opencv2/videoio.hpp>
 
 #include "edge-utils.h"
@@ -32,6 +31,8 @@
 
 #define TEXT_LOAD_FILE "Load Image/Video"
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"
+
+class edgeUtils;
 
 namespace Ui { class MainWindow; }
 
@@ -68,16 +69,14 @@ private:
     void drawLimbsBlazePose(const QVector<float>& outputTensor, bool updateGraphicalView);
     void drawLimbsHandPose(const QVector<float>& outputTensor, bool updateGraphicalView);
     void connectLimbs(int limb1, int limb2, bool drawGraphicalViewLimbs);
-    void displayTotalFps(int totalProcessTime);
-    void timeTotalFps(bool startingTimer);
 
     Ui::MainWindow *uiPE;
     Input inputModePE;
     PoseModel poseModelSet;
+    edgeUtils *utilPE;
     QVector<float> outputTensor;
     QVector<float> xCoordinate;
     QVector<float> yCoordinate;
-    std::chrono::high_resolution_clock::time_point startTime;
     bool continuousMode;
     bool buttonState;
     int frameHeight;
