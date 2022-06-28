@@ -32,6 +32,14 @@
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"
 #define TEXT_TOTAL_FPS "Total FPS: "
 
+#define BOX_GREEN Qt::green
+#define DOT_GREEN Qt::green
+#define DOT_RED Qt::red
+#define LINE_BLUE Qt::blue
+#define LINE_GREEN Qt::green
+#define LINE_RED Qt::red
+#define TEXT_GREEN Qt::green
+
 #define GRAPHICS_VIEW_HEIGHT 600
 #define GRAPHICS_VIEW_WIDTH 800
 

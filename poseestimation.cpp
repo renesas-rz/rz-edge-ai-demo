@@ -50,10 +50,6 @@ enum HandPosePoints { HP_WRIST, HP_THUMB_CMC, HP_THUMB_MCP, HP_THUMB_IP, HP_THUM
 
 #define PEN_WIDTH 2
 #define PEN_WIDTH_HAND_POSE 3
-#define DOT_COLOUR Qt::green
-#define DOT_COLOUR_HAND_POSE Qt::green
-#define LINE_COLOUR Qt::red
-#define LINE_COLOUR_HAND_POSE Qt::blue
 
 poseEstimation::poseEstimation(Ui::MainWindow *ui, PoseModel poseModel)
 {
@@ -224,7 +220,7 @@ void poseEstimation::drawLimbsMoveNet(const QVector<float> &outputTensor, bool u
         float x = xCoordinate[i];
         float y = yCoordinate[i];
 
-        pen.setColor(DOT_COLOUR);
+        pen.setColor(DOT_GREEN);
 
         if (x >= 0 && y >= 0) {
             if (updateGraphicalView)
@@ -316,7 +312,7 @@ void poseEstimation::drawLimbsBlazePose(const QVector<float> &outputTensor, bool
         float x = xCoordinate[i];
         float y = yCoordinate[i];
 
-        pen.setColor(DOT_COLOUR);
+        pen.setColor(DOT_GREEN);
 
         if (x >= 0 && y >= 0) {
             if (updateGraphicalView)
@@ -393,7 +389,7 @@ void poseEstimation::drawLimbsHandPose(const QVector<float> &outputTensor, bool 
         float x = xCoordinate[i];
         float y = yCoordinate[i];
 
-        pen.setColor(DOT_COLOUR_HAND_POSE);
+        pen.setColor(DOT_GREEN);
 
         if (x >= 0 && y >= 0) {
             if (updateGraphicalView)
@@ -410,10 +406,10 @@ void poseEstimation::connectLimbs(int limb1, int limb2, bool drawGraphicalViewLi
 
     if (poseModelSet == HandPose) {
         pen.setWidth(PEN_WIDTH_HAND_POSE);
-        pen.setColor(LINE_COLOUR_HAND_POSE);
+        pen.setColor(LINE_BLUE);
     } else {
         pen.setWidth(PEN_WIDTH);
-        pen.setColor(LINE_COLOUR);
+        pen.setColor(LINE_RED);
     }
 
     if (std::isnan(xCoordinate[limb1]) == false && std::isnan(yCoordinate[limb1]) == false) {

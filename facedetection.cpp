@@ -26,8 +26,6 @@
 #define FACE_LANDMARK_INPUT_SIZE 192.0
 
 #define PEN_THICKNESS 2
-#define DOT_COLOUR Qt::red
-#define LINE_COLOUR Qt::green
 
 #define DETECT_THRESHOLD_FACE 0.5
 
@@ -181,7 +179,7 @@ void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, b
             float x = xCoordinate[i];
             float y = yCoordinate[i];
 
-            pen.setColor(DOT_COLOUR);
+            pen.setColor(DOT_RED);
 
             if (x >= 0 && y >= 0) {
                 if (updateGraphicalView)
@@ -200,7 +198,7 @@ void faceDetection::connectLandmarks(int landmark1, int landmark2, bool drawGrap
     bool nanLandmark2;
 
     pen.setWidth(PEN_THICKNESS);
-    pen.setColor(LINE_COLOUR);
+    pen.setColor(LINE_GREEN);
 
     nanLandmark1 = std::isnan(xCoordinate[landmark1]) && std::isnan(yCoordinate[landmark1]);
     nanLandmark2 = std::isnan(xCoordinate[landmark2]) && std::isnan(yCoordinate[landmark2]);

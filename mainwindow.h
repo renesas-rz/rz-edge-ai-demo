@@ -70,8 +70,6 @@
 #define TABLE_COLUMN_WIDTH 180
 #define GRAPHICS_VIEW_EXCESS_SPACE 2 //Prevents the image from scaling outside the graphics view
 #define BOX_WIDTH 2
-#define BOX_COLOUR Qt::green
-#define TEXT_COLOUR Qt::green
 #define MIPI_VIDEO_DELAY 50
 
 /* Application exit codes */

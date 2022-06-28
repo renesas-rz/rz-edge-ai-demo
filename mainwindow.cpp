@@ -367,7 +367,7 @@ void MainWindow::drawBoxes(const QVector<float>& outputTensor, QStringList label
             float xmax = outputTensor[i + 3] * float(scene->width());
             float scorePercentage = outputTensor[i + CONFIDENCE_OFFSET_SSD] * 100;
 
-            pen.setColor(BOX_COLOUR);
+            pen.setColor(BOX_GREEN);
             pen.setWidth(BOX_WIDTH);
 
             itemName->setHtml(QString("<div style='background:rgba(0, 0, 0, 100%);font-size:xx-large;'>" +
@@ -375,7 +375,7 @@ void MainWindow::drawBoxes(const QVector<float>& outputTensor, QStringList label
                                       QString::number(double(scorePercentage), 'f', 1) + "%") +
                                       QString("</div>")));
             itemName->setPos(xmin, ymin);
-            itemName->setDefaultTextColor(TEXT_COLOUR);
+            itemName->setDefaultTextColor(TEXT_GREEN);
             itemName->setZValue(1);
 
             scene->addRect(double(xmin), double(ymin), double(xmax - xmin), double(ymax - ymin), pen, brush);
