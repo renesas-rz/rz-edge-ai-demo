@@ -35,6 +35,7 @@ tfliteWorker::tfliteWorker(QString modelLocation, Delegate delegateType, int def
     tflite::ops::builtin::BuiltinOpResolver tfliteResolver;
     TfLiteIntArray *wantedDimensions;
     this->delegateType = delegateType;
+    modelName = modelLocation;
 
     tfliteModel = tflite::FlatBufferModel::BuildFromFile(modelLocation.toStdString().c_str());
     tflite::InterpreterBuilder(*tfliteModel, tfliteResolver) (&tfliteInterpreter);
@@ -169,7 +170,12 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
     }
 
     timeElapsed = int(std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
-    emit sendOutputTensor(outputTensor, itemStride, timeElapsed, sentMat);
+
+    if (modeSelected == FD && modelName == MODEL_PATH_FD_FACE_LANDMARK)
+        emit sendOutputTensorImageless(outputTensor, itemStride, timeElapsed);
+    else
+        emit sendOutputTensor(outputTensor, itemStride, timeElapsed, sentMat);
+
     outputTensor.clear();
 }
 

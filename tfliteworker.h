@@ -48,12 +48,13 @@ public:
 
 signals:
     void sendOutputTensor(const QVector<float>&, int, int, const cv::Mat&);
+    void sendOutputTensorImageless(const QVector<float>&, int, int);
     void sendInferenceWarning(QString warningMessage);
 
 private:
     std::unique_ptr<tflite::Interpreter> tfliteInterpreter;
     std::unique_ptr<tflite::FlatBufferModel> tfliteModel;
-    std::string modelName;
+    QString modelName;
     Delegate delegateType;
     Mode modeSelected;
 #ifdef DUNFELL

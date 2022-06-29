@@ -27,6 +27,9 @@
 #define BUTTON_GREYED_OUT "background-color: rgba(42, 40, 157, 90);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
 #define BUTTON_RED "background-color: rgba(255, 0, 0);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
 
+#define MODEL_PATH_FD_FACE_DETECTION "/opt/rz-edge-ai-demo/models/face_detection_short_range.tflite"
+#define MODEL_PATH_FD_FACE_LANDMARK "/opt/rz-edge-ai-demo/models/face_landmark.tflite"
+
 #define TEXT_INFERENCE "Inference Time: "
 #define TEXT_LOAD_FILE "Load Image/Video"
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"

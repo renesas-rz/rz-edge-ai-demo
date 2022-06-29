@@ -260,7 +260,8 @@ void MainWindow::setupPoseEstimateMode()
 void MainWindow::setupFaceDetectMode()
 {
     demoMode = FD;
-    tfWorker->setDemoMode(demoMode);
+    tfWorkerFaceDetection->setDemoMode(demoMode);
+    tfWorkerFaceLandmark->setDemoMode(demoMode);
 
     faceDetectMode = new faceDetection(ui, inferenceEngine);
 
@@ -268,10 +269,13 @@ void MainWindow::setupFaceDetectMode()
     connect(ui->pushButtonStartStopFace, SIGNAL(pressed()), faceDetectMode, SLOT(triggerInference()));
     connect(faceDetectMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
     connect(faceDetectMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
+    connect(faceDetectMode, SIGNAL(sendMatForInference(cv::Mat,bool)), this, SLOT(runFaceInference(cv::Mat,bool)));
     connect(faceDetectMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
     connect(faceDetectMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
-    connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, int, const cv::Mat&)),
-            faceDetectMode, SLOT(runInference(QVector<float>, int, int, cv::Mat)));
+    connect(tfWorkerFaceDetection, SIGNAL(sendOutputTensor(QVector<float>,int,int,cv::Mat)),
+            faceDetectMode, SLOT(cropImageFace(QVector<float>,int,int,cv::Mat)));
+    connect(tfWorkerFaceLandmark, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
+            faceDetectMode, SLOT(runInference(QVector<float>, int, int)));
 }
 
 void MainWindow::createVideoWorker()
@@ -287,9 +291,22 @@ void MainWindow::createTfWorker()
      * of the same type logically group first, which for the RZ/G2L and
      * RZ/G2M is 2 */
     int inferenceThreads = 2;
-    tfWorker = new tfliteWorker(modelPath, delegateType, inferenceThreads);
 
-    connect(tfWorker, SIGNAL(sendInferenceWarning(QString)), this, SLOT(inferenceWarning(QString)));
+    if (demoMode == FD) {
+        /*
+         * Face Detection mode creates two tfliteWorker objects to run the
+         * face detection and face landmark models
+         */
+        tfWorkerFaceDetection = new tfliteWorker(MODEL_PATH_FD_FACE_DETECTION, delegateType, inferenceThreads);
+        tfWorkerFaceLandmark = new tfliteWorker(MODEL_PATH_FD_FACE_LANDMARK, delegateType, inferenceThreads);
+
+        connect(tfWorkerFaceDetection, SIGNAL(sendInferenceWarning(QString)), this, SLOT(inferenceWarning(QString)));
+        connect(tfWorkerFaceLandmark, SIGNAL(sendInferenceWarning(QString)), this, SLOT(inferenceWarning(QString)));
+    } else {
+        tfWorker = new tfliteWorker(modelPath, delegateType, inferenceThreads);
+
+        connect(tfWorker, SIGNAL(sendInferenceWarning(QString)), this, SLOT(inferenceWarning(QString)));
+    }
 
     if (delegateType == armNN)
         inferenceEngine = TEXT_INFERENCE_ENGINE_ARMNN_DELEGATE;
@@ -464,13 +481,34 @@ void MainWindow::processFrame()
             errorPopup(TEXT_CAMERA_FAILURE_ERROR, EXIT_CAMERA_STOPPED_ERROR);
         }
     } else {
-        tfWorker->receiveImage(*image);
+        if (demoMode == FD)
+            faceDetectMode->processFace(*image);
+        else
+            tfWorker->receiveImage(*image);
+    }
+}
+
+void MainWindow::runFaceInference(const cv::Mat &receivedMat, bool useFaceDetection)
+{
+    if (useFaceDetection)
+        tfWorkerFaceDetection->receiveImage(receivedMat);
+    else
+        tfWorkerFaceLandmark->receiveImage(receivedMat);
+}
+
+void MainWindow::deleteTfWorker()
+{
+    if (demoMode == FD) {
+        delete tfWorkerFaceDetection;
+        delete tfWorkerFaceLandmark;
+    } else {
+        delete tfWorker;
     }
 }
 
 void MainWindow::remakeTfWorker()
 {
-    delete tfWorker;
+    deleteTfWorker();
     createTfWorker();
     disconnectSignals();
 
@@ -600,6 +638,10 @@ void MainWindow::on_actionShopping_Basket_triggered()
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
 
+    deleteTfWorker();
+    disconnectSignals();
+
+    demoMode = SB;
     inputMode = cameraMode;
     modelPath = modelSB;
     labelPath = labelSB;
@@ -610,10 +652,7 @@ void MainWindow::on_actionShopping_Basket_triggered()
     else
         iterations = 2;
 
-    delete tfWorker;
     createTfWorker();
-
-    disconnectSignals();
     setupShoppingMode();
 
     cvWorker->useCameraMode();
@@ -643,6 +682,10 @@ void MainWindow::on_actionObject_Detection_triggered()
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
 
+    deleteTfWorker();
+    disconnectSignals();
+
+    demoMode = OD;
     inputMode = cameraMode;
     modelPath = modelOD;
     labelPath = labelOD;
@@ -650,10 +693,7 @@ void MainWindow::on_actionObject_Detection_triggered()
 
     iterations = 1;
 
-    delete tfWorker;
     createTfWorker();
-
-    disconnectSignals();
     setupObjectDetectMode();
 
     ui->menuInput->menuAction()->setVisible(true);
@@ -672,16 +712,16 @@ void MainWindow::on_actionPose_Estimation_triggered()
         modelOD = modelPath;
     }
 
+    deleteTfWorker();
+    disconnectSignals();
+
+    demoMode = PE;
     modelPath = modelPE;
     inputMode = cameraMode;
     iterations = 1;
 
     setPoseEstimateDelegateType();
-
-    delete tfWorker;
     createTfWorker();
-
-    disconnectSignals();
     setupPoseEstimateMode();
 
     ui->menuInput->menuAction()->setVisible(true);
@@ -702,16 +742,16 @@ void MainWindow::on_actionFace_Detection_triggered()
         modelPE = modelPath;
     }
 
+    deleteTfWorker();
+    disconnectSignals();
+
+    demoMode = FD;
     modelPath = MODEL_PATH_FD_FACE_LANDMARK;
     inputMode = cameraMode;
     iterations = 1;
 
     setFaceDetectDelegateType();
-
-    delete tfWorker;
     createTfWorker();
-
-    disconnectSignals();
     setupFaceDetectMode();
 
     ui->menuInput->menuAction()->setVisible(true);

@@ -19,15 +19,22 @@
 #include "facedetection.h"
 #include "ui_mainwindow.h"
 
+#include <opencv2/imgproc/imgproc.hpp>
+
 #include <QEventLoop>
 #include <QGraphicsScene>
 #include <QGraphicsTextItem>
 
+#define FACE_DETECTION_BOX_INDEX 4
+#define FACE_DETECTION_INPUT_SIZE 128.0
+#define FACE_DETECTION_OUTPUT_INDEX 16
 #define FACE_LANDMARK_INPUT_SIZE 192.0
 
 #define PEN_THICKNESS 2
 
 #define DETECT_THRESHOLD_FACE 0.5
+#define ANCHOR_CENTER 0.5
+#define DETECT_BOUNDING_BOX_INCREASE 0.1 //Needed to ensure crop contains entire face
 
 faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine)
 {
@@ -50,7 +57,8 @@ faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine)
 
     uiFD->labelAIModelFilenameFD->setText(TEXT_FACE_MODEL);
     uiFD->labelInferenceEngineFD->setText(inferenceEngine);
-    uiFD->labelInferenceTimeFD->setText(TEXT_INFERENCE);
+    uiFD->labelInferenceTimeFaceDetect->setText(TEXT_INFERENCE_FACE_DETECTION);
+    uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK);
     uiFD->labelDemoMode->setText("Mode: Face Detection");
     uiFD->labelTotalFpsPose->setText(TEXT_TOTAL_FPS);
 
@@ -132,15 +140,26 @@ void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, b
 
     pen.setWidth(PEN_THICKNESS);
 
+    int pointPlotHeight = uiFD->graphicsViewPointPlotFace->height();
+    int pointPlotWidth = uiFD->graphicsViewPointPlotFace->width();
+
     if (updateGraphicalView) {
-        /* Scale the dimensions down by 2 */
-        displayHeight = frameHeight / 2;
-        displayWidth = frameWidth / 2;
+        /*
+         * Scale the dimensions down by 1.5 when the face is larger than the
+         * 2D Point Projection
+         */
+        if (faceHeight > pointPlotHeight || faceWidth > pointPlotWidth) {
+            displayHeight = faceHeight / 1.5;
+            displayWidth = faceWidth / 1.5;
+        } else {
+            displayHeight = faceHeight;
+            displayWidth = faceWidth;
+        }
 
         scenePointProjection->clear();
     } else {
-        displayHeight = frameHeight;
-        displayWidth = frameWidth;
+        displayHeight = faceHeight;
+        displayWidth = faceWidth;
     }
 
     float widthMultiplier = float(displayWidth) / FACE_LANDMARK_INPUT_SIZE;
@@ -150,6 +169,15 @@ void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, b
     for (int i = 0; i < outputTensor.size(); i += 2) {
         float y = outputTensor[i] * heightMultiplier;
         float x = outputTensor[i + 1] * widthMultiplier;
+
+        /*
+         * Ensure coordinates drawn onto image frame are relative to the cropping
+         * region of the original image
+         */
+        if (!updateGraphicalView) {
+            y += faceTopLeftY;
+            x += faceTopLeftX;
+        }
 
         xCoordinate.push_back(x);
         yCoordinate.push_back(y);
@@ -215,15 +243,16 @@ void faceDetection::connectLandmarks(int landmark1, int landmark2, bool drawGrap
     }
 }
 
-void faceDetection::runInference(const QVector<float> &receivedTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat)
+void faceDetection::runInference(const QVector<float> &receivedTensor, int receivedStride, int receivedTimeElapsed)
 {
     float totalFps;
 
     outputTensor = sortTensorFaceLandmark(receivedTensor, receivedStride);
 
-    uiFD->labelInferenceTimeFD->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
+    uiFD->labelInferenceTimeFaceDetect->setText(TEXT_INFERENCE_FACE_DETECTION + QString("%1 ms").arg(timeElaspedFaceDetection));
+    uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK + QString("%1 ms").arg(receivedTimeElapsed));
 
-    emit sendMatToView(receivedMat);
+    emit sendMatToView(resizedMat);
 
     if (continuousMode) {
         /* Stop Total FPS timer and display it to GUI, then restart timer before getting the next frame */
@@ -242,6 +271,159 @@ void faceDetection::runInference(const QVector<float> &receivedTensor, int recei
     drawPointsFaceLandmark(outputTensor, true);
 }
 
+void faceDetection::processFace(const cv::Mat &matToProcess)
+{
+    cv::Mat croppedFaceMat;
+
+    /* Resize cv::Mat and run inference using Face Detection model */
+    cv::resize(matToProcess, resizedMat, cv::Size(frameWidth, frameHeight));
+
+    emit sendMatForInference(resizedMat, true);
+
+    /*
+     * Crop cv::Mat using coordinates provided by Face Detection and
+     * run inference using Face Landmark model
+     */
+    cv::Rect cropRegionFace(faceTopLeftX, faceTopLeftY, faceWidth, faceHeight);
+
+    croppedFaceMat = resizedMat(cropRegionFace);
+
+    emit sendMatForInference(croppedFaceMat, false);
+}
+
+void faceDetection::cropImageFace(const QVector<float> &faceDetectOutputTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat)
+{
+    QVector<QPair<float, float>> anchorCoords;
+    QVector<float> coordinatesTensor;
+    QVector<float> confidenceTensor;
+    QVector<float> croppedFaceDims;
+    float inputImageHeight = receivedMat.rows;
+    float inputImageWidth = receivedMat.cols;
+    float faceDetectScaleHeight = inputImageHeight / FACE_DETECTION_INPUT_SIZE;
+    float faceDetectScaleWidth = inputImageWidth / FACE_DETECTION_INPUT_SIZE;
+
+    timeElaspedFaceDetection = receivedTimeElapsed;
+
+    anchorCoords = generateAnchorCoords(inputImageHeight, inputImageWidth);
+
+    for (int j = receivedStride; j < faceDetectOutputTensor.size(); j ++) {
+        int iteration = j - receivedStride;
+
+        /* Calculate confidence probability by applying sigmoid function */
+        float confidenceLevel = 1 / (1 + exp(-faceDetectOutputTensor.at(j)));
+
+        if (confidenceLevel > DETECT_THRESHOLD_FACE && confidenceLevel <= 1.0) {
+            /*
+             * BlazeFace outputs the x and y coordinates as offsets from an anchor point, so
+             * the anchor coordinates must be added to the values
+             */
+            float yCenter = faceDetectOutputTensor.at(iteration * FACE_DETECTION_OUTPUT_INDEX) + anchorCoords.at(iteration).second;
+            float xCenter = faceDetectOutputTensor.at(iteration * FACE_DETECTION_OUTPUT_INDEX + 1) + anchorCoords.at(iteration).first;
+            float height = faceDetectOutputTensor.at(iteration * FACE_DETECTION_OUTPUT_INDEX + 2);
+            float width = faceDetectOutputTensor.at(iteration * FACE_DETECTION_OUTPUT_INDEX + 3);
+
+            /*
+             * Scale coordinates to the input image and provide the top left coordinates
+             * along with the height and width of the box
+             */
+            float xTopLeft = (xCenter - 2 * width);
+            float yTopLeft = (yCenter - 2 * height);
+            float scaledWidth = width * faceDetectScaleWidth;
+            float scaledHeight = height * faceDetectScaleHeight;
+
+            coordinatesTensor.push_back(xTopLeft);
+            coordinatesTensor.push_back(yTopLeft);
+            coordinatesTensor.push_back(scaledWidth);
+            coordinatesTensor.push_back(scaledHeight);
+            confidenceTensor.push_back(confidenceLevel);
+        }
+    }
+
+    croppedFaceDims = sortBoundingBoxes(confidenceTensor, coordinatesTensor);
+
+    setFaceCropDims(croppedFaceDims);
+}
+
+QVector<QPair<float, float>> faceDetection::generateAnchorCoords(int inputHeight, int inputWidth)
+{
+    /* BlazeFace uses two Conv layers (16x16, 8x8) for anchor computation */
+    QVector<int> anchorGridDims = {16, 8};
+    QVector<int> anchorTotalPoints = {2, 6};
+    QPair<float, float> anchor;
+    QVector<QPair<float, float>> anchorList;
+
+    /* Get x and y anchor coordinates and store the points to a QVector */
+    for (int i = 0; i < anchorGridDims.size(); i++) {
+        int gridSize = anchorGridDims.at(i);
+        float strideHeight = inputHeight / gridSize;
+        float strideWidth = inputWidth / gridSize;
+        int anchorAmount = anchorTotalPoints.at(i);
+
+        for (int y = 0; y < gridSize; y++) {
+            anchor.second = strideHeight * (y + ANCHOR_CENTER);
+
+            for (int x = 0; x < gridSize; x++) {
+                anchor.first = strideWidth * (x + ANCHOR_CENTER);
+
+                for (int n = 0; n < anchorAmount; n++)
+                    anchorList.push_back(anchor);
+            }
+        }
+    }
+
+    return anchorList;
+}
+
+QVector<float> faceDetection::sortBoundingBoxes(const QVector<float> receivedConfidenceTensor, const QVector<float> receivedCoordinatesTensor)
+{
+    QVector<float> identifiedFaceDims;
+
+    /* Find highest confidence bounding box and store its coordinates into a vector */
+    float maxConfidence = *std::max_element(receivedConfidenceTensor.constBegin(), receivedConfidenceTensor.constEnd());
+
+    if (maxConfidence > 0) {
+        int indexMaxConfidence = receivedConfidenceTensor.indexOf(maxConfidence, 0);
+
+        identifiedFaceDims.push_back(receivedCoordinatesTensor.at(FACE_DETECTION_BOX_INDEX * indexMaxConfidence));
+        identifiedFaceDims.push_back(receivedCoordinatesTensor.at((FACE_DETECTION_BOX_INDEX * indexMaxConfidence) + 1));
+        identifiedFaceDims.push_back(receivedCoordinatesTensor.at((FACE_DETECTION_BOX_INDEX * indexMaxConfidence) + 2));
+        identifiedFaceDims.push_back(receivedCoordinatesTensor.at((FACE_DETECTION_BOX_INDEX * indexMaxConfidence) + 3));
+    } else {
+        /* Set crop dimensions to Face Landmark input size when a face is not identified */
+        identifiedFaceDims.push_back(0);
+        identifiedFaceDims.push_back(0);
+        identifiedFaceDims.push_back(FACE_LANDMARK_INPUT_SIZE);
+        identifiedFaceDims.push_back(FACE_LANDMARK_INPUT_SIZE);
+    }
+
+    return identifiedFaceDims;
+}
+
+void faceDetection::setFaceCropDims(const QVector<float> &faceCropTensor)
+{
+    float heightOffset = DETECT_BOUNDING_BOX_INCREASE * frameHeight;
+    float widthOffset = DETECT_BOUNDING_BOX_INCREASE * frameWidth;
+
+    /* Increase the dimensions of the bounding box to ensure crop contains entire face */
+    faceTopLeftX = faceCropTensor.at(0) - widthOffset;
+    faceTopLeftY = faceCropTensor.at(1) - heightOffset;
+    faceWidth = faceCropTensor.at(2) + (2 * widthOffset);
+    faceHeight = faceCropTensor.at(3) + (2 * heightOffset);
+
+    /* Ensure that cropping coordinates are not outside of the image */
+    if (faceTopLeftX < 0)
+        faceTopLeftX = 0;
+
+    if (faceTopLeftY < 0)
+        faceTopLeftY = 0;
+
+    if ((faceWidth + faceTopLeftX) > frameWidth)
+        faceWidth = frameWidth - faceTopLeftX;
+
+    if ((faceHeight + faceTopLeftY) > frameHeight)
+        faceHeight = frameHeight - faceTopLeftY;
+}
+
 void faceDetection::stopContinuousMode()
 {
     continuousMode = false;
@@ -249,7 +431,8 @@ void faceDetection::stopContinuousMode()
     stopVideo();
     setButtonState(true);
 
-    uiFD->labelInferenceTimeFD->setText(TEXT_INFERENCE);
+    uiFD->labelInferenceTimeFaceDetect->setText(TEXT_INFERENCE_FACE_DETECTION);
+    uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK);
     uiFD->labelTotalFpsFace->setText(TEXT_TOTAL_FPS);
     uiFD->graphicsViewPointPlotFace->scene()->clear();
 
@@ -283,7 +466,8 @@ void faceDetection::triggerInference()
                 stopVideo();
             } else {
                 startVideo();
-                uiFD->labelInferenceTimeFD->setText(TEXT_INFERENCE);
+                uiFD->labelInferenceTimeFaceDetect->setText(TEXT_INFERENCE_FACE_DETECTION);
+                uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK);
                 uiFD->labelTotalFpsFace->setText(TEXT_TOTAL_FPS);
                 uiFD->graphicsViewPointPlotFace->scene()->clear();
             }

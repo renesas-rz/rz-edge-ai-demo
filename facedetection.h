@@ -25,7 +25,11 @@
 
 #include "edge-utils.h"
 
-#define TEXT_FACE_MODEL "face_landmark.tflite"
+#define TEXT_FACE_MODEL "face_detection_short_range.tflite\nface_landmark.tflite"
+#define TEXT_INFERENCE_FACE_DETECTION "Inference Time (Face Detection): "
+#define TEXT_INFERENCE_FACE_LANDMARK "Inference Time (Face Landmark): "
+#define TEXT_LOAD_FILE "Load Image/Video"
+#define TEXT_LOAD_NEW_FILE "Load New Image/Video"
 
 class edgeUtils;
 
@@ -37,18 +41,22 @@ class faceDetection : public QObject
 
 public:
     faceDetection(Ui::MainWindow *ui, QString inferenceEngine);
+    void processFace(const cv::Mat &matToProcess);
     void setCameraMode();
     void setImageMode();
     void setVideoMode();
     void setFrameDims(int height, int width);
 
 public slots:
-    void runInference(const QVector<float>& receivedTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat);
+    void runInference(const QVector<float>& receivedTensor, int receivedStride, int receivedTimeElapsed);
+    void cropImageFace(const QVector<float> &faceDetectOutputTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat);
+    void setFaceCropDims(const QVector<float>& faceCropTensor);
     void stopContinuousMode();
     void triggerInference();
 
 signals:
     void getFrame();
+    void sendMatForInference(const cv::Mat &receivedMat, bool useFaceDetection);
     void sendMatToView(const cv::Mat&receivedMat);
     void startVideo();
     void stopVideo();
@@ -58,6 +66,8 @@ private:
     QVector<float> sortTensorFaceLandmark(const QVector<float> receivedTensor, int receivedStride);
     void drawPointsFaceLandmark(const QVector<float>& outputTensor, bool updateGraphicalView);
     void connectLandmarks(int landmark1, int landmark2, bool drawGraphicalViewLandmarks);
+    QVector<QPair<float, float>> generateAnchorCoords(int inputHeight, int inputWidth);
+    QVector<float> sortBoundingBoxes(const QVector<float> receivedConfidenceTensor, const QVector<float> receivedCoordinatesTensor);
 
     Ui::MainWindow *uiFD;
     Input inputModeFD;
@@ -65,10 +75,16 @@ private:
     QVector<float> outputTensor;
     QVector<float> xCoordinate;
     QVector<float> yCoordinate;
+    cv::Mat resizedMat;
     bool continuousMode;
     bool buttonState;
     int frameHeight;
     int frameWidth;
+    int timeElaspedFaceDetection;
+    float faceHeight;
+    float faceWidth;
+    float faceTopLeftX;
+    float faceTopLeftY;
 };
 
 #endif // FACEDETECTION_H

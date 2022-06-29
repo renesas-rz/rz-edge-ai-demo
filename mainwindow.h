@@ -50,7 +50,6 @@
 #define MODEL_PATH_PE_BLAZE_POSE_FULL "/opt/rz-edge-ai-demo/models/pose_landmark_full.tflite"
 #define MODEL_PATH_PE_HAND_POSE_LITE "/opt/rz-edge-ai-demo/models/hand_landmark_lite.tflite"
 #define MODEL_PATH_PE_HAND_POSE_FULL "/opt/rz-edge-ai-demo/models/hand_landmark_full.tflite"
-#define MODEL_PATH_FD_FACE_LANDMARK "/opt/rz-edge-ai-demo/models/face_landmark.tflite"
 #define RENESAS_RZ_LOGO_PATH "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
 #define SPLASH_SCREEN_PATH "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
 
@@ -118,6 +117,7 @@ private slots:
     void drawMatToView(const cv::Mat& matInput);
     void getImageFrame();
     void loadAIModel();
+    void runFaceInference(const cv::Mat& receivedMat, bool useFaceDetection);
     void inferenceWarning(QString warningMessage);
     void on_actionLicense_triggered();
     void on_actionEnable_ArmNN_Delegate_triggered();
@@ -138,6 +138,7 @@ private:
     QImage matToQImage(const cv::Mat& matToConvert);
     void createVideoWorker();
     void errorPopup(QString errorMessage, int errorCode);
+    void deleteTfWorker();
     void remakeTfWorker();
     void setupFaceDetectMode();
     void setupObjectDetectMode();
@@ -162,6 +163,8 @@ private:
     poseEstimation *poseEstimateMode;
     faceDetection *faceDetectMode;
     tfliteWorker *tfWorker;
+    tfliteWorker *tfWorkerFaceDetection;
+    tfliteWorker *tfWorkerFaceLandmark;
     QEventLoop *qeventLoop;
     QString boardInfo;
     QString modelPath;

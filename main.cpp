@@ -86,8 +86,9 @@ int main(int argc, char *argv[])
     "                                  displays the live camera feed/media file.\n"
     "  Input->Load Image/Video: Load an image or video file.\n\n"
     "Face Detection Mode\n"
-    "  Draws lines around the facial regions on the image frame, displays the total FPS,\n"
-    "  inference time and displays a 2-D Point Projection of the identified face mesh\n\n"
+    "  Draws lines around the facial regions on the image frame, displays the total FPS and\n"
+    "  inference times for running face detection and face landmark models, and displays a 2-D\n"
+    "  Point Projection of the identified face mesh\n\n"
     "Buttons:\n"
     "  Start Inference/Stop Inference: Starts the live camera feed/media file,\n"
     "                                  grabs the frame and runs inference or just\n"
@@ -113,7 +114,7 @@ int main(int argc, char *argv[])
     "    Object Detection Mode: mobilenet_ssd_v2_coco_quant_postprocess.tflite\n"
     "    Shopping Basket Mode: shoppingBasketDemo.tflite\n"
     "    Pose Estimation Mode: pose_landmark_lite.tflite\n"
-    "    Face Detection Mode: face_landmark.tflite\n"
+    "    Face Detection Mode: face_detection_short_range.tflite + face_landmark.tflite\n"
     "  Mode Specific Files:\n"
     "    Shopping Basket Prices: shoppingBasketDemo_prices.txt\n\n"
 
@@ -151,9 +152,9 @@ int main(int argc, char *argv[])
         mode = FD;
 
         if (!modelLocation.isEmpty())
-            qWarning("Warning: face detection mode does not support loading of models, starting mode using Face Landmark model...");
+            qWarning("Warning: face detection mode does not support loading of models, starting mode using Face Detection model...");
 
-        modelLocation = MODEL_PATH_FD_FACE_LANDMARK;
+        modelLocation = MODEL_PATH_FD_FACE_DETECTION;
     } else {
         qWarning("Warning: unknown demo mode requested, starting in default mode...");
     }
