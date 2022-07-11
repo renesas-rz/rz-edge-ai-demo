@@ -585,9 +585,9 @@ Inference</string>
      <widget class="QLabel" name="labelInferenceEngineSB">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>40</x>
         <y>19</y>
-        <width>401</width>
+        <width>371</width>
         <height>61</height>
        </rect>
       </property>
@@ -609,9 +609,9 @@ Inference</string>
      <widget class="QLabel" name="labelAIModelFilenameSB">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>40</x>
         <y>-14</y>
-        <width>401</width>
+        <width>371</width>
         <height>61</height>
        </rect>
       </property>
@@ -772,9 +772,9 @@ Inference</string>
      <widget class="QLabel" name="labelInferenceEngineOD">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>40</x>
         <y>19</y>
-        <width>401</width>
+        <width>371</width>
         <height>61</height>
        </rect>
       </property>
@@ -796,9 +796,9 @@ Inference</string>
      <widget class="QLabel" name="labelAIModelFilenameOD">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>40</x>
         <y>-14</y>
-        <width>401</width>
+        <width>371</width>
         <height>61</height>
        </rect>
       </property>
@@ -959,9 +959,9 @@ Inference</string>
      <widget class="QLabel" name="labelInferenceEnginePE">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>40</x>
         <y>19</y>
-        <width>401</width>
+        <width>371</width>
         <height>61</height>
        </rect>
       </property>
@@ -983,9 +983,9 @@ Inference</string>
      <widget class="QLabel" name="labelAIModelFilenamePE">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>40</x>
         <y>-14</y>
-        <width>401</width>
+        <width>371</width>
         <height>61</height>
        </rect>
       </property>
@@ -1146,9 +1146,9 @@ Inference</string>
      <widget class="QLabel" name="labelInferenceEngineFD">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>40</x>
         <y>47</y>
-        <width>401</width>
+        <width>371</width>
         <height>61</height>
        </rect>
       </property>
@@ -1170,9 +1170,9 @@ Inference</string>
      <widget class="QLabel" name="labelAIModelFilenameFD">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>40</x>
         <y>-6</y>
-        <width>401</width>
+        <width>371</width>
         <height>61</height>
        </rect>
       </property>
