@@ -53,6 +53,9 @@
 #define RENESAS_RZ_LOGO_PATH "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
 #define SPLASH_SCREEN_PATH "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
 
+#define OPTION_FD_DETECT_FACE "face"
+#define OPTION_FD_DETECT_IRIS "iris"
+
 #define CONFIDENCE_OFFSET_SSD 5
 #define ITEM_OFFSET_SSD 4
 
@@ -99,7 +102,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent, QString boardName, QString cameraLocation, QString labelLocation,
-               QString modelLocation, Mode mode, QString pricesFile);
+               QString modelLocation, Mode mode, QString pricesFile, QString faceOption);
 
 public slots:
     void ShowVideo();

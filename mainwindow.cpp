@@ -37,7 +37,7 @@
 #include "shoppingbasket.h"
 
 MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocation, QString labelLocation,
-                       QString modelLocation, Mode mode, QString pricesFile)
+                       QString modelLocation, Mode mode, QString pricesFile, QString faceOption)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
@@ -189,6 +189,11 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
             modelOD = MODEL_PATH_OD;
 
             modelPE = MODEL_PATH_PE_BLAZE_POSE_LITE;
+
+            if (faceOption == OPTION_FD_DETECT_IRIS)
+                faceDetectIrisMode = true;
+            else
+                faceDetectIrisMode = false;
 
             setupFaceDetectMode();
         }

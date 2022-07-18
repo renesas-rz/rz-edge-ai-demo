@@ -35,11 +35,13 @@ int main(int argc, char *argv[])
                                    "mode", QString("object-detection"));
     QCommandLineOption pricesOption (QStringList() << "p" << "prices-file",
                                    "Choose a text file listing the prices to use for the shopping basket mode", "file", PRICES_PATH_DEFAULT);
+    QCommandLineOption faceDetectOption (QStringList() << "f" << "face-mode", "Choose a mode to start face detection with: [iris|face].", "mode");
     QString cameraLocation;
     QString labelLocation;
     QString modelLocation;
     QString modeString;
     QString pricesLocation;
+    QString faceOption;
     QString boardName;
     QSysInfo systemInfo;
     Mode mode = OD;
@@ -138,6 +140,7 @@ int main(int argc, char *argv[])
     parser.addOption(modelOption);
     parser.addOption(modeOption);
     parser.addOption(pricesOption);
+    parser.addOption(faceDetectOption);
     parser.addHelpOption();
     parser.setApplicationDescription(applicationDescription);
     parser.process(a);
@@ -145,6 +148,7 @@ int main(int argc, char *argv[])
     labelLocation = parser.value(labelOption);
     modelLocation = parser.value(modelOption);
     pricesLocation = parser.value(pricesOption);
+    faceOption = parser.value(faceDetectOption);
     modeString = parser.value(modeOption);
 
     boardName = systemInfo.machineHostName();
@@ -159,11 +163,28 @@ int main(int argc, char *argv[])
         mode = FD;
 
         if (!modelLocation.isEmpty())
-            qWarning("Warning: face detection mode does not support loading of models, starting mode using Face Detection model...");
+            qWarning("Warning: face detection mode does not support loading of models, using default option...");
 
-        modelLocation = MODEL_PATH_FD_FACE_DETECTION;
+        if (faceOption == OPTION_FD_DETECT_FACE) {
+            modelLocation = MODEL_PATH_FD_FACE_DETECTION;
+        } else if (faceOption == OPTION_FD_DETECT_IRIS) {
+            modelLocation = MODEL_PATH_FD_IRIS_LANDMARK;
+        } else {
+            if (!faceOption.isEmpty())
+                qWarning("Warning: unknown face detection mode requested, using default option...");
+
+            faceOption = OPTION_FD_DETECT_FACE;
+            modelLocation = MODEL_PATH_FD_FACE_DETECTION;
+        }
     } else {
         qWarning("Warning: unknown demo mode requested, starting in default mode...");
+    }
+
+    if (mode != FD) {
+        if (!faceOption.isEmpty())
+            qWarning("Warning: demo mode requested does not support face mode parameter...");
+
+        faceOption = OPTION_FD_DETECT_FACE;
     }
 
     if (!QFileInfo(labelLocation).isFile()) {
@@ -194,7 +215,7 @@ int main(int argc, char *argv[])
     }
 
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    MainWindow w(nullptr, boardName, cameraLocation, labelLocation, modelLocation, mode, pricesLocation);
+    MainWindow w(nullptr, boardName, cameraLocation, labelLocation, modelLocation, mode, pricesLocation, faceOption);
     w.show();
     return a.exec();
 }
