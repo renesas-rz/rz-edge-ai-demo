@@ -26,61 +26,86 @@
 #include "edge-utils.h"
 
 #define TEXT_FACE_MODEL "face_detection_short_range.tflite\nface_landmark.tflite"
-#define TEXT_INFERENCE_FACE_DETECTION "Inference Time (Face Detection): "
-#define TEXT_INFERENCE_FACE_LANDMARK "Inference Time (Face Landmark): "
+#define TEXT_FACE_MODEL_WITH_IRIS_MODEL "\nface_detection_short_range.tflite\nface_landmark.tflite\niris_landmark.tflite"
+#define TEXT_INFERENCE_FACE_DETECTION "Face Detection: "
+#define TEXT_INFERENCE_FACE_LANDMARK "Face Landmark: "
+#define TEXT_INFERENCE_IRIS_LANDMARK "Iris Landmark: "
 #define TEXT_LOAD_FILE "Load Image/Video"
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"
+
+#define IRIS_DIAGRAM_PATH "/opt/rz-edge-ai-demo/logos/iris-detection-diagram.png"
+
+#define STACK_WIDGET_INDEX_FACE_LANDMARK 0
+#define STACK_WIDGET_INDEX_IRIS_LANDMARK 1
 
 class edgeUtils;
 
 namespace Ui { class MainWindow; }
+
+enum DetectMode { faceMode, irisMode };
 
 class faceDetection : public QObject
 {
     Q_OBJECT
 
 public:
-    faceDetection(Ui::MainWindow *ui, QString inferenceEngine);
+    faceDetection(Ui::MainWindow *ui, QString inferenceEngine, DetectMode detectModeToUse);
     void processFace(const cv::Mat &matToProcess);
     void setCameraMode();
     void setImageMode();
     void setVideoMode();
     void setFrameDims(int height, int width);
+    bool getUseIrisMode();
 
 public slots:
     void runInference(const QVector<float>& receivedTensor, int receivedStride, int receivedTimeElapsed);
     void cropImageFace(const QVector<float> &faceDetectOutputTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat);
     void setFaceCropDims(const QVector<float>& faceCropTensor);
+    void setIrisCropDims(const QVector<float>& detectedFaceTensor, int receivedStride, int timeElapsed);
+    void setLeftIrisTensor(const QVector<float>& outputIrisLeftTensor, int receivedStride, int receivedTimeElapsed);
+    void detectFaceMode();
+    void detectIrisMode();
     void stopContinuousMode();
     void triggerInference();
 
 signals:
     void getFrame();
-    void sendMatForInference(const cv::Mat &receivedMat, bool useFaceDetection);
+    void sendMatForInference(const cv::Mat &receivedMat, FaceModel faceModelToUse, bool useFaceDetection);
     void sendMatToView(const cv::Mat&receivedMat);
     void startVideo();
     void stopVideo();
+    void displayFrame();
 
 private:
     void setButtonState(bool enable);
     QVector<float> sortTensorFaceLandmark(const QVector<float> receivedTensor, int receivedStride);
+    QVector<float> sortTensorIrisLandmark(const QVector<float> receivedTensor, int receivedStride);
     void drawPointsFaceLandmark(const QVector<float>& outputTensor, bool updateGraphicalView);
+    void drawPointsIrisLandmark(const QVector<float>& outputTensor, bool drawLeftEye);
     void connectLandmarks(int landmark1, int landmark2, bool drawGraphicalViewLandmarks);
+    void processIris(const cv::Mat &croppedFaceMat, bool detectIris);
     QVector<QPair<float, float>> generateAnchorCoords(int inputHeight, int inputWidth);
     QVector<float> sortBoundingBoxes(const QVector<float> receivedConfidenceTensor, const QVector<float> receivedCoordinatesTensor);
 
     Ui::MainWindow *uiFD;
     Input inputModeFD;
+    FaceModel faceModel;
+    DetectMode detectMode;
     edgeUtils *utilFD;
     QVector<float> outputTensor;
     QVector<float> xCoordinate;
     QVector<float> yCoordinate;
+    QVector<float> eyeCropCoords;
+    QVector<float> leftEyeTensor;
     cv::Mat resizedMat;
     bool continuousMode;
     bool buttonState;
+    bool faceVisible;
     int frameHeight;
     int frameWidth;
     int timeElaspedFaceDetection;
+    int timeElaspedFaceLandmark;
+    int timeElaspedIrisLeft;
     float faceHeight;
     float faceWidth;
     float faceTopLeftX;

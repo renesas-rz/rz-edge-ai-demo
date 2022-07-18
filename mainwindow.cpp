@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     inputMode = cameraMode;
     demoMode = mode;
     pricesPath = pricesFile;
+    faceDetectIrisMode = false;
 
     QPixmap splashScreenImage(SPLASH_SCREEN_PATH);
 
@@ -259,23 +260,46 @@ void MainWindow::setupPoseEstimateMode()
 
 void MainWindow::setupFaceDetectMode()
 {
+    DetectMode detectModeToUse;
+
     demoMode = FD;
     tfWorkerFaceDetection->setDemoMode(demoMode);
     tfWorkerFaceLandmark->setDemoMode(demoMode);
+    tfWorkerIrisLandmarkL->setDemoMode(demoMode);
+    tfWorkerIrisLandmarkR->setDemoMode(demoMode);
 
-    faceDetectMode = new faceDetection(ui, inferenceEngine);
+    if (faceDetectIrisMode)
+        detectModeToUse = irisMode;
+    else
+        detectModeToUse = faceMode;
+
+    faceDetectMode = new faceDetection(ui, inferenceEngine, detectModeToUse);
 
     connect(this, SIGNAL(stopInference()), faceDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
     connect(ui->pushButtonStartStopFace, SIGNAL(pressed()), faceDetectMode, SLOT(triggerInference()));
+    connect(ui->pushButtonDetectFace, SIGNAL(pressed()), faceDetectMode, SLOT(detectFaceMode()));
+    connect(ui->pushButtonDetectIris, SIGNAL(pressed()), faceDetectMode, SLOT(detectIrisMode()));
     connect(faceDetectMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
     connect(faceDetectMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
-    connect(faceDetectMode, SIGNAL(sendMatForInference(cv::Mat,bool)), this, SLOT(runFaceInference(cv::Mat,bool)));
+    connect(faceDetectMode, SIGNAL(sendMatForInference(cv::Mat,FaceModel,bool)),
+            this, SLOT(runFaceInference(cv::Mat,FaceModel,bool)));
+    connect(faceDetectMode, SIGNAL(displayFrame()), this, SLOT(getImageFrame()));
     connect(faceDetectMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
     connect(faceDetectMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
     connect(tfWorkerFaceDetection, SIGNAL(sendOutputTensor(QVector<float>,int,int,cv::Mat)),
             faceDetectMode, SLOT(cropImageFace(QVector<float>,int,int,cv::Mat)));
-    connect(tfWorkerFaceLandmark, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
-            faceDetectMode, SLOT(runInference(QVector<float>, int, int)));
+    connect(tfWorkerIrisLandmarkL, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
+            faceDetectMode, SLOT(setLeftIrisTensor(QVector<float>,int,int)));
+    connect(tfWorkerIrisLandmarkR, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
+            faceDetectMode, SLOT(runInference(QVector<float>,int,int)));
+
+    if (detectModeToUse == irisMode) {
+        connect(tfWorkerFaceLandmark, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
+                faceDetectMode, SLOT(setIrisCropDims(QVector<float>,int,int)));
+    } else {
+        connect(tfWorkerFaceLandmark, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
+                faceDetectMode, SLOT(runInference(QVector<float>, int, int)));
+    }
 }
 
 void MainWindow::createVideoWorker()
@@ -299,9 +323,13 @@ void MainWindow::createTfWorker()
          */
         tfWorkerFaceDetection = new tfliteWorker(MODEL_PATH_FD_FACE_DETECTION, delegateType, inferenceThreads);
         tfWorkerFaceLandmark = new tfliteWorker(MODEL_PATH_FD_FACE_LANDMARK, delegateType, inferenceThreads);
+        tfWorkerIrisLandmarkL = new tfliteWorker(MODEL_PATH_FD_IRIS_LANDMARK, delegateType, inferenceThreads);
+        tfWorkerIrisLandmarkR = new tfliteWorker(MODEL_PATH_FD_IRIS_LANDMARK, delegateType, inferenceThreads);
 
         connect(tfWorkerFaceDetection, SIGNAL(sendInferenceWarning(QString)), this, SLOT(inferenceWarning(QString)));
         connect(tfWorkerFaceLandmark, SIGNAL(sendInferenceWarning(QString)), this, SLOT(inferenceWarning(QString)));
+        connect(tfWorkerIrisLandmarkL, SIGNAL(sendInferenceWarning(QString)), this, SLOT(inferenceWarning(QString)));
+        connect(tfWorkerIrisLandmarkR, SIGNAL(sendInferenceWarning(QString)), this, SLOT(inferenceWarning(QString)));
     } else {
         tfWorker = new tfliteWorker(modelPath, delegateType, inferenceThreads);
 
@@ -488,12 +516,33 @@ void MainWindow::processFrame()
     }
 }
 
-void MainWindow::runFaceInference(const cv::Mat &receivedMat, bool useFaceDetection)
+void MainWindow::runFaceInference(const cv::Mat &receivedMat, FaceModel faceModelToUse, bool useIrisModel)
 {
-    if (useFaceDetection)
+    if (faceDetectIrisMode != useIrisModel) {
+        faceDetectIrisMode = useIrisModel;
+
+        /* Connect correct signals for Face Detection model modes */
+        if (faceDetectIrisMode) {
+            disconnect(tfWorkerFaceLandmark, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
+                       faceDetectMode, SLOT(runInference(QVector<float>, int, int)));
+            connect(tfWorkerFaceLandmark, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
+                    faceDetectMode, SLOT(setIrisCropDims(QVector<float>,int,int)));
+        } else {
+            disconnect(tfWorkerFaceLandmark, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
+                       faceDetectMode, SLOT(setIrisCropDims(QVector<float>,int,int)));
+            connect(tfWorkerFaceLandmark, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
+                    faceDetectMode, SLOT(runInference(QVector<float>, int, int)));
+        }
+    }
+
+    if (faceModelToUse == faceDetect)
         tfWorkerFaceDetection->receiveImage(receivedMat);
-    else
+    else if (faceModelToUse == faceLandmark)
         tfWorkerFaceLandmark->receiveImage(receivedMat);
+    else if (faceModelToUse == irisLandmarkL)
+        tfWorkerIrisLandmarkL->receiveImage(receivedMat);
+    else if (faceModelToUse == irisLandmarkR)
+        tfWorkerIrisLandmarkR->receiveImage(receivedMat);
 }
 
 void MainWindow::deleteTfWorker()
@@ -501,6 +550,8 @@ void MainWindow::deleteTfWorker()
     if (demoMode == FD) {
         delete tfWorkerFaceDetection;
         delete tfWorkerFaceLandmark;
+        delete tfWorkerIrisLandmarkL;
+        delete tfWorkerIrisLandmarkR;
     } else {
         delete tfWorker;
     }
@@ -545,12 +596,15 @@ void MainWindow::on_actionTensorflow_Lite_XNNPack_delegate_triggered()
 {
     delegateType = xnnpack;
 
-    if (demoMode == PE)
+    if (demoMode == PE) {
         setPoseEstimateDelegateType();
-    else if (demoMode == FD)
+    } else if (demoMode == FD) {
+        faceDetectIrisMode = faceDetectMode->getUseIrisMode();
+
         setFaceDetectDelegateType();
-    else
+    } else {
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+    }
 
     ui->actionTensorFlow_Lite->setEnabled(true);
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(false);
@@ -562,12 +616,15 @@ void MainWindow::on_actionTensorFlow_Lite_triggered()
 {
     delegateType = none;
 
-    if (demoMode == PE)
+    if (demoMode == PE) {
         setPoseEstimateDelegateType();
-    else if (demoMode == FD)
+    } else if (demoMode == FD) {
+        faceDetectIrisMode = faceDetectMode->getUseIrisMode();
+
         setFaceDetectDelegateType();
-    else
+    } else {
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+    }
 
     ui->actionTensorFlow_Lite->setEnabled(false);
 #ifdef DUNFELL
@@ -631,6 +688,8 @@ void MainWindow::on_actionShopping_Basket_triggered()
         if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET))
             ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     } else if (demoMode == FD) {
+        faceDetectIrisMode = faceDetectMode->getUseIrisMode();
+
         /*
          * If coming from the Face Detection mode, enable ArmNN Delegate which
          * that mode doesn't support
@@ -675,6 +734,8 @@ void MainWindow::on_actionObject_Detection_triggered()
         if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET))
             ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     } else if (demoMode == FD) {
+        faceDetectIrisMode = faceDetectMode->getUseIrisMode();
+
         /*
          * If coming from the Face Detection mode, enable ArmNN Delegate which
          * that mode doesn't support
@@ -710,6 +771,8 @@ void MainWindow::on_actionPose_Estimation_triggered()
     } else if (demoMode == OD) {
         labelOD = labelPath;
         modelOD = modelPath;
+    } else if (demoMode == FD) {
+        faceDetectIrisMode = faceDetectMode->getUseIrisMode();
     }
 
     deleteTfWorker();

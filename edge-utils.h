@@ -29,6 +29,7 @@
 
 #define MODEL_PATH_FD_FACE_DETECTION "/opt/rz-edge-ai-demo/models/face_detection_short_range.tflite"
 #define MODEL_PATH_FD_FACE_LANDMARK "/opt/rz-edge-ai-demo/models/face_landmark.tflite"
+#define MODEL_PATH_FD_IRIS_LANDMARK "/opt/rz-edge-ai-demo/models/iris_landmark.tflite"
 
 #define TEXT_INFERENCE "Inference Time: "
 #define TEXT_LOAD_FILE "Load Image/Video"
@@ -56,6 +57,7 @@
 enum Board { G2E, G2L, G2LC, G2M, Unknown };
 enum Input { cameraMode, imageMode, videoMode };
 enum Mode { SB, OD, PE, FD };
+enum FaceModel { faceDetect, faceLandmark, irisLandmarkL, irisLandmarkR };
 
 class edgeUtils : public QObject
 {

@@ -171,7 +171,7 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
 
     timeElapsed = int(std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
 
-    if (modeSelected == FD && modelName == MODEL_PATH_FD_FACE_LANDMARK)
+    if (modeSelected == FD && modelName != MODEL_PATH_FD_FACE_DETECTION)
         emit sendOutputTensorImageless(outputTensor, itemStride, timeElapsed);
     else
         emit sendOutputTensor(outputTensor, itemStride, timeElapsed, sentMat);

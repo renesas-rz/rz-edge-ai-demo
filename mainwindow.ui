@@ -446,7 +446,7 @@ AI Model</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>230</y>
+        <y>360</y>
         <width>111</width>
         <height>111</height>
        </rect>
@@ -482,6 +482,102 @@ border-style: outset;
       <property name="text">
        <string>Start
 Inference</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonDetectIris">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>190</y>
+        <width>111</width>
+        <height>111</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>23</pointsize>
+        <weight>75</weight>
+        <italic>false</italic>
+        <bold>true</bold>
+        <underline>false</underline>
+        <strikeout>false</strikeout>
+        <kerning>false</kerning>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string/>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(42, 40, 157);
+color: rgb(255, 255, 255);
+border: 2px;
+border-radius: 55px;
+border-style: outset;
+</string>
+      </property>
+      <property name="text">
+       <string>Detect
+Iris</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonDetectFace">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>111</width>
+        <height>111</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>23</pointsize>
+        <weight>75</weight>
+        <italic>false</italic>
+        <bold>true</bold>
+        <underline>false</underline>
+        <strikeout>false</strikeout>
+        <kerning>false</kerning>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string/>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(42, 40, 157);
+color: rgb(255, 255, 255);
+border: 2px;
+border-radius: 55px;
+border-style: outset;
+</string>
+      </property>
+      <property name="text">
+       <string>Detect
+Face</string>
       </property>
       <property name="checkable">
        <bool>true</bool>
@@ -1061,7 +1157,7 @@ Inference</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>127</y>
+        <y>170</y>
         <width>179</width>
         <height>35</height>
        </rect>
@@ -1084,70 +1180,11 @@ Inference</string>
        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
       </property>
      </widget>
-     <widget class="QLabel" name="labelGraphicalViewTitleFD">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>155</y>
-        <width>331</width>
-        <height>35</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-        <horstretch>1</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>19</pointsize>
-        <underline>false</underline>
-       </font>
-      </property>
-      <property name="text">
-       <string>2-D Point Projection</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QGraphicsView" name="graphicsViewPointPlotFace">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>157</y>
-        <width>330</width>
-        <height>400</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>330</width>
-        <height>400</height>
-       </size>
-      </property>
-      <property name="verticalScrollBarPolicy">
-       <enum>Qt::ScrollBarAlwaysOff</enum>
-      </property>
-      <property name="horizontalScrollBarPolicy">
-       <enum>Qt::ScrollBarAlwaysOff</enum>
-      </property>
-      <property name="sizeAdjustPolicy">
-       <enum>QAbstractScrollArea::AdjustToContents</enum>
-      </property>
-     </widget>
      <widget class="QLabel" name="labelInferenceEngineFD">
       <property name="geometry">
        <rect>
         <x>40</x>
-        <y>47</y>
+        <y>52</y>
         <width>371</width>
         <height>61</height>
        </rect>
@@ -1171,9 +1208,9 @@ Inference</string>
       <property name="geometry">
        <rect>
         <x>40</x>
-        <y>-6</y>
+        <y>-16</y>
         <width>371</width>
-        <height>61</height>
+        <height>81</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -1191,11 +1228,11 @@ Inference</string>
        <string>Model_name</string>
       </property>
      </widget>
-     <widget class="QLabel" name="labelInferenceTimeFaceDetect">
+     <widget class="QLabel" name="labelInferenceTimeFD">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>81</y>
+        <y>86</y>
         <width>451</width>
         <height>35</height>
        </rect>
@@ -1212,7 +1249,7 @@ Inference</string>
        </font>
       </property>
       <property name="text">
-       <string>Inference Time (Face Detection): </string>
+       <string>Inference Time: </string>
       </property>
       <property name="alignment">
        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -1222,7 +1259,7 @@ Inference</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>48</y>
+        <y>53</y>
         <width>198</width>
         <height>29</height>
        </rect>
@@ -1245,9 +1282,9 @@ Inference</string>
      <widget class="QLabel" name="labelInferenceTimeFaceLandmark">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>103</y>
-        <width>411</width>
+        <x>40</x>
+        <y>125</y>
+        <width>381</width>
         <height>35</height>
        </rect>
       </property>
@@ -1259,24 +1296,174 @@ Inference</string>
       </property>
       <property name="font">
        <font>
-        <pointsize>19</pointsize>
+        <pointsize>16</pointsize>
        </font>
       </property>
       <property name="text">
-       <string>Inference Time (Face Landmark): </string>
+       <string>Face Landmark: </string>
       </property>
       <property name="alignment">
        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
       </property>
      </widget>
+     <widget class="QLabel" name="labelInferenceTimeIrisLandmark">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>145</y>
+        <width>381</width>
+        <height>35</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Iris Landmark: </string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelInferenceTimeFaceDetection">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>105</y>
+        <width>381</width>
+        <height>35</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Face Detection: </string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QStackedWidget" name="stackedWidgetFace">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>200</y>
+        <width>381</width>
+        <height>361</height>
+       </rect>
+      </property>
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
+      <widget class="QWidget" name="page_FaceLandmark">
+       <widget class="QGraphicsView" name="graphicsViewPointPlotFace">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>6</y>
+          <width>330</width>
+          <height>350</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>330</width>
+          <height>350</height>
+         </size>
+        </property>
+        <property name="verticalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QAbstractScrollArea::AdjustToContents</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelGraphicalViewTitleFD">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>4</y>
+          <width>331</width>
+          <height>35</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>19</pointsize>
+          <underline>false</underline>
+         </font>
+        </property>
+        <property name="text">
+         <string>2-D Point Projection</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="page_IrisLandmark">
+       <widget class="QLabel" name="labelIrisDiagram">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>35</y>
+          <width>330</width>
+          <height>321</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+     <zorder>stackedWidgetFace</zorder>
      <zorder>labelTotalFpsFace</zorder>
-     <zorder>graphicsViewPointPlotFace</zorder>
-     <zorder>labelGraphicalViewTitleFD</zorder>
      <zorder>labelInferenceEngineFD</zorder>
      <zorder>labelAIModelFilenameFD</zorder>
-     <zorder>labelInferenceTimeFaceDetect</zorder>
+     <zorder>labelInferenceTimeFD</zorder>
      <zorder>labelInferenceTitleFD</zorder>
      <zorder>labelInferenceTimeFaceLandmark</zorder>
+     <zorder>labelInferenceTimeIrisLandmark</zorder>
+     <zorder>labelInferenceTimeFaceDetection</zorder>
     </widget>
    </widget>
    <widget class="QLabel" name="labelDemoMode">

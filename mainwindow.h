@@ -117,7 +117,7 @@ private slots:
     void drawMatToView(const cv::Mat& matInput);
     void getImageFrame();
     void loadAIModel();
-    void runFaceInference(const cv::Mat& receivedMat, bool useFaceDetection);
+    void runFaceInference(const cv::Mat& receivedMat, FaceModel faceModelToUse, bool useIrisModel);
     void inferenceWarning(QString warningMessage);
     void on_actionLicense_triggered();
     void on_actionEnable_ArmNN_Delegate_triggered();
@@ -165,6 +165,8 @@ private:
     tfliteWorker *tfWorker;
     tfliteWorker *tfWorkerFaceDetection;
     tfliteWorker *tfWorkerFaceLandmark;
+    tfliteWorker *tfWorkerIrisLandmarkL;
+    tfliteWorker *tfWorkerIrisLandmarkR;
     QEventLoop *qeventLoop;
     QString boardInfo;
     QString modelPath;
@@ -177,6 +179,7 @@ private:
     QString labelSB;
     QString inferenceEngine;
     QStringList labelFileList;
+    bool faceDetectIrisMode;
     videoWorker *vidWorker;
     Board board;
     Input inputMode;

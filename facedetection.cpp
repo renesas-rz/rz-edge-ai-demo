@@ -29,6 +29,8 @@
 #define FACE_DETECTION_INPUT_SIZE 128.0
 #define FACE_DETECTION_OUTPUT_INDEX 16
 #define FACE_LANDMARK_INPUT_SIZE 192.0
+#define IRIS_LANDMARK_INPUT_SIZE 64.0
+#define IRIS_LANDMARK_IRIS_OUTPUT_INDEX 10
 
 #define PEN_THICKNESS 2
 
@@ -36,11 +38,23 @@
 #define ANCHOR_CENTER 0.5
 #define DETECT_BOUNDING_BOX_INCREASE 0.1 //Needed to ensure crop contains entire face
 
-faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine)
+struct {
+    float x;
+    float y;
+    float width;
+    float height;
+} eyeLeft, eyeRight;
+
+faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine, DetectMode detectModeToUse)
 {
+    QPixmap irisDiagram(IRIS_DIAGRAM_PATH);
+
     uiFD = ui;
     inputModeFD = cameraMode;
+    faceModel = faceDetect;
+    detectMode = detectModeToUse;
     buttonState = true;
+    faceVisible = false;
 
     utilFD = new edgeUtils();
 
@@ -55,10 +69,9 @@ faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine)
     uiFD->actionLoad_Camera->setDisabled(true);
     uiFD->actionLoad_File->setText(TEXT_LOAD_FILE);
 
+    uiFD->labelIrisDiagram->setPixmap(irisDiagram);
     uiFD->labelAIModelFilenameFD->setText(TEXT_FACE_MODEL);
     uiFD->labelInferenceEngineFD->setText(inferenceEngine);
-    uiFD->labelInferenceTimeFaceDetect->setText(TEXT_INFERENCE_FACE_DETECTION);
-    uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK);
     uiFD->labelDemoMode->setText("Mode: Face Detection");
     uiFD->labelTotalFpsPose->setText(TEXT_TOTAL_FPS);
 
@@ -67,6 +80,11 @@ faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine)
 
     QGraphicsScene *scenePointProjection = new QGraphicsScene(this);
     uiFD->graphicsViewPointPlotFace->setScene(scenePointProjection);
+
+    if (detectMode == irisMode)
+        detectIrisMode();
+    else
+        detectFaceMode();
 }
 
 void faceDetection::setButtonState(bool enable)
@@ -97,8 +115,8 @@ QVector<float> faceDetection::sortTensorFaceLandmark(const QVector<float> receiv
     for (int i = 0; i < receivedStride; i += 3) {
 
         if (confidenceLevel > DETECT_THRESHOLD_FACE && confidenceLevel <= 1.0) {
-            sortedTensor.push_back(receivedTensor.at(i + 1)); // y-coordinate
             sortedTensor.push_back(receivedTensor.at(i));     // x-coordinate
+            sortedTensor.push_back(receivedTensor.at(i + 1)); // y-coordinate
         } else {
             sortedTensor.push_back(nanValue);
             sortedTensor.push_back(nanValue);
@@ -106,6 +124,25 @@ QVector<float> faceDetection::sortTensorFaceLandmark(const QVector<float> receiv
      }
 
     return sortedTensor;
+}
+
+QVector<float> faceDetection::sortTensorIrisLandmark(const QVector<float> receivedTensor, int receivedStride)
+{
+    QVector<float> sortedTensorIris = QVector<float>();
+
+    float nanValueIris = std::nanf("NAN");
+
+    for (int i = receivedStride; i < receivedTensor.size(); i += 3) {
+        if (receivedTensor.at(i) >= 0 && receivedTensor.at(i + 1) >= 0) {
+            sortedTensorIris.push_back(receivedTensor.at(i));     // x-coordinate
+            sortedTensorIris.push_back(receivedTensor.at(i + 1)); // y-coordinate
+        } else {
+            sortedTensorIris.push_back(nanValueIris);
+            sortedTensorIris.push_back(nanValueIris);
+        }
+    }
+
+    return sortedTensorIris;
 }
 
 void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, bool updateGraphicalView)
@@ -167,8 +204,8 @@ void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, b
 
     /* Save x and y coordinates in separate vectors */
     for (int i = 0; i < outputTensor.size(); i += 2) {
-        float y = outputTensor[i] * heightMultiplier;
-        float x = outputTensor[i + 1] * widthMultiplier;
+        float x = outputTensor[i] * widthMultiplier;
+        float y = outputTensor[i + 1] * heightMultiplier;
 
         /*
          * Ensure coordinates drawn onto image frame are relative to the cropping
@@ -221,6 +258,52 @@ void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, b
     }
 }
 
+void faceDetection::drawPointsIrisLandmark(const QVector<float> &outputTensor, bool drawLeftEye)
+{
+    QBrush brush = QBrush(Qt::white, Qt::Dense6Pattern);
+    QPen pen;
+    xCoordinate = QVector<float>();
+    yCoordinate = QVector<float>();
+    float displayWidth;
+    float displayHeight;
+
+    pen.setColor(Qt::yellow);
+    pen.setWidth(PEN_THICKNESS);
+
+    if (drawLeftEye) {
+        displayWidth = eyeLeft.width / IRIS_LANDMARK_INPUT_SIZE;
+        displayHeight = eyeLeft.height / IRIS_LANDMARK_INPUT_SIZE;
+    } else {
+        displayWidth = eyeRight.width / IRIS_LANDMARK_INPUT_SIZE;
+        displayHeight = eyeRight.height / IRIS_LANDMARK_INPUT_SIZE;
+    }
+
+    /*
+     * Save x and y coordinates in separate vectors and ensure that they
+     * are relative to the cropping region of the original image
+     */
+    for (int i = 0; i < IRIS_LANDMARK_IRIS_OUTPUT_INDEX; i += 2) {
+        float xIrisPosition;
+        float yIrisPosition;
+
+        if (drawLeftEye) {
+            xIrisPosition = faceTopLeftX + eyeLeft.x;
+            yIrisPosition = faceTopLeftY + eyeLeft.y;
+        } else {
+            xIrisPosition = faceTopLeftX + eyeRight.x;
+            yIrisPosition = faceTopLeftY + eyeRight.y;
+        }
+
+        xIrisPosition += outputTensor[i] * displayWidth;
+        yIrisPosition += outputTensor[i + 1] * displayHeight;
+
+        xCoordinate.push_back(xIrisPosition);
+        yCoordinate.push_back(yIrisPosition);
+    }
+
+    uiFD->graphicsView->scene()->addEllipse(xCoordinate.at(3), yCoordinate.at(2), (xCoordinate.at(1) - xCoordinate.at(3)), (yCoordinate.at(4) - yCoordinate.at(2)), pen, brush);
+}
+
 void faceDetection::connectLandmarks(int landmark1, int landmark2, bool drawGraphicalViewLandmarks)
 {
     QPen pen;
@@ -247,10 +330,19 @@ void faceDetection::runInference(const QVector<float> &receivedTensor, int recei
 {
     float totalFps;
 
-    outputTensor = sortTensorFaceLandmark(receivedTensor, receivedStride);
+    if (detectMode == irisMode)
+        outputTensor = sortTensorIrisLandmark(receivedTensor, receivedStride);
+    else
+        outputTensor = sortTensorFaceLandmark(receivedTensor, receivedStride);
 
-    uiFD->labelInferenceTimeFaceDetect->setText(TEXT_INFERENCE_FACE_DETECTION + QString("%1 ms").arg(timeElaspedFaceDetection));
-    uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK + QString("%1 ms").arg(receivedTimeElapsed));
+    uiFD->labelInferenceTimeFaceDetection->setText(TEXT_INFERENCE_FACE_DETECTION + QString("%1 ms").arg(timeElaspedFaceDetection));
+
+    if (detectMode == irisMode) {
+        uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK + QString("%1 ms").arg(timeElaspedFaceLandmark));
+        uiFD->labelInferenceTimeIrisLandmark->setText(TEXT_INFERENCE_IRIS_LANDMARK + QString("%1 ms").arg(timeElaspedIrisLeft) + QString(" + %1ms").arg(receivedTimeElapsed));
+    } else {
+        uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK + QString("%1 ms").arg(receivedTimeElapsed));
+    }
 
     emit sendMatToView(resizedMat);
 
@@ -266,19 +358,35 @@ void faceDetection::runInference(const QVector<float> &receivedTensor, int recei
         setButtonState(true);
     }
 
-    /* Draw onto image first then the graphical view */
-    drawPointsFaceLandmark(outputTensor, false);
-    drawPointsFaceLandmark(outputTensor, true);
+    if (detectMode == irisMode) {
+        /* Draw left iris first and then right iris */
+        drawPointsIrisLandmark(leftEyeTensor, true);
+        drawPointsIrisLandmark(outputTensor, false);
+    } else {
+        /* Draw onto image first then the graphical view */
+        drawPointsFaceLandmark(outputTensor, false);
+        drawPointsFaceLandmark(outputTensor, true);
+    }
 }
 
 void faceDetection::processFace(const cv::Mat &matToProcess)
 {
     cv::Mat croppedFaceMat;
+    bool detectIris;
+
+    if (detectMode == irisMode)
+        detectIris = true;
+    else
+        detectIris = false;
+
+    faceModel = faceDetect;
 
     /* Resize cv::Mat and run inference using Face Detection model */
     cv::resize(matToProcess, resizedMat, cv::Size(frameWidth, frameHeight));
 
-    emit sendMatForInference(resizedMat, true);
+    emit sendMatForInference(resizedMat, faceModel, detectIris);
+
+    faceModel = faceLandmark;
 
     /*
      * Crop cv::Mat using coordinates provided by Face Detection and
@@ -288,7 +396,75 @@ void faceDetection::processFace(const cv::Mat &matToProcess)
 
     croppedFaceMat = resizedMat(cropRegionFace);
 
-    emit sendMatForInference(croppedFaceMat, false);
+    emit sendMatForInference(croppedFaceMat, faceModel, detectIris);
+
+    if (detectMode == irisMode)
+        processIris(croppedFaceMat, detectIris);
+}
+
+void faceDetection::processIris(const cv::Mat &croppedFaceMat, bool detectIris)
+{
+    if (faceVisible) {
+        cv::Mat croppedEyeMat;
+        float irisScaleWidth = croppedFaceMat.cols / FACE_LANDMARK_INPUT_SIZE;
+        float irisScaleHeight = croppedFaceMat.rows / FACE_LANDMARK_INPUT_SIZE;
+
+        /* Process left eye */
+        faceModel = irisLandmarkL;
+
+        eyeLeft.x = eyeCropCoords.at(0) * irisScaleWidth;
+        eyeLeft.y = eyeCropCoords.at(1) * irisScaleHeight;
+        eyeLeft.width = (eyeCropCoords.at(2) * irisScaleWidth) - eyeLeft.x;
+        eyeLeft.height = (eyeCropCoords.at(3) * irisScaleHeight) - eyeLeft.y;
+
+        /*
+         * Crop cv::Mat using coordinates provided by Face Landmark and
+         * run inference on left eye using Iris Landmark model
+         */
+        cv::Rect cropRegionEyeL(eyeLeft.x, eyeLeft.y, eyeLeft.width, eyeLeft.height);
+
+        croppedEyeMat = croppedFaceMat(cropRegionEyeL);
+
+        emit sendMatForInference(croppedEyeMat, faceModel, detectIris);
+
+        /* Process right eye */
+        faceModel = irisLandmarkR;
+
+        eyeRight.x = eyeCropCoords.at(4) * irisScaleWidth;
+        eyeRight.y = eyeCropCoords.at(5) * irisScaleHeight;
+        eyeRight.width = (eyeCropCoords.at(6) * irisScaleWidth) - eyeRight.x;
+        eyeRight.height = (eyeCropCoords.at(7) * irisScaleHeight) - eyeRight.y;
+
+        /*
+         * Crop cv::Mat using coordinates provided by Face Landmark and
+         * run inference on right eye using Iris Landmark model
+         */
+        cv::Rect cropRegionEyeR(eyeRight.x, eyeRight.y, eyeRight.width, eyeRight.height);
+
+        croppedEyeMat = croppedFaceMat(cropRegionEyeR);
+
+        emit sendMatForInference(croppedEyeMat, faceModel, detectIris);
+    } else {
+        int totalIrisModeFps;
+
+        uiFD->labelInferenceTimeFaceDetection->setText(TEXT_INFERENCE_FACE_DETECTION + QString("%1 ms").arg(timeElaspedFaceDetection));
+        uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK + QString("%1 ms").arg(timeElaspedFaceLandmark));
+        uiFD->labelInferenceTimeIrisLandmark->setText(TEXT_INFERENCE_IRIS_LANDMARK);
+
+        emit displayFrame();
+
+        if (continuousMode) {
+            /* Stop Total FPS timer and display it to GUI, then restart timer before getting the next frame */
+            utilFD->timeTotalFps(false);
+            totalIrisModeFps = utilFD->calculateTotalFps();
+            uiFD->labelTotalFpsFace->setText(TEXT_TOTAL_FPS + QString::number(double(totalIrisModeFps), 'f', 1));
+            utilFD->timeTotalFps(true);
+
+            emit getFrame();
+        } else {
+            setButtonState(true);
+        }
+    }
 }
 
 void faceDetection::cropImageFace(const QVector<float> &faceDetectOutputTensor, int receivedStride, int receivedTimeElapsed, const cv::Mat &receivedMat)
@@ -424,6 +600,87 @@ void faceDetection::setFaceCropDims(const QVector<float> &faceCropTensor)
         faceHeight = frameHeight - faceTopLeftY;
 }
 
+void faceDetection::setIrisCropDims(const QVector<float> &detectedFaceTensor, int receivedStride, int timeElapsed)
+{
+    QVector <int> pointsEye = { 108, 109, 8, 9, 8, 569, 560, 561 };
+    float confidenceValue = detectedFaceTensor.last();
+    QVector<float> sortedFaceTensor = sortTensorFaceLandmark(detectedFaceTensor, receivedStride);
+
+    /* Calculate confidence probability by applying sigmoid function */
+    float confidenceLevel = 1 / (1 + exp(-confidenceValue));
+
+    timeElaspedFaceLandmark = timeElapsed;
+
+    if (confidenceLevel >= DETECT_THRESHOLD_FACE)
+        faceVisible = true;
+    else
+        faceVisible = false;
+
+    eyeCropCoords.clear();
+
+    foreach (int point, pointsEye) {
+        float coordinate = sortedFaceTensor.at(point);
+        eyeCropCoords.push_back(coordinate);
+    }
+}
+
+void faceDetection::setLeftIrisTensor(const QVector<float> &outputIrisLeftTensor, int receivedStride, int receivedTimeElapsed)
+{
+    timeElaspedIrisLeft = receivedTimeElapsed;
+
+    leftEyeTensor.clear();
+
+    /* Store the left iris x,y coordinates into a vector */
+    for (int i = receivedStride; i < outputIrisLeftTensor.size(); i+=3) {
+        leftEyeTensor.push_back(outputIrisLeftTensor.at(i));
+        leftEyeTensor.push_back(outputIrisLeftTensor.at(i + 1));
+    }
+}
+
+void faceDetection::detectFaceMode()
+{
+    detectMode = faceMode;
+
+    uiFD->labelAIModelFilenameFD->setText(TEXT_FACE_MODEL);
+    uiFD->labelInferenceTimeFaceDetection->setText(TEXT_INFERENCE_FACE_DETECTION);
+    uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK);
+    uiFD->labelInferenceTimeIrisLandmark->setVisible(false);
+    uiFD->labelTotalFpsFace->setText(TEXT_TOTAL_FPS);
+    uiFD->graphicsViewPointPlotFace->scene()->clear();
+    uiFD->pushButtonDetectFace->setDisabled(true);
+    uiFD->pushButtonDetectFace->setStyleSheet(BUTTON_GREYED_OUT);
+    uiFD->pushButtonDetectIris->setEnabled(true);
+    uiFD->pushButtonDetectIris->setStyleSheet(BUTTON_BLUE);
+    uiFD->stackedWidgetFace->setCurrentIndex(STACK_WIDGET_INDEX_FACE_LANDMARK);
+
+    qApp->processEvents();
+
+    if (!continuousMode)
+        displayFrame();
+}
+
+void faceDetection::detectIrisMode()
+{
+    detectMode = irisMode;
+
+    uiFD->labelAIModelFilenameFD->setText(TEXT_FACE_MODEL_WITH_IRIS_MODEL);
+    uiFD->labelInferenceTimeFaceDetection->setText(TEXT_INFERENCE_FACE_DETECTION);
+    uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK);
+    uiFD->labelInferenceTimeIrisLandmark->setVisible(true);
+    uiFD->labelInferenceTimeIrisLandmark->setText(TEXT_INFERENCE_IRIS_LANDMARK);
+    uiFD->labelTotalFpsFace->setText(TEXT_TOTAL_FPS);
+    uiFD->pushButtonDetectFace->setEnabled(true);
+    uiFD->pushButtonDetectFace->setStyleSheet(BUTTON_BLUE);
+    uiFD->pushButtonDetectIris->setDisabled(true);
+    uiFD->pushButtonDetectIris->setStyleSheet(BUTTON_GREYED_OUT);
+    uiFD->stackedWidgetFace->setCurrentIndex(STACK_WIDGET_INDEX_IRIS_LANDMARK);
+
+    qApp->processEvents();
+
+    if (!continuousMode)
+        displayFrame();
+}
+
 void faceDetection::stopContinuousMode()
 {
     continuousMode = false;
@@ -431,8 +688,12 @@ void faceDetection::stopContinuousMode()
     stopVideo();
     setButtonState(true);
 
-    uiFD->labelInferenceTimeFaceDetect->setText(TEXT_INFERENCE_FACE_DETECTION);
+    uiFD->labelInferenceTimeFaceDetection->setText(TEXT_INFERENCE_FACE_DETECTION);
     uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK);
+
+    if (detectMode == irisMode)
+        uiFD->labelInferenceTimeIrisLandmark->setText(TEXT_INFERENCE_IRIS_LANDMARK);
+
     uiFD->labelTotalFpsFace->setText(TEXT_TOTAL_FPS);
     uiFD->graphicsViewPointPlotFace->scene()->clear();
 
@@ -466,8 +727,12 @@ void faceDetection::triggerInference()
                 stopVideo();
             } else {
                 startVideo();
-                uiFD->labelInferenceTimeFaceDetect->setText(TEXT_INFERENCE_FACE_DETECTION);
+                uiFD->labelInferenceTimeFaceDetection->setText(TEXT_INFERENCE_FACE_DETECTION);
                 uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK);
+
+                if (detectMode == irisMode)
+                    uiFD->labelInferenceTimeIrisLandmark->setText(TEXT_INFERENCE_IRIS_LANDMARK);
+
                 uiFD->labelTotalFpsFace->setText(TEXT_TOTAL_FPS);
                 uiFD->graphicsViewPointPlotFace->scene()->clear();
             }
@@ -503,4 +768,16 @@ void faceDetection::setFrameDims(int height, int width)
 {
     frameHeight = height;
     frameWidth = width;
+}
+
+bool faceDetection::getUseIrisMode()
+{
+    bool useIrisMode;
+
+    if (detectMode == irisMode)
+        useIrisMode = true;
+    else
+        useIrisMode = false;
+
+    return useIrisMode;
 }
