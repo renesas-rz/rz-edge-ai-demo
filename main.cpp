@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     QCommandLineOption modelOption (QStringList() << "m" << "model", "Choose a model for selected demo mode.", "file");
     QCommandLineOption modeOption (QStringList() << "s" << "start-mode",
                                    "Choose a mode to start the application in: [shopping-basket|object-detection|pose-estimation|\nface-detection].",
-                                   "mode", QString("object-detection"));
+                                   "mode", QString("pose-estimation"));
     QCommandLineOption pricesOption (QStringList() << "p" << "prices-file",
                                    "Choose a text file listing the prices to use for the shopping basket mode", "file", PRICES_PATH_DEFAULT);
     QCommandLineOption faceDetectOption (QStringList() << "f" << "face-mode", "Choose a mode to start face detection with: [iris|face].", "mode");
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     QString faceOption;
     QString boardName;
     QSysInfo systemInfo;
-    Mode mode = OD;
+    Mode mode = PE;
     QString applicationDescription =
     "Selecting Demo Mode\n"
     "Demo Mode->Object Detection: Object Detection Mode.\n"
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     "Required Hardware:\n"
     "  Camera: Currently the Google Coral Mipi camera is supported,\n"
     "          but should work with any UVC compatible USB camera.\n\n"
-    "Object Detection Mode (Default)\n"
+    "Object Detection Mode\n"
     "  Draws boxes around detected objects and displays the following:\n"
     "    - Object Name and confidence level\n"
     "    - Table of the detected objects\n"
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     "  Process Basket: Pauses the live camera feed, grabs the frame and runs inference.\n"
     "  Next Basket: Clears inference results and resumes live camera feed.\n"
     "  Input->Load Image: Load a static image file.\n\n"
-    "Pose Estimation Mode\n"
+    "Pose Estimation Mode (Default)\n"
     "  BlazePose, MoveNet: Draws lines to connect identified joints and facial features,\n"
     "                      displays the total FPS, inference time, and displays a 2-D Point\n"
     "                      Projection of the identified pose.\n\n"
