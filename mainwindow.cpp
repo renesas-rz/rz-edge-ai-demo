@@ -37,7 +37,7 @@
 #include "shoppingbasket.h"
 
 MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocation, QString labelLocation,
-                       QString modelLocation, Mode mode, QString pricesFile, QString faceOption)
+                       QString modelLocation, Mode mode, QString pricesFile, QString faceOption, bool autoStart)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
@@ -204,6 +204,17 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
             vidWorker->setDelayMS(MIPI_VIDEO_DELAY);
 
         vidWorker->StartVideo();
+    }
+
+    if (autoStart) {
+        if (demoMode == PE)
+            ui->pushButtonStartStopPose->pressed();
+        else if (demoMode == OD)
+            ui->pushButtonStartStop->pressed();
+        else if (demoMode == SB)
+            ui->pushButtonProcessBasket->pressed();
+        else if (demoMode == FD)
+            ui->pushButtonStartStopFace->pressed();
     }
 }
 

@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     QCommandLineParser parser;
+    QCommandLineOption autoStartOption (QStringList() << "a" << "autostart", "Enable inference to automatically start when the application opens.");
     QCommandLineOption cameraOption(QStringList() << "c" << "camera", "Choose a camera.", "file");
     QCommandLineOption labelOption (QStringList() << "l" << "label", "Choose a label for selected demo mode.", "file");
     QCommandLineOption modelOption (QStringList() << "m" << "model", "Choose a model for selected demo mode.", "file");
@@ -36,6 +37,7 @@ int main(int argc, char *argv[])
     QCommandLineOption pricesOption (QStringList() << "p" << "prices-file",
                                    "Choose a text file listing the prices to use for the shopping basket mode", "file", PRICES_PATH_DEFAULT);
     QCommandLineOption faceDetectOption (QStringList() << "f" << "face-mode", "Choose a mode to start face detection with: [iris|face].", "mode");
+    bool autoStart;
     QString cameraLocation;
     QString labelLocation;
     QString modelLocation;
@@ -135,6 +137,7 @@ int main(int argc, char *argv[])
                                         MODEL_PATH_PE_BLAZE_POSE_HEAVY, MODEL_PATH_PE_BLAZE_POSE_LITE,
                                         MODEL_PATH_PE_HAND_POSE_FULL, MODEL_PATH_PE_HAND_POSE_LITE };
 
+    parser.addOption(autoStartOption);
     parser.addOption(cameraOption);
     parser.addOption(labelOption);
     parser.addOption(modelOption);
@@ -150,6 +153,7 @@ int main(int argc, char *argv[])
     pricesLocation = parser.value(pricesOption);
     faceOption = parser.value(faceDetectOption);
     modeString = parser.value(modeOption);
+    autoStart = parser.isSet(autoStartOption);
 
     boardName = systemInfo.machineHostName();
 
@@ -215,7 +219,7 @@ int main(int argc, char *argv[])
     }
 
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    MainWindow w(nullptr, boardName, cameraLocation, labelLocation, modelLocation, mode, pricesLocation, faceOption);
+    MainWindow w(nullptr, boardName, cameraLocation, labelLocation, modelLocation, mode, pricesLocation, faceOption, autoStart);
     w.show();
     return a.exec();
 }
