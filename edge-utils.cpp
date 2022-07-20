@@ -16,6 +16,8 @@
  * along with the RZ Edge AI Demo.  If not, see <https://www.gnu.org/licenses/>.
  *****************************************************************************************/
 
+#include <cmath>
+
 #include "edge-utils.h"
 
 edgeUtils::edgeUtils()
@@ -40,4 +42,8 @@ float edgeUtils::calculateTotalFps()
     float totalFps = 1000.0 / totalProcessTime;
 
     return  totalFps;
+}
+
+float edgeUtils::calculateSigmoid(float realNumber) {
+    return (1 / (1 + exp(-realNumber)));
 }

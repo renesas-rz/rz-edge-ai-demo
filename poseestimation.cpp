@@ -136,10 +136,7 @@ QVector<float> poseEstimation::sortTensorBlazePose(const QVector<float> received
     float nanValue = std::nanf("NAN");
 
     for(int i = 0; i < receivedStride; i += 5) {
-        float confidenceValue = receivedTensor.at(i + 4);
-
-        /* Calculate confidence probability by applying sigmoid function */
-        float confidenceLevel = 1 / (1 + exp(-confidenceValue));
+        float confidenceLevel = edgeUtils::calculateSigmoid(receivedTensor.at(i + 4));
 
         if (confidenceLevel > 0.5 && confidenceLevel <= 1.0) {
             sortedTensor.push_back(receivedTensor.at(i + 1)); // y-coordinate

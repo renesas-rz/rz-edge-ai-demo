@@ -67,6 +67,7 @@ public:
     edgeUtils();
     void timeTotalFps(bool startingTimer);
     float calculateTotalFps();
+    static float calculateSigmoid(float realNumber);
 
     std::chrono::high_resolution_clock::time_point startTime;
     int totalProcessTime;

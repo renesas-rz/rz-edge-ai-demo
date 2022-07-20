@@ -105,12 +105,8 @@ void faceDetection::setButtonState(bool enable)
 QVector<float> faceDetection::sortTensorFaceLandmark(const QVector<float> receivedTensor, int receivedStride)
 {
     QVector<float> sortedTensor = QVector<float>();
-
     float nanValue = std::nanf("NAN");
-    float confidenceValue = receivedTensor.at(receivedStride);
-
-    /* Calculate confidence probability by applying sigmoid function */
-    float confidenceLevel = 1 / (1 + exp(-confidenceValue));
+    float confidenceLevel = edgeUtils::calculateSigmoid(receivedTensor.at(receivedStride));
 
     for (int i = 0; i < receivedStride; i += 3) {
 
@@ -484,9 +480,7 @@ void faceDetection::cropImageFace(const QVector<float> &faceDetectOutputTensor, 
 
     for (int j = receivedStride; j < faceDetectOutputTensor.size(); j ++) {
         int iteration = j - receivedStride;
-
-        /* Calculate confidence probability by applying sigmoid function */
-        float confidenceLevel = 1 / (1 + exp(-faceDetectOutputTensor.at(j)));
+        float confidenceLevel = edgeUtils::calculateSigmoid(faceDetectOutputTensor.at(j));
 
         if (confidenceLevel > DETECT_THRESHOLD_FACE && confidenceLevel <= 1.0) {
             /*
@@ -603,11 +597,8 @@ void faceDetection::setFaceCropDims(const QVector<float> &faceCropTensor)
 void faceDetection::setIrisCropDims(const QVector<float> &detectedFaceTensor, int receivedStride, int timeElapsed)
 {
     QVector <int> pointsEye = { 108, 109, 8, 9, 8, 569, 560, 561 };
-    float confidenceValue = detectedFaceTensor.last();
     QVector<float> sortedFaceTensor = sortTensorFaceLandmark(detectedFaceTensor, receivedStride);
-
-    /* Calculate confidence probability by applying sigmoid function */
-    float confidenceLevel = 1 / (1 + exp(-confidenceValue));
+    float confidenceLevel = edgeUtils::calculateSigmoid(detectedFaceTensor.last());
 
     timeElaspedFaceLandmark = timeElapsed;
 
