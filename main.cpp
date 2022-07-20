@@ -31,7 +31,8 @@ int main(int argc, char *argv[])
     QCommandLineOption labelOption (QStringList() << "l" << "label", "Choose a label for selected demo mode.", "file");
     QCommandLineOption modelOption (QStringList() << "m" << "model", "Choose a model for selected demo mode.", "file");
     QCommandLineOption modeOption (QStringList() << "s" << "start-mode",
-                                   "Choose a mode to start the application in: [shopping-basket|object-detection|pose-estimation].", "mode", QString("object-detection"));
+                                   "Choose a mode to start the application in: [shopping-basket|object-detection|pose-estimation|\nface-detection].",
+                                   "mode", QString("object-detection"));
     QCommandLineOption pricesOption (QStringList() << "p" << "prices-file",
                                    "Choose a text file listing the prices to use for the shopping basket mode", "file", PRICES_PATH_DEFAULT);
     QString cameraLocation;
