@@ -37,7 +37,7 @@
 #include "shoppingbasket.h"
 
 MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocation, QString labelLocation,
-                       QString modelLocation, Mode mode, QString pricesFile, QString faceOption, bool autoStart)
+                       QString modelLocation, QString videoLocation, Mode mode, QString pricesFile, QString faceOption, bool autoStart)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
@@ -204,6 +204,27 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
             vidWorker->setDelayMS(MIPI_VIDEO_DELAY);
 
         vidWorker->StartVideo();
+    }
+
+    if (!videoLocation.isEmpty()) {
+        bool video = false;
+
+        ui->actionLoad_Camera->setEnabled(true);
+        QList<QString> supportedFormats = {".asf", ".avi", ".3gp", ".mp4", ".m4v", ".mov",
+                                           ".flv", ".mpeg", ".mkv", ".webm", ".mxf", ".ogg"};
+
+        foreach(QString format, supportedFormats) {
+            if(videoLocation.endsWith(format, Qt::CaseInsensitive))
+                video = true;
+        }
+
+        if (video) {
+            inputMode = videoMode;
+            cvWorker->useVideoMode(videoLocation);
+        } else {
+            inputMode = imageMode;
+            cvWorker->useImageMode(videoLocation);
+        }
     }
 
     if (autoStart) {

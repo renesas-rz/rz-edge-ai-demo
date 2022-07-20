@@ -37,12 +37,14 @@ int main(int argc, char *argv[])
     QCommandLineOption pricesOption (QStringList() << "p" << "prices-file",
                                    "Choose a text file listing the prices to use for the shopping basket mode", "file", PRICES_PATH_DEFAULT);
     QCommandLineOption faceDetectOption (QStringList() << "f" << "face-mode", "Choose a mode to start face detection with: [iris|face].", "mode");
+    QCommandLineOption videoOption (QStringList() << "v" << "video-image", "Choose a video/image to load during startup. Displays before -c option during startup.", "media");
     bool autoStart;
     QString cameraLocation;
     QString labelLocation;
     QString modelLocation;
     QString modeString;
     QString pricesLocation;
+    QString videoLocation;
     QString faceOption;
     QString boardName;
     QSysInfo systemInfo;
@@ -144,6 +146,7 @@ int main(int argc, char *argv[])
     parser.addOption(modeOption);
     parser.addOption(pricesOption);
     parser.addOption(faceDetectOption);
+    parser.addOption(videoOption);
     parser.addHelpOption();
     parser.setApplicationDescription(applicationDescription);
     parser.process(a);
@@ -154,6 +157,7 @@ int main(int argc, char *argv[])
     faceOption = parser.value(faceDetectOption);
     modeString = parser.value(modeOption);
     autoStart = parser.isSet(autoStartOption);
+    videoLocation = parser.value(videoOption);
 
     boardName = systemInfo.machineHostName();
 
@@ -219,7 +223,7 @@ int main(int argc, char *argv[])
     }
 
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    MainWindow w(nullptr, boardName, cameraLocation, labelLocation, modelLocation, mode, pricesLocation, faceOption, autoStart);
+    MainWindow w(nullptr, boardName, cameraLocation, labelLocation, modelLocation, videoLocation, mode, pricesLocation, faceOption, autoStart);
     w.show();
     return a.exec();
 }
