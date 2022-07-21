@@ -161,6 +161,7 @@ int main(int argc, char *argv[])
 
     boardName = systemInfo.machineHostName();
 
+    /* Mode selection (-s / --start-mode) */
     if (modeString == "shopping-basket") {
         mode = SB;
     } else if (modeString == "object-detection") {
@@ -195,6 +196,7 @@ int main(int argc, char *argv[])
         faceOption = OPTION_FD_DETECT_FACE;
     }
 
+    /* Label file selection (-l / --label)*/
     if (!QFileInfo(labelLocation).isFile()) {
         if (mode != PE && !labelLocation.isEmpty())
                 qWarning("Warning: label file does not exist, using default label file...");
@@ -205,6 +207,7 @@ int main(int argc, char *argv[])
             labelLocation = LABEL_PATH_OD;
     }
 
+    /* Model file section (-m / --model */
     if (!QFileInfo(modelLocation).isFile()) {
         if (mode != PE && !modelLocation.isEmpty())
             qWarning("Warning: AI model does not exist, using default AI model...");
@@ -222,6 +225,7 @@ int main(int argc, char *argv[])
         modelLocation = MODEL_PATH_PE_BLAZE_POSE_LITE;
     }
 
+    /* Application start */
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     MainWindow w(nullptr, boardName, cameraLocation, labelLocation, modelLocation, videoLocation, mode, pricesLocation, faceOption, autoStart);
     w.show();
