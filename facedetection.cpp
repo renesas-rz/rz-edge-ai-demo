@@ -283,11 +283,11 @@ void faceDetection::drawPointsIrisLandmark(const QVector<float> &outputTensor, b
         float yIrisPosition;
 
         if (drawLeftEye) {
-            xIrisPosition = faceTopLeftX + eyeLeft.x;
-            yIrisPosition = faceTopLeftY + eyeLeft.y;
+            xIrisPosition = eyeLeft.x;
+            yIrisPosition = eyeLeft.y;
         } else {
-            xIrisPosition = faceTopLeftX + eyeRight.x;
-            yIrisPosition = faceTopLeftY + eyeRight.y;
+            xIrisPosition = eyeRight.x;
+            yIrisPosition = eyeRight.y;
         }
 
         xIrisPosition += outputTensor[i] * displayWidth;
@@ -395,10 +395,10 @@ void faceDetection::processFace(const cv::Mat &matToProcess)
     emit sendMatForInference(croppedFaceMat, faceModel, detectIris);
 
     if (detectMode == irisMode)
-        processIris(croppedFaceMat, detectIris);
+        processIris(resizedMat, croppedFaceMat, detectIris);
 }
 
-void faceDetection::processIris(const cv::Mat &croppedFaceMat, bool detectIris)
+void faceDetection::processIris(const cv::Mat &resizedInputMat, const cv::Mat &croppedFaceMat, bool detectIris)
 {
     if (faceVisible) {
         cv::Mat croppedEyeMat;
@@ -413,13 +413,17 @@ void faceDetection::processIris(const cv::Mat &croppedFaceMat, bool detectIris)
         eyeLeft.width = (eyeCropCoords.at(2) * irisScaleWidth) - eyeLeft.x;
         eyeLeft.height = (eyeCropCoords.at(3) * irisScaleHeight) - eyeLeft.y;
 
+        /* Scale left eye to the resized image */
+        eyeLeft.x += faceTopLeftX;
+        eyeLeft.y += faceTopLeftY;
+
         /*
          * Crop cv::Mat using coordinates provided by Face Landmark and
          * run inference on left eye using Iris Landmark model
          */
         cv::Rect cropRegionEyeL(eyeLeft.x, eyeLeft.y, eyeLeft.width, eyeLeft.height);
 
-        croppedEyeMat = croppedFaceMat(cropRegionEyeL);
+        croppedEyeMat = resizedInputMat(cropRegionEyeL);
 
         emit sendMatForInference(croppedEyeMat, faceModel, detectIris);
 
@@ -431,13 +435,17 @@ void faceDetection::processIris(const cv::Mat &croppedFaceMat, bool detectIris)
         eyeRight.width = (eyeCropCoords.at(6) * irisScaleWidth) - eyeRight.x;
         eyeRight.height = (eyeCropCoords.at(7) * irisScaleHeight) - eyeRight.y;
 
+        /* Scale right eye to the resized image */
+        eyeRight.x += faceTopLeftX;
+        eyeRight.y += faceTopLeftY;
+
         /*
          * Crop cv::Mat using coordinates provided by Face Landmark and
          * run inference on right eye using Iris Landmark model
          */
         cv::Rect cropRegionEyeR(eyeRight.x, eyeRight.y, eyeRight.width, eyeRight.height);
 
-        croppedEyeMat = croppedFaceMat(cropRegionEyeR);
+        croppedEyeMat = resizedInputMat(cropRegionEyeR);
 
         emit sendMatForInference(croppedEyeMat, faceModel, detectIris);
     } else {

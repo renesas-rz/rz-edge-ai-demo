@@ -83,7 +83,7 @@ private:
     void drawPointsFaceLandmark(const QVector<float>& outputTensor, bool updateGraphicalView);
     void drawPointsIrisLandmark(const QVector<float>& outputTensor, bool drawLeftEye);
     void connectLandmarks(int landmark1, int landmark2, bool drawGraphicalViewLandmarks);
-    void processIris(const cv::Mat &croppedFaceMat, bool detectIris);
+    void processIris(const cv::Mat &resizedInputMat, const cv::Mat &croppedFaceMat, bool detectIris);
     QVector<QPair<float, float>> generateAnchorCoords(int inputHeight, int inputWidth);
     QVector<float> sortBoundingBoxes(const QVector<float> receivedConfidenceTensor, const QVector<float> receivedCoordinatesTensor);
 
