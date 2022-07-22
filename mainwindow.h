@@ -102,7 +102,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent, QString boardName, QString cameraLocation, QString labelLocation,
-               QString modelLocation, QString videoLocation, Mode mode, QString pricesFile, QString faceOption, bool autoStart);
+               QString modelLocation, QString videoLocation, Mode mode, QString pricesFile, bool irisOption, bool autoStart);
 
 public slots:
     void ShowVideo();

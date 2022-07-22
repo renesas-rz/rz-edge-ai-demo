@@ -37,7 +37,7 @@
 #include "shoppingbasket.h"
 
 MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocation, QString labelLocation,
-                       QString modelLocation, QString videoLocation, Mode mode, QString pricesFile, QString faceOption, bool autoStart)
+                       QString modelLocation, QString videoLocation, Mode mode, QString pricesFile, bool irisOption, bool autoStart)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
@@ -45,7 +45,12 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     inputMode = cameraMode;
     demoMode = mode;
     pricesPath = pricesFile;
-    faceDetectIrisMode = false;
+    faceDetectIrisMode = irisOption;
+    modelPE = MODEL_PATH_PE_BLAZE_POSE_LITE;
+    labelOD = LABEL_PATH_OD;
+    modelOD = MODEL_PATH_OD;
+    labelSB = LABEL_PATH_SB;
+    modelSB = MODEL_PATH_SB;
 
     QPixmap splashScreenImage(SPLASH_SCREEN_PATH);
 
@@ -154,57 +159,23 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     } else {
         createVideoWorker();
         createTfWorker();
-
-        if (demoMode == SB) {
-            /* Set default parameters for other modes */
-            labelOD = LABEL_PATH_OD;
-            modelOD = MODEL_PATH_OD;
-
-            modelPE = MODEL_PATH_PE_BLAZE_POSE_LITE;
-
-            setupShoppingMode();
-        } else if (demoMode == OD) {
-            /* Set default parameters for other modes*/
-            labelSB = LABEL_PATH_SB;
-            modelSB = MODEL_PATH_SB;
-
-            modelPE = MODEL_PATH_PE_BLAZE_POSE_LITE;
-
-            setupObjectDetectMode();
-        } else if (demoMode == PE) {
-            /* Set default parameters for other modes */
-            labelSB = LABEL_PATH_SB;
-            modelSB = MODEL_PATH_SB;
-
-            labelOD = LABEL_PATH_OD;
-            modelOD = MODEL_PATH_OD;
-
-            setupPoseEstimateMode();
-        } else if (demoMode == FD) {
-            /* Set default parameters for other modes */
-            labelSB = LABEL_PATH_SB;
-            modelSB = MODEL_PATH_SB;
-
-            labelOD = LABEL_PATH_OD;
-            modelOD = MODEL_PATH_OD;
-
-            modelPE = MODEL_PATH_PE_BLAZE_POSE_LITE;
-
-            if (faceOption == OPTION_FD_DETECT_IRIS)
-                faceDetectIrisMode = true;
-            else
-                faceDetectIrisMode = false;
-
-            setupFaceDetectMode();
-        }
-
-        /* Limit camera loop speed if using mipi camera to save on CPU
-         * USB camera is alreay limited to 10 FPS */
-        if (cvWorker->getUsingMipi())
-            vidWorker->setDelayMS(MIPI_VIDEO_DELAY);
-
-        vidWorker->StartVideo();
     }
+
+    if (demoMode == SB)
+        setupShoppingMode();
+    else if (demoMode == OD)
+        setupObjectDetectMode();
+    else if (demoMode == PE)
+        setupPoseEstimateMode();
+    else if (demoMode == FD)
+        setupFaceDetectMode();
+
+    /* Limit camera loop speed if using mipi camera to save on CPU
+     * USB camera is alreay limited to 10 FPS */
+    if (cvWorker->getUsingMipi())
+        vidWorker->setDelayMS(MIPI_VIDEO_DELAY);
+
+    vidWorker->StartVideo();
 
     if (!videoLocation.isEmpty()) {
         bool video = false;

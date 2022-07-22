@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
     QString videoLocation;
     QString faceOption;
     QString boardName;
+    bool irisOption = false;
     QSysInfo systemInfo;
     Mode mode = PE;
     QString applicationDescription =
@@ -176,13 +177,15 @@ int main(int argc, char *argv[])
 
         if (faceOption == OPTION_FD_DETECT_FACE) {
             modelLocation = MODEL_PATH_FD_FACE_DETECTION;
+            irisOption = false;
         } else if (faceOption == OPTION_FD_DETECT_IRIS) {
             modelLocation = MODEL_PATH_FD_IRIS_LANDMARK;
+            irisOption = true;
         } else {
             if (!faceOption.isEmpty())
                 qWarning("Warning: unknown face detection mode requested, using default option...");
 
-            faceOption = OPTION_FD_DETECT_FACE;
+            irisOption = false;
             modelLocation = MODEL_PATH_FD_FACE_DETECTION;
         }
     } else {
@@ -227,7 +230,7 @@ int main(int argc, char *argv[])
 
     /* Application start */
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    MainWindow w(nullptr, boardName, cameraLocation, labelLocation, modelLocation, videoLocation, mode, pricesLocation, faceOption, autoStart);
+    MainWindow w(nullptr, boardName, cameraLocation, labelLocation, modelLocation, videoLocation, mode, pricesLocation, irisOption, autoStart);
     w.show();
     return a.exec();
 }
