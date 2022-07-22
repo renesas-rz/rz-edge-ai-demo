@@ -38,7 +38,8 @@ class shoppingBasket  : public QObject
     Q_OBJECT
 
 public:
-    shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QString pricesFile, QString modelPath, QString inferenceEngine);
+    shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QString pricesFile,
+                   QString modelPath, QString inferenceEngine, bool cameraConnect);
     void setImageMode(bool imageStatus);
     void updateInferenceLabel();
     void updateModelLabel();
@@ -71,6 +72,7 @@ private:
     QString currency;
     QStringList labelList;
     Input inputModeSB;
+    bool camConnect;
 };
 
 #endif // SHOPPINGBASKET_H

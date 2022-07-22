@@ -49,7 +49,7 @@ class faceDetection : public QObject
     Q_OBJECT
 
 public:
-    faceDetection(Ui::MainWindow *ui, QString inferenceEngine, DetectMode detectModeToUse);
+    faceDetection(Ui::MainWindow *ui, QString inferenceEngine, DetectMode detectModeToUse, bool cameraConnect);
     void processFace(const cv::Mat &matToProcess);
     void setCameraMode();
     void setImageMode();
@@ -101,6 +101,7 @@ private:
     bool continuousMode;
     bool buttonState;
     bool faceVisible;
+    bool camConnect;
     int frameHeight;
     int frameWidth;
     int timeElaspedFaceDetection;

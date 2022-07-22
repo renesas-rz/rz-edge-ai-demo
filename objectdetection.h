@@ -35,7 +35,7 @@ class objectDetection : public QObject
      Q_OBJECT
 
 public:
-    objectDetection(Ui::MainWindow *ui, QStringList labelFileList, QString modelPath, QString inferenceEngine);
+    objectDetection(Ui::MainWindow *ui, QStringList labelFileList, QString modelPath, QString inferenceEngine, bool cameraConnect);
     void setImageMode();
     void setVideoMode();
     void setCameraMode();
@@ -64,6 +64,7 @@ private:
     QVector<float> outputTensor;
     bool buttonState;
     bool continuousMode;
+    bool camConnect;
     QStringList labelList;
     Input inputModeOD;
 };

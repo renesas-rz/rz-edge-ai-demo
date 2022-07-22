@@ -45,12 +45,14 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     inputMode = cameraMode;
     demoMode = mode;
     pricesPath = pricesFile;
+    mediaPath = videoLocation;
     faceDetectIrisMode = irisOption;
     modelPE = MODEL_PATH_PE_BLAZE_POSE_LITE;
     labelOD = LABEL_PATH_OD;
     modelOD = MODEL_PATH_OD;
     labelSB = LABEL_PATH_SB;
     modelSB = MODEL_PATH_SB;
+    bool mediaExists = QFile::exists(mediaPath);
 
     QPixmap splashScreenImage(SPLASH_SCREEN_PATH);
 
@@ -151,15 +153,19 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     splashScreen->close();
 
     if (cvWorker->cameraInit() == false) {
-        qWarning("Camera not initialising. Quitting.");
-        errorPopup(TEXT_CAMERA_INIT_STATUS_ERROR, EXIT_CAMERA_INIT_ERROR);
+        qWarning("Camera not initialising. Starting in Cameraless mode.");
+        cameraConnect = false;
+        errorPopup(TEXT_CAMERA_INIT_STATUS_ERROR);
     } else if (cvWorker->getCameraOpen() == false) {
-        qWarning("Camera not opening. Quitting.");
-        errorPopup(TEXT_CAMERA_OPENING_ERROR, EXIT_CAMERA_STOPPED_ERROR);
+        qWarning("Camera not opening. Starting in Cameraless mode.");
+        cameraConnect = false;
+        errorPopup(TEXT_CAMERA_OPENING_ERROR);
     } else {
+        cameraConnect = true;
         createVideoWorker();
-        createTfWorker();
     }
+
+    createTfWorker();
 
     if (demoMode == SB)
         setupShoppingMode();
@@ -170,35 +176,46 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     else if (demoMode == FD)
         setupFaceDetectMode();
 
-    /* Limit camera loop speed if using mipi camera to save on CPU
-     * USB camera is alreay limited to 10 FPS */
-    if (cvWorker->getUsingMipi())
-        vidWorker->setDelayMS(MIPI_VIDEO_DELAY);
+    if (cameraConnect) {
+        /* Limit camera loop speed if using mipi camera to save on CPU
+         * USB camera is alreay limited to 10 FPS */
+        if (cvWorker->getUsingMipi())
+            vidWorker->setDelayMS(MIPI_VIDEO_DELAY);
 
-    vidWorker->StartVideo();
+        vidWorker->StartVideo();
+    }
 
-    if (!videoLocation.isEmpty()) {
+    if (mediaExists) {
         bool video = false;
 
-        ui->actionLoad_Camera->setEnabled(true);
+        if (cameraConnect)
+            ui->actionLoad_Camera->setEnabled(true);
+
         QList<QString> supportedFormats = {".asf", ".avi", ".3gp", ".mp4", ".m4v", ".mov",
                                            ".flv", ".mpeg", ".mkv", ".webm", ".mxf", ".ogg"};
 
         foreach(QString format, supportedFormats) {
-            if(videoLocation.endsWith(format, Qt::CaseInsensitive))
+            if (mediaPath.endsWith(format, Qt::CaseInsensitive))
                 video = true;
         }
 
         if (video) {
             inputMode = videoMode;
-            cvWorker->useVideoMode(videoLocation);
+            cvWorker->useVideoMode(mediaPath);
         } else {
             inputMode = imageMode;
-            cvWorker->useImageMode(videoLocation);
+            cvWorker->useImageMode(mediaPath);
         }
     }
 
-    if (autoStart) {
+    /* If there is no camera or file selected, select a default file */
+    if (!mediaExists && !cameraConnect) {
+        mediaPath = DEFAULT_VIDEO;
+        inputMode = videoMode;
+        cvWorker->useVideoMode(mediaPath);
+    }
+
+    if (autoStart && (mediaExists || cameraConnect)) {
         if (demoMode == PE)
             ui->pushButtonStartStopPose->pressed();
         else if (demoMode == OD)
@@ -215,7 +232,7 @@ void MainWindow::setupObjectDetectMode()
     demoMode = OD;
     tfWorker->setDemoMode(demoMode);
 
-    objectDetectMode = new objectDetection(ui, labelFileList, modelPath, inferenceEngine);
+    objectDetectMode = new objectDetection(ui, labelFileList, modelPath, inferenceEngine, cameraConnect);
 
     connect(this, SIGNAL(stopInference()), objectDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
     connect(ui->pushButtonLoadAIModelOD, SIGNAL(pressed()), this, SLOT(loadAIModel()));
@@ -223,10 +240,13 @@ void MainWindow::setupObjectDetectMode()
     connect(objectDetectMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
     connect(objectDetectMode, SIGNAL(getBoxes(QVector<float>,QStringList)), this, SLOT(drawBoxes(QVector<float>,QStringList)));
     connect(objectDetectMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
-    connect(objectDetectMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
-    connect(objectDetectMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
     connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, int, const cv::Mat&)),
             objectDetectMode, SLOT(runInference(QVector<float>, int, int, cv::Mat)));
+
+    if (cameraConnect) {
+        connect(objectDetectMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
+        connect(objectDetectMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
+    }
 }
 
 void MainWindow::setupShoppingMode()
@@ -234,7 +254,7 @@ void MainWindow::setupShoppingMode()
     demoMode = SB;
     tfWorker->setDemoMode(demoMode);
 
-    shoppingBasketMode = new shoppingBasket(ui, labelFileList, pricesPath, modelPath, inferenceEngine);
+    shoppingBasketMode = new shoppingBasket(ui, labelFileList, pricesPath, modelPath, inferenceEngine, cameraConnect);
 
     connect(ui->pushButtonLoadAIModelSB, SIGNAL(pressed()), this, SLOT(loadAIModel()));
     connect(ui->pushButtonProcessBasket, SIGNAL(pressed()), shoppingBasketMode, SLOT(processBasket()));
@@ -243,10 +263,13 @@ void MainWindow::setupShoppingMode()
     connect(shoppingBasketMode, SIGNAL(getBoxes(QVector<float>,QStringList)), this, SLOT(drawBoxes(QVector<float>,QStringList)));
     connect(shoppingBasketMode, SIGNAL(getStaticImage()), this, SLOT(getImageFrame()));
     connect(shoppingBasketMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
-    connect(shoppingBasketMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
-    connect(shoppingBasketMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
     connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, int, const cv::Mat&)),
             shoppingBasketMode, SLOT(runInference(QVector<float>, int, int, cv::Mat)));
+
+    if (cameraConnect) {
+        connect(shoppingBasketMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
+        connect(shoppingBasketMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
+    }
 }
 
 void MainWindow::setupPoseEstimateMode()
@@ -254,16 +277,19 @@ void MainWindow::setupPoseEstimateMode()
     demoMode = PE;
     tfWorker->setDemoMode(demoMode);
 
-    poseEstimateMode = new poseEstimation(ui, modelPath, inferenceEngine);
+    poseEstimateMode = new poseEstimation(ui, modelPath, inferenceEngine, cameraConnect);
 
     connect(this, SIGNAL(stopInference()), poseEstimateMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
     connect(ui->pushButtonStartStopPose, SIGNAL(pressed()), poseEstimateMode, SLOT(triggerInference()));
     connect(poseEstimateMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
     connect(poseEstimateMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
-    connect(poseEstimateMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
-    connect(poseEstimateMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
     connect(tfWorker, SIGNAL(sendOutputTensor(const QVector<float>, int, int, const cv::Mat&)),
             poseEstimateMode, SLOT(runInference(QVector<float>, int, int, cv::Mat)));
+
+    if (cameraConnect) {
+        connect(poseEstimateMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
+        connect(poseEstimateMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
+    }
 }
 
 void MainWindow::setupFaceDetectMode()
@@ -281,7 +307,7 @@ void MainWindow::setupFaceDetectMode()
     else
         detectModeToUse = faceMode;
 
-    faceDetectMode = new faceDetection(ui, inferenceEngine, detectModeToUse);
+    faceDetectMode = new faceDetection(ui, inferenceEngine, detectModeToUse, cameraConnect);
 
     connect(this, SIGNAL(stopInference()), faceDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
     connect(ui->pushButtonStartStopFace, SIGNAL(pressed()), faceDetectMode, SLOT(triggerInference()));
@@ -292,14 +318,17 @@ void MainWindow::setupFaceDetectMode()
     connect(faceDetectMode, SIGNAL(sendMatForInference(cv::Mat,FaceModel,bool)),
             this, SLOT(runFaceInference(cv::Mat,FaceModel,bool)));
     connect(faceDetectMode, SIGNAL(displayFrame()), this, SLOT(getImageFrame()));
-    connect(faceDetectMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
-    connect(faceDetectMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
     connect(tfWorkerFaceDetection, SIGNAL(sendOutputTensor(QVector<float>,int,int,cv::Mat)),
             faceDetectMode, SLOT(cropImageFace(QVector<float>,int,int,cv::Mat)));
     connect(tfWorkerIrisLandmarkL, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
             faceDetectMode, SLOT(setLeftIrisTensor(QVector<float>,int,int)));
     connect(tfWorkerIrisLandmarkR, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
             faceDetectMode, SLOT(runInference(QVector<float>,int,int)));
+
+    if (cameraConnect) {
+        connect(faceDetectMode, SIGNAL(startVideo()), vidWorker, SLOT(StartVideo()));
+        connect(faceDetectMode, SIGNAL(stopVideo()), vidWorker, SLOT(StopVideo()));
+    }
 
     if (detectModeToUse == irisMode) {
         connect(tfWorkerFaceLandmark, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
@@ -396,8 +425,8 @@ void MainWindow::ShowVideo()
     image = cvWorker->getImage(1);
 
     if (image == nullptr) {
-        qWarning("Camera no longer working. Quitting.");
-        errorPopup(TEXT_CAMERA_FAILURE_ERROR, EXIT_CAMERA_STOPPED_ERROR);
+        qWarning("Camera no longer working.");
+        errorPopup(TEXT_CAMERA_FAILURE_ERROR);
     } else {
         emit sendMatToDraw(*image);
     }
@@ -513,8 +542,8 @@ void MainWindow::processFrame()
             msgBox->exec();
             emit stopInference();
         } else {
-            qWarning("Camera not working. Quitting.");
-            errorPopup(TEXT_CAMERA_FAILURE_ERROR, EXIT_CAMERA_STOPPED_ERROR);
+            qWarning("Camera not working.");
+            errorPopup(TEXT_CAMERA_FAILURE_ERROR);
         }
     } else {
         if (demoMode == FD)
@@ -656,14 +685,12 @@ void MainWindow::inferenceWarning(QString warningMessage)
         checkInputMode();
 }
 
-void MainWindow::errorPopup(QString errorMessage, int errorCode)
+void MainWindow::errorPopup(QString errorMessage)
 {
     QMessageBox *msgBox = new QMessageBox(QMessageBox::Critical, "Error", errorMessage,
                                  QMessageBox::NoButton, this, Qt::Dialog | Qt::FramelessWindowHint);
     msgBox->setFont(font);
     msgBox->exec();
-
-    exit(errorCode);
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -708,11 +735,16 @@ void MainWindow::on_actionShopping_Basket_triggered()
     deleteTfWorker();
     disconnectSignals();
 
+    scene->clear();
     demoMode = SB;
-    inputMode = cameraMode;
     modelPath = modelSB;
     labelPath = labelSB;
     labelFileList = readLabelFile(labelSB);
+
+    if (cameraConnect)
+        inputMode = cameraMode;
+    else
+        inputMode = imageMode;
 
     if (cvWorker->getUsingMipi())
         iterations = 6;
@@ -722,8 +754,24 @@ void MainWindow::on_actionShopping_Basket_triggered()
     createTfWorker();
     setupShoppingMode();
 
-    cvWorker->useCameraMode();
-    vidWorker->StartVideo();
+    if (cameraConnect) {
+        cvWorker->useCameraMode();
+        vidWorker->StartVideo();
+    } else if (inputMode == imageMode) {
+        cvWorker->useImageMode(DEFAULT_SBD_IMG);
+    }
+}
+
+void MainWindow::startDefaultMode()
+{
+    ui->menuInput->menuAction()->setVisible(true);
+
+    if (inputMode == cameraMode) {
+        cvWorker->useCameraMode();
+        vidWorker->StartVideo();
+    } else if (inputMode == videoMode) {
+        cvWorker->useVideoMode(mediaPath);
+    }
 }
 
 void MainWindow::on_actionObject_Detection_triggered()
@@ -754,20 +802,23 @@ void MainWindow::on_actionObject_Detection_triggered()
     deleteTfWorker();
     disconnectSignals();
 
+    scene->clear();
     demoMode = OD;
-    inputMode = cameraMode;
     modelPath = modelOD;
     labelPath = labelOD;
+    mediaPath = DEFAULT_VIDEO;
     labelFileList = readLabelFile(labelPath);
 
     iterations = 1;
 
+    if (cameraConnect)
+        inputMode = cameraMode;
+    else
+        inputMode = videoMode;
+
     createTfWorker();
     setupObjectDetectMode();
-
-    ui->menuInput->menuAction()->setVisible(true);
-    cvWorker->useCameraMode();
-    vidWorker->StartVideo();
+    startDefaultMode();
 }
 
 void MainWindow::on_actionPose_Estimation_triggered()
@@ -786,18 +837,21 @@ void MainWindow::on_actionPose_Estimation_triggered()
     deleteTfWorker();
     disconnectSignals();
 
+    scene->clear();
     demoMode = PE;
     modelPath = modelPE;
-    inputMode = cameraMode;
+    mediaPath = DEFAULT_VIDEO;
     iterations = 1;
+
+    if (cameraConnect)
+        inputMode = cameraMode;
+    else
+        inputMode = videoMode;
 
     setPoseEstimateDelegateType();
     createTfWorker();
     setupPoseEstimateMode();
-
-    ui->menuInput->menuAction()->setVisible(true);
-    cvWorker->useCameraMode();
-    vidWorker->StartVideo();
+    startDefaultMode();
 }
 
 void MainWindow::on_actionFace_Detection_triggered()
@@ -816,18 +870,21 @@ void MainWindow::on_actionFace_Detection_triggered()
     deleteTfWorker();
     disconnectSignals();
 
+    scene->clear();
     demoMode = FD;
     modelPath = MODEL_PATH_FD_FACE_LANDMARK;
-    inputMode = cameraMode;
+    mediaPath = DEFAULT_FD_VIDEO;
     iterations = 1;
+
+    if (cameraConnect)
+        inputMode = cameraMode;
+    else
+        inputMode = videoMode;
 
     setFaceDetectDelegateType();
     createTfWorker();
     setupFaceDetectMode();
-
-    ui->menuInput->menuAction()->setVisible(true);
-    cvWorker->useCameraMode();
-    vidWorker->StartVideo();
+    startDefaultMode();
 }
 
 void MainWindow::loadAIModel()
@@ -956,14 +1013,14 @@ void MainWindow::on_actionLoad_File_triggered()
     QFileDialog dialog(this);
     QString mediaFileFilter;
     QString mediaFileName;
-    QString mediaFilePath;
 
     connect(this, SIGNAL(fileLoaded()), qeventLoop, SLOT(quit()));
 
     if (demoMode != SB)
         emit stopInference();
 
-    vidWorker->StopVideo();
+    if (cameraConnect)
+        vidWorker->StopVideo();
 
     dialog.setFileMode(QFileDialog::AnyFile);
     dialog.setViewMode(QFileDialog::Detail);
@@ -988,15 +1045,17 @@ void MainWindow::on_actionLoad_File_triggered()
         return;
     }
 
-    mediaFilePath = QDir::current().absoluteFilePath(mediaFileName);
-    ui->actionLoad_Camera->setEnabled(true);
+    mediaPath = QDir::current().absoluteFilePath(mediaFileName);
+
+    if (cameraConnect)
+        ui->actionLoad_Camera->setEnabled(true);
 
     if (dialog.selectedNameFilter().contains("Images")) {
         inputMode = imageMode;
-        cvWorker->useImageMode(mediaFilePath);
+        cvWorker->useImageMode(mediaPath);
     } else if (dialog.selectedNameFilter().contains("Videos")) {
         inputMode = videoMode;
-        cvWorker->useVideoMode(mediaFilePath);
+        cvWorker->useVideoMode(mediaPath);
     }
 
     checkInputMode();
@@ -1067,7 +1126,7 @@ void MainWindow::checkInputMode()
             poseEstimateMode->setImageMode();
         else if (demoMode == FD)
             faceDetectMode->setImageMode();
-    } else {
+    } else if (inputMode == cameraMode) {
         if (demoMode == OD)
             objectDetectMode->setCameraMode();
         else if (demoMode == SB)

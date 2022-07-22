@@ -51,13 +51,14 @@ enum HandPosePoints { HP_WRIST, HP_THUMB_CMC, HP_THUMB_MCP, HP_THUMB_IP, HP_THUM
 #define PEN_WIDTH 2
 #define PEN_WIDTH_HAND_POSE 3
 
-poseEstimation::poseEstimation(Ui::MainWindow *ui, QString modelPath, QString inferenceEngine)
+poseEstimation::poseEstimation(Ui::MainWindow *ui, QString modelPath, QString inferenceEngine, bool cameraConnect)
 {
     QString modelName;
 
     uiPE = ui;
     inputModePE = cameraMode;
     buttonState = true;
+    camConnect = cameraConnect;
 
     utilPE = new edgeUtils();
 
@@ -76,8 +77,8 @@ poseEstimation::poseEstimation(Ui::MainWindow *ui, QString modelPath, QString in
     uiPE->actionObject_Detection->setDisabled(false);
     uiPE->actionPose_Estimation->setDisabled(true);
     uiPE->actionFace_Detection->setDisabled(false);
-    uiPE->actionLoad_Camera->setDisabled(true);
     uiPE->actionLoad_File->setText(TEXT_LOAD_FILE);
+    uiPE->actionLoad_Camera->setDisabled(true);
 
     uiPE->labelAIModelFilenamePE->setText(modelName);
     uiPE->labelInferenceEnginePE->setText(inferenceEngine);
@@ -538,7 +539,7 @@ void poseEstimation::setImageMode()
 {
     inputModePE = imageMode;
 
-    uiPE->actionLoad_Camera->setEnabled(true);
+    uiPE->actionLoad_Camera->setEnabled(camConnect);
     uiPE->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
 }
 
@@ -546,7 +547,7 @@ void poseEstimation::setVideoMode()
 {
     inputModePE = videoMode;
 
-    uiPE->actionLoad_Camera->setEnabled(true);
+    uiPE->actionLoad_Camera->setEnabled(camConnect);
     uiPE->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
 }
 

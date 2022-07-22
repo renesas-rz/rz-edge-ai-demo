@@ -24,9 +24,9 @@
 #include "tfliteworker.h"
 #include "edge-utils.h"
 
-#define TEXT_CAMERA_INIT_STATUS_ERROR "Camera Error!\n\n No camera detected, please check connection and relaunch application.\n\nApplication will now close."
-#define TEXT_CAMERA_OPENING_ERROR "Camera Error!\n\n Camera not Opening, please check connection and relaunch application.\n\nApplication will now close."
-#define TEXT_CAMERA_FAILURE_ERROR "Camera Error!\n\n Camera has stopped working, please check the connection and relaunch application.\n\nApplication will now close."
+#define TEXT_CAMERA_INIT_STATUS_ERROR "Camera Error!\n\n No camera detected, launching in cameraless mode.\n"
+#define TEXT_CAMERA_OPENING_ERROR "Camera Error!\n\n Camera not Opening, please check connection and relaunch application.\n"
+#define TEXT_CAMERA_FAILURE_ERROR "Camera Error!\n\n Camera has stopped working, please check the connection and relaunch application.\n"
 #define TEXT_INFERENCE_ENGINE_TFLITE "TensorFlow Lite"
 #define TEXT_INFERENCE_ENGINE_ARMNN_DELEGATE "TensorFlow Lite + ArmNN Delegate"
 #define TEXT_INFERENCE_ENGINE_XNNPACK_DELEGATE "TensorFlow Lite + XNNPACK Delegate"
@@ -52,6 +52,9 @@
 #define MODEL_PATH_PE_HAND_POSE_FULL "/opt/rz-edge-ai-demo/models/hand_landmark_full.tflite"
 #define RENESAS_RZ_LOGO_PATH "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
 #define SPLASH_SCREEN_PATH "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
+#define DEFAULT_VIDEO "/opt/rz-edge-ai-demo/media/exercising_using_battle_ropes.mp4"
+#define DEFAULT_FD_VIDEO "/opt/rz-edge-ai-demo/media/face_shaking.mp4"
+#define DEFAULT_SBD_IMG "/opt/rz-edge-ai-demo/media/shopping_items_003.jpg"
 
 #define OPTION_FD_DETECT_FACE "face"
 #define OPTION_FD_DETECT_IRIS "iris"
@@ -140,7 +143,7 @@ private:
     void createTfWorker();
     QImage matToQImage(const cv::Mat& matToConvert);
     void createVideoWorker();
-    void errorPopup(QString errorMessage, int errorCode);
+    void errorPopup(QString errorMessage);
     void deleteTfWorker();
     void remakeTfWorker();
     void setupFaceDetectMode();
@@ -151,6 +154,7 @@ private:
     void checkInputMode();
     void setPoseEstimateDelegateType();
     void setFaceDetectDelegateType();
+    void startDefaultMode();
     QStringList readLabelFile(QString labelPath);
 
     Ui::MainWindow *ui;
@@ -174,6 +178,7 @@ private:
     QString boardInfo;
     QString modelPath;
     QString pricesPath;
+    QString mediaPath;
     QString modelOD;
     QString modelPE;
     QString modelSB;
@@ -183,6 +188,7 @@ private:
     QString inferenceEngine;
     QStringList labelFileList;
     bool faceDetectIrisMode;
+    bool cameraConnect;
     videoWorker *vidWorker;
     Board board;
     Input inputMode;

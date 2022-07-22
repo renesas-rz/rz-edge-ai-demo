@@ -40,7 +40,7 @@ class poseEstimation : public QObject
     Q_OBJECT
 
 public:
-    poseEstimation(Ui::MainWindow *ui, QString modelPath, QString inferenceEngine);
+    poseEstimation(Ui::MainWindow *ui, QString modelPath, QString inferenceEngine, bool cameraConnect);
     void setCameraMode();
     void setImageMode();
     void setVideoMode();
@@ -78,6 +78,7 @@ private:
     bool buttonState;
     int frameHeight;
     int frameWidth;
+    bool camConnect;
 };
 
 #endif // POSEESTIMATION_H

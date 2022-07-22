@@ -45,7 +45,7 @@ struct {
     float height;
 } eyeLeft, eyeRight;
 
-faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine, DetectMode detectModeToUse)
+faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine, DetectMode detectModeToUse, bool cameraConnect)
 {
     QPixmap irisDiagram(IRIS_DIAGRAM_PATH);
 
@@ -55,6 +55,7 @@ faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine, Detect
     detectMode = detectModeToUse;
     buttonState = true;
     faceVisible = false;
+    camConnect = cameraConnect;
 
     utilFD = new edgeUtils();
 
@@ -751,7 +752,7 @@ void faceDetection::setImageMode()
 {
     inputModeFD = imageMode;
 
-    uiFD->actionLoad_Camera->setEnabled(true);
+    uiFD->actionLoad_Camera->setEnabled(camConnect);
     uiFD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
 }
 
@@ -759,7 +760,7 @@ void faceDetection::setVideoMode()
 {
     inputModeFD = videoMode;
 
-    uiFD->actionLoad_Camera->setEnabled(true);
+    uiFD->actionLoad_Camera->setEnabled(camConnect);
     uiFD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
 }
 

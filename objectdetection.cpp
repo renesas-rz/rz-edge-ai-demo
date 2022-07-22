@@ -27,7 +27,8 @@
 
 #define DETECT_THRESHOLD 0.5
 
-objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList, QString modelPath, QString inferenceEngine)
+objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList, QString modelPath,
+                                 QString inferenceEngine, bool cameraConnect)
 {
     QFont font;
     QString modelName;
@@ -35,6 +36,7 @@ objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList, 
     uiOD = ui;
     inputModeOD = cameraMode;
     labelList = labelFileList;
+    camConnect = cameraConnect;
 
     utilOD = new edgeUtils();
 
@@ -216,7 +218,7 @@ void objectDetection::setImageMode()
 {
     inputModeOD = imageMode;
 
-    uiOD->actionLoad_Camera->setEnabled(true);
+    uiOD->actionLoad_Camera->setEnabled(camConnect);
     uiOD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
 }
 
@@ -224,7 +226,7 @@ void objectDetection::setVideoMode()
 {
     inputModeOD = videoMode;
 
-    uiOD->actionLoad_Camera->setEnabled(true);
+    uiOD->actionLoad_Camera->setEnabled(camConnect);
     uiOD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
 }
 

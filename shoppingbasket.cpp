@@ -24,7 +24,8 @@
 #define ITEM_INDEX 4
 #define BOX_POINTS 4
 
-shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QString pricesFile, QString modelPath, QString inferenceEngine)
+shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QString pricesFile,
+                               QString modelPath, QString inferenceEngine, bool cameraConnect)
 {
     QFont font;
     QString modelName;
@@ -33,6 +34,7 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QS
     inputModeSB = cameraMode;
     labelList = labelFileList;
     costs = readPricesFile(pricesFile);
+    camConnect = cameraConnect;
 
     font.setPointSize(EDGE_FONT_SIZE);
     modelName = modelPath.section('/', -1);
@@ -232,7 +234,7 @@ void shoppingBasket::setImageMode(bool imageStatus)
 
         emit startVideo();
     }
-    uiSB->actionLoad_Camera->setEnabled(imageStatus);
+    uiSB->actionLoad_Camera->setEnabled(imageStatus && camConnect);
     uiSB->labelInferenceTimeSB->setText(TEXT_INFERENCE);
     uiSB->labelTotalItems->setText(TEXT_TOTAL_ITEMS);
     uiSB->tableWidget->setRowCount(0);

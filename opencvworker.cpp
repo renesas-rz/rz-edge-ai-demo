@@ -39,7 +39,7 @@ opencvWorker::opencvWorker(QString cameraLocation, Board board)
 
     setupCamera();
 
-    if (usingMipi) {
+    if (webcamInitialised && usingMipi) {
         if (board == G2M)
             cameraInitialization = G2M_CAM_INIT;
         else if (board == G2E)
@@ -51,7 +51,8 @@ opencvWorker::opencvWorker(QString cameraLocation, Board board)
     if (board == G2LC)
         videoCodecs = false;
 
-    connectCamera();
+    if (webcamInitialised)
+        connectCamera();
 }
 
 int opencvWorker::runCommand(std::string command, std::string &stdoutput)
