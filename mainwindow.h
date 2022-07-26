@@ -31,8 +31,8 @@
 #define TEXT_INFERENCE_ENGINE_ARMNN_DELEGATE "TensorFlow Lite + ArmNN Delegate"
 #define TEXT_INFERENCE_ENGINE_XNNPACK_DELEGATE "TensorFlow Lite + XNNPACK Delegate"
 
-#define IMAGE_FILE_FILTER "Images (*.bmp *.dib *.jpeg *.jpg *.jpe *.png *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif);;"
-#define VIDEO_FILE_FILTER "Videos (*.asf *.avi *.3gp *.mp4 *m4v *.mov *.flv *.mpeg *.mkv *.webm *.mxf *.ogg)"
+#define IMAGE_FILE_FILTER "Images (*.bmp *.dib *.jpeg *.jpg *.jpe *.png *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif)"
+#define VIDEO_FILE_FILTER "Videos (*.asf *.avi *.3gp *.mp4 *m4v *.mov *.flv *.mpeg *.mkv *.webm *.mxf *.ogg);;"
 
 #define LABEL_DIRECTORY "/opt/rz-edge-ai-demo/labels/"
 #define LABEL_PATH_OD "/opt/rz-edge-ai-demo/labels/mobilenet_ssd_v2_coco_quant_postprocess_labels.txt"

@@ -1029,10 +1029,10 @@ void MainWindow::on_actionLoad_File_triggered()
     dialog.setViewMode(QFileDialog::Detail);
     dialog.setDirectory(MEDIA_DIRECTORY);
 
-    mediaFileFilter = IMAGE_FILE_FILTER;
-
     if (demoMode != SB)
         mediaFileFilter += VIDEO_FILE_FILTER;
+
+    mediaFileFilter += IMAGE_FILE_FILTER;
 
     dialog.setNameFilter(mediaFileFilter);
 
