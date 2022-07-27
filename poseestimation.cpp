@@ -425,10 +425,10 @@ void poseEstimation::connectLimbs(int limb1, int limb2, bool drawGraphicalViewLi
         pen.setColor(LINE_RED);
     }
 
-    nanLimb1 = std::isnan(xCoordinate[limb1]) && std::isnan(yCoordinate[limb1]);
-    nanLimb2 = std::isnan(xCoordinate[limb2]) && std::isnan(yCoordinate[limb2]);
+    nanLimb1 = !std::isnan(xCoordinate[limb1]) || !std::isnan(yCoordinate[limb1]);
+    nanLimb2 = !std::isnan(xCoordinate[limb2]) || !std::isnan(yCoordinate[limb2]);
 
-    if (!nanLimb1 || !nanLimb2) {
+    if (nanLimb1 && nanLimb2) {
         QLine *lineToDraw = new QLine(xCoordinate[limb1], yCoordinate[limb1], xCoordinate[limb2], yCoordinate[limb2]);
 
         if (drawGraphicalViewLimbs)
