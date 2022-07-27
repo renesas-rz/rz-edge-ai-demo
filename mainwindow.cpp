@@ -354,10 +354,8 @@ void MainWindow::createTfWorker()
     int inferenceThreads = 2;
 
     if (demoMode == FD) {
-        /*
-         * Face Detection mode creates two tfliteWorker objects to run the
-         * face detection and face landmark models
-         */
+        /* Face Detection mode creates two tfliteWorker objects to run the
+         * face detection and face landmark models */
         tfWorkerFaceDetection = new tfliteWorker(MODEL_PATH_FD_FACE_DETECTION, delegateType, inferenceThreads);
         tfWorkerFaceLandmark = new tfliteWorker(MODEL_PATH_FD_FACE_LANDMARK, delegateType, inferenceThreads);
         tfWorkerIrisLandmarkL = new tfliteWorker(MODEL_PATH_FD_IRIS_LANDMARK, delegateType, inferenceThreads);
@@ -385,11 +383,9 @@ void MainWindow::createTfWorker()
 
 void MainWindow::setPoseEstimateDelegateType()
 {
-    /*
-     * Only enable ArmNN delegate when not using BlazePose/HandPose models on the
+    /* Only enable ArmNN delegate when not using BlazePose/HandPose models on the
      * RZ/G2L and RZ/G2LC platforms as it does not currently support Const
-     * Tensors as inputs for Conv2d
-     */
+     * Tensors as inputs for Conv2d */
     if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET)) {
         if (delegateType == armNN) {
             delegateType = none;
@@ -405,10 +401,9 @@ void MainWindow::setPoseEstimateDelegateType()
 
 void MainWindow::setFaceDetectDelegateType()
 {
-    /*
-     * Do not enable ArmNN delegate when not using Face Detection mode on all
-     * platforms as it does not currently support Const Tensors as inputs for Conv2d
-     */
+    /* Do not enable ArmNN delegate when not using Face Detection mode on all
+     * platforms as it does not currently support Const Tensors as
+     * inputs for Conv2d */
     if (delegateType == armNN) {
         delegateType = none;
         ui->actionEnable_ArmNN_Delegate->setEnabled(false);
@@ -716,19 +711,15 @@ void MainWindow::on_actionShopping_Basket_triggered()
     } else if (demoMode == PE) {
         modelPE = modelPath;
 
-        /*
-         * Only enable ArmNN delegate when switching from BlazePose/HandPose models
-         * as it does not currently support Const Tensors as inputs for Conv2d
-         */
+        /* Only enable ArmNN delegate when switching from BlazePose/HandPose models
+         * as it does not currently support Const Tensors as inputs for Conv2d */
         if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET))
             ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     } else if (demoMode == FD) {
         faceDetectIrisMode = faceDetectMode->getUseIrisMode();
 
-        /*
-         * If coming from the Face Detection mode, enable ArmNN Delegate which
-         * that mode doesn't support
-         */
+        /* If coming from the Face Detection mode, enable ArmNN Delegate which
+         * that mode doesn't support */
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
 
@@ -783,19 +774,15 @@ void MainWindow::on_actionObject_Detection_triggered()
     } else if (demoMode == PE) {
         modelPE = modelPath;
 
-        /*
-         * Only enable ArmNN delegate when switching from BlazePose/HandPose models
-         * as it does not currently support Const Tensors as inputs for Conv2d
-         */
+        /* Only enable ArmNN delegate when switching from BlazePose/HandPose models
+         * as it does not currently support Const Tensors as inputs for Conv2d */
         if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET))
             ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     } else if (demoMode == FD) {
         faceDetectIrisMode = faceDetectMode->getUseIrisMode();
 
-        /*
-         * If coming from the Face Detection mode, enable ArmNN Delegate which
-         * that mode doesn't support
-         */
+        /* If coming from the Face Detection mode, enable ArmNN Delegate which
+         * that mode doesn't support */
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
 

@@ -281,10 +281,8 @@ void opencvWorker::setVideoDims()
     /* Round aspect ratio to 2 decimal places */
     double aspectRatioRounded = round(aspectRatio * 100) / 100;
 
-    /*
-     * Identify aspect ratio and set downscaled resolution.
-     * Downscaled resolutions set must allign with 32 to prevent any display issues
-     */
+    /* Identify aspect ratio and set downscaled resolution.
+     * Downscaled resolutions set must allign with 32 to prevent any display issues */
     if ((aspectRatioRounded == VIDEO_ASPECT_RATIO_16_TO_9) || (aspectRatioRounded == VIDEO_ASPECT_RATIO_16_TO_10)) {
         videoHeight = 480;
         videoWidth = 768;

@@ -153,10 +153,8 @@ void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, b
     QGraphicsScene *scene = uiFD->graphicsView->scene();
     QGraphicsScene *scenePointProjection = uiFD->graphicsViewPointPlotFace->scene();
 
-    /*
-     * Indexing of the Face Landmark model can be found at
-     * https://github.com/google/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model_uv_visualization.png
-     */
+    /* Indexing of the Face Landmark model can be found at
+     * https://github.com/google/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model_uv_visualization.png */
     QVector <int> pointsIndexFace = { 10, 109, 67, 103, 54, 21, 162, 127, 234, 93, 132, 58, 172, 136, 150, 149,
                                      176, 148, 152, 377, 400, 378, 379, 365, 397, 288, 361, 323, 454, 356, 389,
                                      251, 284, 332, 297, 338, 10 };
@@ -178,10 +176,8 @@ void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, b
     int pointPlotWidth = uiFD->graphicsViewPointPlotFace->width();
 
     if (updateGraphicalView) {
-        /*
-         * Scale the dimensions down by 1.5 when the face is larger than the
-         * 2D Point Projection
-         */
+        /* Scale the dimensions down by 1.5 when the face is larger than the
+         * 2D Point Projection */
         if (faceHeight > pointPlotHeight || faceWidth > pointPlotWidth) {
             displayHeight = faceHeight / 1.5;
             displayWidth = faceWidth / 1.5;
@@ -204,10 +200,8 @@ void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, b
         float x = outputTensor[i] * widthMultiplier;
         float y = outputTensor[i + 1] * heightMultiplier;
 
-        /*
-         * Ensure coordinates drawn onto image frame are relative to the cropping
-         * region of the original image
-         */
+        /* Ensure coordinates drawn onto image frame are relative to the cropping
+         * region of the original image */
         if (!updateGraphicalView) {
             y += faceTopLeftY;
             x += faceTopLeftX;
@@ -275,10 +269,8 @@ void faceDetection::drawPointsIrisLandmark(const QVector<float> &outputTensor, b
         displayHeight = eyeRight.height / IRIS_LANDMARK_INPUT_SIZE;
     }
 
-    /*
-     * Save x and y coordinates in separate vectors and ensure that they
-     * are relative to the cropping region of the original image
-     */
+    /* Save x and y coordinates in separate vectors and ensure that they
+     * are relative to the cropping region of the original image */
     for (int i = 0; i < IRIS_LANDMARK_IRIS_OUTPUT_INDEX; i += 2) {
         float xIrisPosition;
         float yIrisPosition;
@@ -385,10 +377,8 @@ void faceDetection::processFace(const cv::Mat &matToProcess)
 
     faceModel = faceLandmark;
 
-    /*
-     * Crop cv::Mat using coordinates provided by Face Detection and
-     * run inference using Face Landmark model
-     */
+    /* Crop cv::Mat using coordinates provided by Face Detection and
+     * run inference using Face Landmark model */
     cv::Rect cropRegionFace(faceTopLeftX, faceTopLeftY, faceWidth, faceHeight);
 
     croppedFaceMat = resizedMat(cropRegionFace);
@@ -418,10 +408,8 @@ void faceDetection::processIris(const cv::Mat &resizedInputMat, const cv::Mat &c
         eyeLeft.x += faceTopLeftX;
         eyeLeft.y += faceTopLeftY;
 
-        /*
-         * Crop cv::Mat using coordinates provided by Face Landmark and
-         * run inference on left eye using Iris Landmark model
-         */
+        /* Crop cv::Mat using coordinates provided by Face Landmark and
+         * run inference on left eye using Iris Landmark model */
         cv::Rect cropRegionEyeL(eyeLeft.x, eyeLeft.y, eyeLeft.width, eyeLeft.height);
 
         croppedEyeMat = resizedInputMat(cropRegionEyeL);
@@ -440,10 +428,8 @@ void faceDetection::processIris(const cv::Mat &resizedInputMat, const cv::Mat &c
         eyeRight.x += faceTopLeftX;
         eyeRight.y += faceTopLeftY;
 
-        /*
-         * Crop cv::Mat using coordinates provided by Face Landmark and
-         * run inference on right eye using Iris Landmark model
-         */
+        /* Crop cv::Mat using coordinates provided by Face Landmark and
+         * run inference on right eye using Iris Landmark model */
         cv::Rect cropRegionEyeR(eyeRight.x, eyeRight.y, eyeRight.width, eyeRight.height);
 
         croppedEyeMat = resizedInputMat(cropRegionEyeR);
@@ -492,19 +478,15 @@ void faceDetection::cropImageFace(const QVector<float> &faceDetectOutputTensor, 
         float confidenceLevel = edgeUtils::calculateSigmoid(faceDetectOutputTensor.at(j));
 
         if (confidenceLevel > DETECT_THRESHOLD_FACE && confidenceLevel <= 1.0) {
-            /*
-             * BlazeFace outputs the x and y coordinates as offsets from an anchor point, so
-             * the anchor coordinates must be added to the values
-             */
+            /* BlazeFace outputs the x and y coordinates as offsets from an anchor point, so
+             * the anchor coordinates must be added to the values */
             float yCenter = faceDetectOutputTensor.at(iteration * FACE_DETECTION_OUTPUT_INDEX) + anchorCoords.at(iteration).second;
             float xCenter = faceDetectOutputTensor.at(iteration * FACE_DETECTION_OUTPUT_INDEX + 1) + anchorCoords.at(iteration).first;
             float height = faceDetectOutputTensor.at(iteration * FACE_DETECTION_OUTPUT_INDEX + 2);
             float width = faceDetectOutputTensor.at(iteration * FACE_DETECTION_OUTPUT_INDEX + 3);
 
-            /*
-             * Scale coordinates to the input image and provide the top left coordinates
-             * along with the height and width of the box
-             */
+            /* Scale coordinates to the input image and provide the top left coordinates
+             * along with the height and width of the box */
             float xTopLeft = (xCenter - 2 * width);
             float yTopLeft = (yCenter - 2 * height);
             float scaledWidth = width * faceDetectScaleWidth;

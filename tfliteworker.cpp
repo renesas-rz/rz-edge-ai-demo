@@ -86,11 +86,9 @@ tfliteWorker::~tfliteWorker() {
 #endif
 }
 
-/*
- * Resize the input image and manipulate the data such that the alpha channel
+/* Resize the input image and manipulate the data such that the alpha channel
  * is removed. Input the data to the tensor and output the results into a vector.
- * Also measure the time it takes for this function to complete
- */
+ * Also measure the time it takes for this function to complete */
 void tfliteWorker::receiveImage(const cv::Mat& sentMat)
 {
     cv::Mat sentImageMat;
@@ -111,11 +109,9 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
     cv::resize(sentMat, sentImageMat, cv::Size(wantedWidth, wantedHeight));
 
     if (tfliteInterpreter->tensor(input)->type == kTfLiteFloat32) {
-        /*
-         * Convert cv::Mat data type from 8-bit unsigned char to 32-bit float.
+        /* Convert cv::Mat data type from 8-bit unsigned char to 32-bit float.
          * The data of the image needs to be divided by 255.0f as CV_8UC3 ranges
-         * from 0 to 255, whereas CV_32FC3 ranges from 0 to 1
-         */
+         * from 0 to 255, whereas CV_32FC3 ranges from 0 to 1 */
         sentImageMat.convertTo(sentImageMat, CV_32FC3, SCALE_FACTOR_UCHAR_TO_FLOAT);
 
         memcpy(tfliteInterpreter->typed_tensor<float>(input), sentImageMat.data, sentImageMat.total() * sentImageMat.elemSize());
