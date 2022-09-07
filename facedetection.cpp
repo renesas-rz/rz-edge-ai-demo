@@ -86,6 +86,35 @@ faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine, Detect
         detectIrisMode();
     else
         detectFaceMode();
+
+    /* Indexing of the Face Landmark model can be found at
+     * https://github.com/google/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model_uv_visualization.png */
+    QVector <int> pointsIndexFace = { 10, 109, 67, 103, 54, 21, 162, 127, 234, 93, 132, 58, 172, 136, 150, 149,
+                                     176, 148, 152, 377, 400, 378, 379, 365, 397, 288, 361, 323, 454, 356, 389,
+                                     251, 284, 332, 297, 338, 10 };
+    QVector <int> pointsIndexInnerLip = { 308, 415, 310, 311, 312, 13, 82, 81, 80, 191, 78, 95, 88, 178, 87, 14,
+                                          317, 402, 318, 324, 308 };
+    QVector <int> pointsIndexOuterLip = { 291, 409, 270, 269, 267, 0, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291 };
+    QVector <int> pointsIndexLEye = { 362, 398, 384, 385, 386, 387, 388, 466, 263, 249, 390, 373, 374, 380,
+                                      381, 382, 362 };
+    QVector <int> pointsIndexLEyebrowBottom = { 285, 295, 282, 283, 276 };
+    QVector <int> pointsIndexLEyebrowTop = { 336, 296, 334, 293, 300 };
+    QVector <int> pointsIndexREye = { 133, 173, 157, 158, 159, 160, 161, 246, 33, 7, 163, 144, 145, 153, 154,
+                                      155, 133 };
+    QVector <int> pointsIndexREyebrowBottom = { 55, 65, 52, 53, 46 };
+    QVector <int> pointsIndexREyebrowTop = { 107, 66, 105, 63, 70 };
+
+    faceParts = new QList<QVector<int>>();
+
+    faceParts->push_back(pointsIndexFace);
+    faceParts->push_back(pointsIndexInnerLip);
+    faceParts->push_back(pointsIndexOuterLip);
+    faceParts->push_back(pointsIndexLEye);
+    faceParts->push_back(pointsIndexLEyebrowBottom);
+    faceParts->push_back(pointsIndexLEyebrowTop);
+    faceParts->push_back(pointsIndexREye);
+    faceParts->push_back(pointsIndexREyebrowBottom);
+    faceParts->push_back(pointsIndexREyebrowTop);
 }
 
 void faceDetection::setButtonState(bool enable)
@@ -153,23 +182,6 @@ void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, b
     QGraphicsScene *scene = uiFD->graphicsView->scene();
     QGraphicsScene *scenePointProjection = uiFD->graphicsViewPointPlotFace->scene();
 
-    /* Indexing of the Face Landmark model can be found at
-     * https://github.com/google/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model_uv_visualization.png */
-    QVector <int> pointsIndexFace = { 10, 109, 67, 103, 54, 21, 162, 127, 234, 93, 132, 58, 172, 136, 150, 149,
-                                     176, 148, 152, 377, 400, 378, 379, 365, 397, 288, 361, 323, 454, 356, 389,
-                                     251, 284, 332, 297, 338, 10 };
-    QVector <int> pointsIndexInnerLip = { 308, 415, 310, 311, 312, 13, 82, 81, 80, 191, 78, 95, 88, 178, 87, 14,
-                                          317, 402, 318, 324, 308 };
-    QVector <int> pointsIndexOuterLip = { 291, 409, 270, 269, 267, 0, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291 };
-    QVector <int> pointsIndexLEye = { 362, 398, 384, 385, 386, 387, 388, 466, 263, 249, 390, 373, 374, 380,
-                                      381, 382, 362 };
-    QVector <int> pointsIndexLEyebrowBottom = { 285, 295, 282, 283, 276 };
-    QVector <int> pointsIndexLEyebrowTop = { 336, 296, 334, 293, 300 };
-    QVector <int> pointsIndexREye = { 133, 173, 157, 158, 159, 160, 161, 246, 33, 7, 163, 144, 145, 153, 154,
-                                      155, 133 };
-    QVector <int> pointsIndexREyebrowBottom = { 55, 65, 52, 53, 46 };
-    QVector <int> pointsIndexREyebrowTop = { 107, 66, 105, 63, 70 };
-
     pen.setWidth(PEN_THICKNESS);
 
     int pointPlotHeight = uiFD->graphicsViewPointPlotFace->height();
@@ -210,18 +222,6 @@ void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, b
         xCoordinate.push_back(x);
         yCoordinate.push_back(y);
     }
-
-    QList<QVector<int>> *faceParts = new QList<QVector<int>>();
-
-    faceParts->push_back(pointsIndexFace);
-    faceParts->push_back(pointsIndexInnerLip);
-    faceParts->push_back(pointsIndexOuterLip);
-    faceParts->push_back(pointsIndexLEye);
-    faceParts->push_back(pointsIndexLEyebrowBottom);
-    faceParts->push_back(pointsIndexLEyebrowTop);
-    faceParts->push_back(pointsIndexREye);
-    faceParts->push_back(pointsIndexREyebrowBottom);
-    faceParts->push_back(pointsIndexREyebrowTop);
 
     /* Draw lines on image frame and dots on the 2D Point Projection */
     if (!updateGraphicalView) {

@@ -97,6 +97,7 @@ private:
     QVector<float> yCoordinate;
     QVector<float> eyeCropCoords;
     QVector<float> leftEyeTensor;
+    QList<QVector<int>> *faceParts;
     cv::Mat resizedMat;
     bool continuousMode;
     bool buttonState;
