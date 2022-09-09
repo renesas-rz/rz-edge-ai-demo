@@ -635,8 +635,6 @@ void faceDetection::detectFaceMode()
     uiFD->pushButtonDetectIris->setStyleSheet(BUTTON_BLUE);
     uiFD->stackedWidgetFace->setCurrentIndex(STACK_WIDGET_INDEX_FACE_LANDMARK);
 
-    qApp->processEvents();
-
     if (!continuousMode)
         displayFrame();
 }
@@ -656,8 +654,6 @@ void faceDetection::detectIrisMode()
     uiFD->pushButtonDetectIris->setDisabled(true);
     uiFD->pushButtonDetectIris->setStyleSheet(BUTTON_GREYED_OUT);
     uiFD->stackedWidgetFace->setCurrentIndex(STACK_WIDGET_INDEX_IRIS_LANDMARK);
-
-    qApp->processEvents();
 
     if (!continuousMode)
         displayFrame();
