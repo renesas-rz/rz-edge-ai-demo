@@ -26,9 +26,7 @@
 #include <armnn/Utils.hpp>
 #include <delegate/armnn_delegate.hpp>
 #include <delegate/DelegateOptions.hpp>
-#ifdef DUNFELL
 #include "tensorflow/lite/delegates/xnnpack/xnnpack_delegate.h"
-#endif
 
 tfliteWorker::tfliteWorker(QString modelLocation, Delegate delegateType, int defaultThreads)
 {
@@ -53,7 +51,6 @@ tfliteWorker::tfliteWorker(QString modelLocation, Delegate delegateType, int def
            qWarning("ArmNN Delegate could not be used to modify the graph\n");
     }
 
-#ifdef DUNFELL
     if (delegateType == xnnpack) {
         TfLiteXNNPackDelegateOptions xnnpack_options = TfLiteXNNPackDelegateOptionsDefault();
 
@@ -63,7 +60,6 @@ tfliteWorker::tfliteWorker(QString modelLocation, Delegate delegateType, int def
         if (tfliteInterpreter->ModifyGraphWithDelegate(xnnpack_delegate) != kTfLiteOk)
             qWarning("Could not modifiy Graph with XNNPack Delegate\n");
     }
-#endif
 
     if (tfliteInterpreter->AllocateTensors() != kTfLiteOk)
         qFatal("Failed to allocate tensors!");
@@ -80,10 +76,8 @@ tfliteWorker::tfliteWorker(QString modelLocation, Delegate delegateType, int def
 tfliteWorker::~tfliteWorker() {
     tfliteInterpreter.reset();
 
-#ifdef DUNFELL
     if (delegateType == xnnpack)
         TfLiteXNNPackDelegateDelete(xnnpack_delegate);
-#endif
 }
 
 /* Resize the input image and manipulate the data such that the alpha channel

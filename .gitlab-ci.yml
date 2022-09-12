@@ -1,4 +1,5 @@
 .app-build:
+  image: gitlab.renesas.solutions:5050/spl2/continuous-integration/dockerfiles:ubuntu-20.04-latest
   stage: build
   variables:
     META_LAYER_REF: master
@@ -16,7 +17,7 @@
     - mkdir ${PWD}/toolchain
     - ./sdk.sh -y -d ${PWD}/toolchain
     - source ${PWD}/toolchain/environment-setup-aarch64-poky-linux
-    - qmake ${QDEFINES}
+    - qmake
     - make
   artifacts:
     name: "${CI_JOB_NAME}-${CI_JOB_ID}"
@@ -26,30 +27,24 @@
       - rz-edge-ai-demo
 
 hihope-rzg2m:
-  image: gitlab.renesas.solutions:5050/spl2/continuous-integration/dockerfiles:ubuntu-18.04-latest
   extends: .app-build
   variables:
     PLATFORM: hihope-rzg2m
 
 ek874:
-  image: gitlab.renesas.solutions:5050/spl2/continuous-integration/dockerfiles:ubuntu-18.04-latest
   extends: .app-build
   variables:
     PLATFORM: ek874
 
 smarc-rzg2l:
-  image: gitlab.renesas.solutions:5050/spl2/continuous-integration/dockerfiles:ubuntu-20.04-latest
   extends: .app-build
   variables:
     PLATFORM: smarc-rzg2l
-    QDEFINES: 'DEFINES+=DUNFELL'
 
 smarc-rzg2lc:
-  image: gitlab.renesas.solutions:5050/spl2/continuous-integration/dockerfiles:ubuntu-20.04-latest
   extends: .app-build
   variables:
     PLATFORM: smarc-rzg2lc
-    QDEFINES: 'DEFINES+=DUNFELL'
 
 trigger-bsp-build:
   stage: deploy

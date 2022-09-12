@@ -57,9 +57,7 @@ private:
     QString modelName;
     Delegate delegateType;
     Mode modeSelected;
-#ifdef DUNFELL
     TfLiteDelegate* xnnpack_delegate;
-#endif
     QVector<float> outputTensor;
     int wantedWidth, wantedHeight, wantedChannels;
 };

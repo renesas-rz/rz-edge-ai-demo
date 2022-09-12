@@ -62,10 +62,7 @@ LIBS += \
     -lopencv_videoio \
     -ltensorflow-lite \
     -ldl \
-    -lutil
-
-contains(DEFINES, DUNFELL) {
-LIBS += \
+    -lutil \
     -lflatbuffers \
     -lfft2d_fftsg2d \
     -lruy \
@@ -75,4 +72,3 @@ LIBS += \
     -lclog \
     -lfft2d_fftsg \
     -lfarmhash
-}

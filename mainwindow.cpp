@@ -87,10 +87,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
 
     ui->actionEnable_ArmNN_Delegate->setEnabled(false);
     ui->actionTensorFlow_Lite->setEnabled(true);
-
-#ifndef DUNFELL
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(false);
-#endif
 
     connect(this, SIGNAL(sendMatToDraw(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
 
@@ -617,9 +614,7 @@ void MainWindow::on_actionEnable_ArmNN_Delegate_triggered()
 
     ui->actionEnable_ArmNN_Delegate->setEnabled(false);
     ui->actionTensorFlow_Lite->setEnabled(true);
-#ifdef DUNFELL
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(true);
-#endif
 
     remakeTfWorker();
 }
@@ -659,9 +654,7 @@ void MainWindow::on_actionTensorFlow_Lite_triggered()
     }
 
     ui->actionTensorFlow_Lite->setEnabled(false);
-#ifdef DUNFELL
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(true);
-#endif
 
     remakeTfWorker();
 }
