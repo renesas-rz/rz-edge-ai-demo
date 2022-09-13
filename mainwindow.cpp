@@ -704,6 +704,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_actionShopping_Basket_triggered()
 {
+    ui->menuDemoMode->setEnabled(false);
+
     /* Store previous demo modes label and model */
     if (demoMode == OD) {
         labelOD = labelPath;
@@ -751,6 +753,8 @@ void MainWindow::on_actionShopping_Basket_triggered()
     } else if (inputMode == imageMode) {
         cvWorker->useImageMode(DEFAULT_SBD_IMG);
     }
+
+    ui->menuDemoMode->setEnabled(true);
 }
 
 void MainWindow::startDefaultMode()
@@ -767,6 +771,8 @@ void MainWindow::startDefaultMode()
 
 void MainWindow::on_actionObject_Detection_triggered()
 {
+    ui->menuDemoMode->setEnabled(false);
+
     /* Store previous demo modes label and model */
     if (demoMode == SB) {
         labelSB = labelPath;
@@ -806,10 +812,14 @@ void MainWindow::on_actionObject_Detection_triggered()
     createTfWorker();
     setupObjectDetectMode();
     startDefaultMode();
+
+    ui->menuDemoMode->setEnabled(true);
 }
 
 void MainWindow::on_actionPose_Estimation_triggered()
 {
+    ui->menuDemoMode->setEnabled(false);
+
     /* Store previous demo modes label and model */
     if (demoMode == SB) {
         labelSB = labelPath;
@@ -839,10 +849,14 @@ void MainWindow::on_actionPose_Estimation_triggered()
     createTfWorker();
     setupPoseEstimateMode();
     startDefaultMode();
+
+    ui->menuDemoMode->setEnabled(true);
 }
 
 void MainWindow::on_actionFace_Detection_triggered()
 {
+    ui->menuDemoMode->setEnabled(false);
+
     /* Store previous demo modes label and model */
     if (demoMode == SB) {
         labelSB = labelPath;
@@ -872,6 +886,8 @@ void MainWindow::on_actionFace_Detection_triggered()
     createTfWorker();
     setupFaceDetectMode();
     startDefaultMode();
+
+    ui->menuDemoMode->setEnabled(true);
 }
 
 void MainWindow::loadAIModel()
