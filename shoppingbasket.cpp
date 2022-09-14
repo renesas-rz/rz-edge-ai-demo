@@ -24,6 +24,9 @@
 #define ITEM_INDEX 4
 #define BOX_POINTS 4
 
+#define ITEM_COL 0
+#define PRICE_COL 1
+
 shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QString pricesFile,
                                QString modelPath, QString inferenceEngine, bool cameraConnect)
 {
@@ -61,7 +64,7 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QS
     uiSB->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     uiSB->tableWidget->resizeColumnsToContents();
     double column1Width = uiSB->tableWidget->geometry().width() * 0.6;
-    uiSB->tableWidget->setColumnWidth(0, column1Width);
+    uiSB->tableWidget->setColumnWidth(ITEM_COL, column1Width);
     uiSB->tableWidget->horizontalHeader()->setStretchLastSection(true);
     uiSB->tableWidget->setRowCount(0);
 
@@ -197,8 +200,8 @@ void shoppingBasket::runInference(QVector<float> receivedTensor, int receivedStr
         item->setTextAlignment(Qt::AlignCenter);
 
         uiSB->tableWidget->insertRow(uiSB->tableWidget->rowCount());
-        uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, 0, item);
-        uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, 1,
+        uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, ITEM_COL, item);
+        uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, PRICE_COL,
         price = new QTableWidgetItem(currency + QString::number(
                 double(costs[labelList.indexOf(labelListSorted.at(i))]), 'f', 2)));
         price->setTextAlignment(Qt::AlignRight);
@@ -209,11 +212,11 @@ void shoppingBasket::runInference(QVector<float> receivedTensor, int receivedStr
 
     item = new QTableWidgetItem("Total Cost:");
     item->setTextAlignment(Qt::AlignBottom | Qt::AlignRight);
-    uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, 0, item);
+    uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, ITEM_COL, item);
 
     item = new QTableWidgetItem(currency + QString::number(double(totalCost), 'f', 2));
     item->setTextAlignment(Qt::AlignBottom | Qt::AlignRight);
-    uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, 1, item);
+    uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, PRICE_COL, item);
 
     if(!uiSB->pushButtonProcessBasket->isEnabled())
         emit sendMatToView(receivedMat);
