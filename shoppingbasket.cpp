@@ -25,7 +25,8 @@
 #define BOX_POINTS 4
 
 #define ITEM_COL 0
-#define PRICE_COL 1
+#define QUANT_COL 1
+#define PRICE_COL 2
 
 shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QString pricesFile,
                                QString modelPath, QString inferenceEngine, bool cameraConnect)
@@ -59,12 +60,13 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QS
     uiSB->stackedWidgetRight->setCurrentIndex(STACK_WIDGET_INDEX_SB);
 
     uiSB->tableWidget->verticalHeader()->setDefaultSectionSize(25);
-    uiSB->tableWidget->setHorizontalHeaderLabels({"Item", "Price"});
+    uiSB->tableWidget->setHorizontalHeaderLabels({"Item", "Quantity", "Unit Price"});
     uiSB->tableWidget->horizontalHeader()->setFont(font);
     uiSB->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     uiSB->tableWidget->resizeColumnsToContents();
-    double column1Width = uiSB->tableWidget->geometry().width() * 0.6;
+    double column1Width = uiSB->tableWidget->geometry().width() * 0.5;
     uiSB->tableWidget->setColumnWidth(ITEM_COL, column1Width);
+    uiSB->tableWidget->setColumnWidth(QUANT_COL, column1Width * 0.5);
     uiSB->tableWidget->horizontalHeader()->setStretchLastSection(true);
     uiSB->tableWidget->setRowCount(0);
 
@@ -182,6 +184,7 @@ void shoppingBasket::runInference(QVector<float> receivedTensor, int receivedStr
 {
     QTableWidgetItem* item;
     QTableWidgetItem* price;
+    QStringList *labelSet = new QStringList();
     float totalCost = 0;
     outputTensor = sortTensor(receivedTensor, receivedStride);
 
@@ -196,23 +199,36 @@ void shoppingBasket::runInference(QVector<float> receivedTensor, int receivedStr
     labelListSorted.sort();
 
     for (int i = 0; i < labelListSorted.size(); i++) {
+        int quantityCount = labelListSorted.count(labelListSorted.at(i));
         QTableWidgetItem* item = new QTableWidgetItem(labelListSorted.at(i));
+        QTableWidgetItem* quantity = new QTableWidgetItem(QString::number(quantityCount));
+
+        /* Ensure the item is not already displayed in the table */
+        if (labelSet->contains(labelListSorted.at(i)))
+            continue;
+
         item->setTextAlignment(Qt::AlignCenter);
+        quantity->setTextAlignment(Qt::AlignCenter);
 
         uiSB->tableWidget->insertRow(uiSB->tableWidget->rowCount());
         uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, ITEM_COL, item);
+        uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, QUANT_COL, quantity);
         uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, PRICE_COL,
         price = new QTableWidgetItem(currency + QString::number(
                 double(costs[labelList.indexOf(labelListSorted.at(i))]), 'f', 2)));
         price->setTextAlignment(Qt::AlignRight);
+
+        labelSet->push_back(labelListSorted.at(i));
     }
+
+    delete labelSet;
 
     uiSB->labelInferenceTimeSB->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
     uiSB->tableWidget->insertRow(uiSB->tableWidget->rowCount());
 
     item = new QTableWidgetItem("Total Cost:");
     item->setTextAlignment(Qt::AlignBottom | Qt::AlignRight);
-    uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, ITEM_COL, item);
+    uiSB->tableWidget->setItem(uiSB->tableWidget->rowCount()-1, QUANT_COL, item);
 
     item = new QTableWidgetItem(currency + QString::number(double(totalCost), 'f', 2));
     item->setTextAlignment(Qt::AlignBottom | Qt::AlignRight);

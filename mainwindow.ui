@@ -97,7 +97,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="page_ShoppingBasketL">
      <widget class="QPushButton" name="pushButtonNextBasket">
@@ -598,7 +598,7 @@ Face</string>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="page_ShoppingBasketR">
      <widget class="QLabel" name="labelTotalItems">
@@ -649,7 +649,7 @@ Face</string>
        <enum>QAbstractScrollArea::AdjustToContents</enum>
       </property>
       <property name="columnCount">
-       <number>2</number>
+       <number>3</number>
       </property>
       <attribute name="horizontalHeaderCascadingSectionResizes">
        <bool>false</bool>
@@ -675,6 +675,7 @@ Face</string>
       <attribute name="verticalHeaderStretchLastSection">
        <bool>true</bool>
       </attribute>
+      <column/>
       <column/>
       <column/>
      </widget>
