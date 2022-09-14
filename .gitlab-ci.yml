@@ -50,3 +50,11 @@ smarc-rzg2lc:
   variables:
     PLATFORM: smarc-rzg2lc
     QDEFINES: 'DEFINES+=DUNFELL'
+
+trigger-bsp-build:
+  stage: deploy
+  trigger:
+    project: spl2/machine-learning/rzg-foss-ai/meta-rz-edge-ai-demo
+    branch: master
+  only:
+    - master
