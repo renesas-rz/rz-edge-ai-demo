@@ -1009,6 +1009,7 @@ void MainWindow::on_actionLoad_File_triggered()
     QFileDialog dialog(this);
     QString mediaFileFilter;
     QString mediaFileName;
+    QString mediaDir;
 
     connect(this, SIGNAL(fileLoaded()), qeventLoop, SLOT(quit()));
 
@@ -1020,7 +1021,20 @@ void MainWindow::on_actionLoad_File_triggered()
 
     dialog.setFileMode(QFileDialog::AnyFile);
     dialog.setViewMode(QFileDialog::Detail);
-    dialog.setDirectory(MEDIA_DIRECTORY);
+
+    switch (demoMode)
+    {
+       case SB: mediaDir = MEDIA_DIRECTORY_SB;
+         break;
+       case OD: mediaDir = MEDIA_DIRECTORY_FD;
+         break;
+       case PE: mediaDir = MEDIA_DIRECTORY_PE;
+         break;
+       case FD: mediaDir = MEDIA_DIRECTORY_OD;
+         break;
+       default: mediaDir = MEDIA_DIRECTORY;
+    }
+    dialog.setDirectory(mediaDir);
 
     if (demoMode != SB)
         mediaFileFilter += VIDEO_FILE_FILTER;
