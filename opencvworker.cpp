@@ -211,6 +211,9 @@ cv::Mat* opencvWorker::getImage(unsigned int iterations)
 
 void opencvWorker::getVideoFileFrame()
 {
+    if (videoFile == 0)
+        return;
+
     int prevFramePos = videoFile->get(cv::CAP_PROP_POS_FRAMES);
 
     *videoFile >> picture;
@@ -237,14 +240,20 @@ void opencvWorker::useCameraMode()
     inputOpenCV = cameraMode;
 }
 
-void opencvWorker::useVideoMode(QString videoFilePath)
+bool opencvWorker::useVideoMode(QString videoFilePath)
 {
     QString videoDecodePipeline;
 
     checkVideoFile();
     inputOpenCV = videoMode;
     videoLoadedPath = videoFilePath;
-    setVideoDims();
+
+    if (!setVideoDims()) {
+        videoLoadedPath = "";
+        videoFile = 0;
+
+        return false;
+    }
 
     /* Check which decoding pipeline to use */
     if (videoCodecs)
@@ -257,26 +266,48 @@ void opencvWorker::useVideoMode(QString videoFilePath)
 
     videoFile = new cv::VideoCapture(videoPipeline.toStdString(), cv::CAP_GSTREAMER);
 
-    if (!videoFile->isOpened())
-        qWarning("Could not open video file");
+    if (!videoFile->isOpened()) {
+        qWarning("Could not open video file for streaming");
+        videoFile->release();
+        videoFile = 0;
+        emit resolutionError(STREAM_OPEN_ERR);
+
+        return false;
+    }
+
+    return true;
 }
 
 void opencvWorker::checkVideoFile()
 {
     /* Close video file capture device */
-    if (inputOpenCV == videoMode)
+    if (inputOpenCV == videoMode && videoFile)
         videoFile->release();
 }
 
-void opencvWorker::setVideoDims()
+bool opencvWorker::setVideoDims()
 {
     cv::VideoCapture *videoChecker = new cv::VideoCapture(videoLoadedPath.toStdString());
+
+    if (!videoChecker->isOpened()) {
+        qWarning("Could not open video file for dimension reading");
+        emit resolutionError(FILE_OPEN_ERR);
+
+        return false;
+    }
 
     double videoFileHeight = videoChecker->get(cv::CAP_PROP_FRAME_HEIGHT);
     double videoFileWidth = videoChecker->get(cv::CAP_PROP_FRAME_WIDTH);
     double aspectRatio = videoFileWidth / videoFileHeight;
 
     videoChecker->release();
+
+    if (videoFileHeight == 0 || videoFileWidth == 0) {
+        qWarning("File resolution error.");
+        emit resolutionError(RESOLUTION_ERR);
+
+        return false;
+    }
 
     /* Round aspect ratio to 2 decimal places */
     double aspectRatioRounded = round(aspectRatio * 100) / 100;
@@ -296,6 +327,8 @@ void opencvWorker::setVideoDims()
         videoHeight = videoFileHeight;
         videoWidth = videoFileWidth;
     }
+
+    return true;
 }
 
 bool opencvWorker::getUsingMipi()

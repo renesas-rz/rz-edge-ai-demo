@@ -146,6 +146,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
 
     qRegisterMetaType<cv::Mat>();
     cvWorker = new opencvWorker(cameraLocation, board);
+    connect(cvWorker, SIGNAL(resolutionError(QString)), SLOT(errorPopup(QString)), Qt::DirectConnection);
 
     splashScreen->close();
 
@@ -173,15 +174,6 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     else if (demoMode == FD)
         setupFaceDetectMode();
 
-    if (cameraConnect) {
-        /* Limit camera loop speed if using mipi camera to save on CPU
-         * USB camera is alreay limited to 10 FPS */
-        if (cvWorker->getUsingMipi())
-            vidWorker->setDelayMS(MIPI_VIDEO_DELAY);
-
-        vidWorker->StartVideo();
-    }
-
     if (mediaExists) {
         bool video = false;
 
@@ -198,12 +190,23 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
 
         if (video) {
             inputMode = videoMode;
-            cvWorker->useVideoMode(mediaPath);
+            mediaExists = cvWorker->useVideoMode(mediaPath);
         } else {
             inputMode = imageMode;
             cvWorker->useImageMode(mediaPath);
         }
     }
+
+    if (cameraConnect) {
+        /* Limit camera loop speed if using mipi camera to save on CPU
+         * USB camera is alreay limited to 10 FPS */
+        if (cvWorker->getUsingMipi())
+            vidWorker->setDelayMS(MIPI_VIDEO_DELAY);
+
+        if (!mediaExists)
+            vidWorker->StartVideo();
+    }
+
 
     /* If there is no camera or file selected, select a default file */
     if (!mediaExists && !cameraConnect) {
@@ -211,6 +214,9 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
         inputMode = videoMode;
         cvWorker->useVideoMode(mediaPath);
     }
+
+    checkInputMode();
+    getImageFrame();
 
     if (autoStart && (mediaExists || cameraConnect)) {
         if (demoMode == PE)
@@ -1064,8 +1070,20 @@ void MainWindow::on_actionLoad_File_triggered()
         inputMode = imageMode;
         cvWorker->useImageMode(mediaPath);
     } else if (dialog.selectedNameFilter().contains("Videos")) {
+        if (!cvWorker->useVideoMode(mediaPath)) {
+            vidWorker->StopVideo();
+
+            /* If there is an attached camera return to that, otherwise
+             * give the user the opportunity to select another file */
+            if (cameraConnect)
+                on_actionLoad_Camera_triggered();
+            else
+                on_actionLoad_File_triggered();
+
+            return;
+        }
+
         inputMode = videoMode;
-        cvWorker->useVideoMode(mediaPath);
     }
 
     checkInputMode();

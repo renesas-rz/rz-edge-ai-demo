@@ -142,12 +142,12 @@ private slots:
     void on_actionLoad_Camera_triggered();
     void on_actionLoad_File_triggered();
     void on_pushButtonLoadPoseModel_clicked();
+    void errorPopup(QString errorMessage);
 
 private:
     void createTfWorker();
     QImage matToQImage(const cv::Mat& matToConvert);
     void createVideoWorker();
-    void errorPopup(QString errorMessage);
     void deleteTfWorker();
     void remakeTfWorker();
     void setupFaceDetectMode();

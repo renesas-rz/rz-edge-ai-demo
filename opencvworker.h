@@ -26,6 +26,10 @@
 #define GST_CODEC_PIPELINE " ! qtdemux ! queue ! h264parse ! omxh264dec ! queue ! vspmfilter dmabuf-use=true ! "
 #define GST_NO_CODEC_PIPELINE " ! decodebin ! videoscale ! videoconvert ! "
 
+#define RESOLUTION_ERR "Resolution of file is not supported."
+#define FILE_OPEN_ERR "File could not be opened, please check resolution"
+#define STREAM_OPEN_ERR "Could not open video file for streaming"
+
 #define VIDEO_ASPECT_RATIO_4_TO_3 1.33
 #define VIDEO_ASPECT_RATIO_5_TO_4 1.25
 #define VIDEO_ASPECT_RATIO_16_TO_9 1.78
@@ -55,7 +59,10 @@ public:
     bool getUsingMipi();
     void useCameraMode();
     void useImageMode(QString imageFilePath);
-    void useVideoMode(QString videoFilePath);
+    bool useVideoMode(QString videoFilePath);
+
+signals:
+    void resolutionError(QString message);
 
 private slots:
     void getVideoFileFrame();
@@ -66,7 +73,7 @@ private:
     void connectCamera();
     void checkCamera();
     void checkVideoFile();
-    void setVideoDims();
+    bool setVideoDims();
 
     std::unique_ptr<cv::VideoCapture> videoCapture;
     bool webcamInitialised;
