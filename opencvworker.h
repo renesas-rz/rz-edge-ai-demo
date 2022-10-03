@@ -30,10 +30,7 @@
 #define FILE_OPEN_ERR "File could not be opened, please check resolution"
 #define STREAM_OPEN_ERR "Could not open video file for streaming"
 
-#define VIDEO_ASPECT_RATIO_4_TO_3 1.33
-#define VIDEO_ASPECT_RATIO_5_TO_4 1.25
-#define VIDEO_ASPECT_RATIO_16_TO_9 1.78
-#define VIDEO_ASPECT_RATIO_16_TO_10 1.6
+#define SCALE_RATE 0.95
 
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>

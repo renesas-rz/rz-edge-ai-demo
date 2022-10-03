@@ -298,7 +298,6 @@ bool opencvWorker::setVideoDims()
 
     double videoFileHeight = videoChecker->get(cv::CAP_PROP_FRAME_HEIGHT);
     double videoFileWidth = videoChecker->get(cv::CAP_PROP_FRAME_WIDTH);
-    double aspectRatio = videoFileWidth / videoFileHeight;
 
     videoChecker->release();
 
@@ -309,24 +308,21 @@ bool opencvWorker::setVideoDims()
         return false;
     }
 
-    /* Round aspect ratio to 2 decimal places */
-    double aspectRatioRounded = round(aspectRatio * 100) / 100;
+    videoHeight = videoFileHeight;
+    videoWidth = videoFileWidth;
 
-    /* Identify aspect ratio and set downscaled resolution.
-     * Downscaled resolutions set must allign with 32 to prevent any display issues */
-    if ((aspectRatioRounded == VIDEO_ASPECT_RATIO_16_TO_9) || (aspectRatioRounded == VIDEO_ASPECT_RATIO_16_TO_10)) {
-        videoHeight = 480;
-        videoWidth = 768;
-    } else if (aspectRatioRounded == VIDEO_ASPECT_RATIO_4_TO_3) {
-        videoHeight = 576;
-        videoWidth = 768;
-    } else if (aspectRatioRounded == VIDEO_ASPECT_RATIO_5_TO_4) {
-        videoHeight = 512;
-        videoWidth = 640;
-    } else {
-        videoHeight = videoFileHeight;
-        videoWidth = videoFileWidth;
+    /* Scale down the image without changing aspect ratio to ensure it fits on the GUI */
+    while (videoHeight > GRAPHICS_VIEW_HEIGHT || videoWidth > GRAPHICS_VIEW_WIDTH) {
+        videoHeight *= SCALE_RATE;
+        videoWidth *= SCALE_RATE;
     }
+
+    /* Resolutions set must align with 32 to prevent any display issues */
+    while (videoHeight % 32 != 0)
+           videoHeight--;
+
+    while (videoWidth % 32 != 0)
+           videoWidth--;
 
     return true;
 }
