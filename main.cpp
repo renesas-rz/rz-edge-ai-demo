@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
             labelLocation = LABEL_PATH_OD;
     }
 
-    /* Model file section (-m / --model */
+    /* Model file section (-m / --model) */
     if (!QFileInfo(modelLocation).isFile()) {
         if (mode != PE && !modelLocation.isEmpty())
             qWarning("Warning: AI model does not exist, using default AI model...");
