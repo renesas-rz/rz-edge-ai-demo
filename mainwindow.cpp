@@ -1031,11 +1031,11 @@ void MainWindow::on_actionLoad_File_triggered()
     {
        case SB: mediaDir = MEDIA_DIRECTORY_SB;
          break;
-       case OD: mediaDir = MEDIA_DIRECTORY_FD;
+       case OD: mediaDir = MEDIA_DIRECTORY_OD;
          break;
        case PE: mediaDir = MEDIA_DIRECTORY_PE;
          break;
-       case FD: mediaDir = MEDIA_DIRECTORY_OD;
+       case FD: mediaDir = MEDIA_DIRECTORY_FD;
          break;
        default: mediaDir = MEDIA_DIRECTORY;
     }
