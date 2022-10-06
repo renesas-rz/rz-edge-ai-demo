@@ -87,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
 
     ui->actionEnable_ArmNN_Delegate->setEnabled(false);
     ui->actionTensorFlow_Lite->setEnabled(true);
-    ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(false);
+    ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(true);
 
     connect(this, SIGNAL(sendMatToDraw(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
 
