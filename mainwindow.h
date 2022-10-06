@@ -56,9 +56,9 @@
 #define MODEL_PATH_PE_HAND_POSE_FULL "/opt/rz-edge-ai-demo/models/hand_landmark_full.tflite"
 #define RENESAS_RZ_LOGO_PATH "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
 #define SPLASH_SCREEN_PATH "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
-#define DEFAULT_VIDEO "/opt/rz-edge-ai-demo/media/exercising_using_battle_ropes.mp4"
-#define DEFAULT_FD_VIDEO "/opt/rz-edge-ai-demo/media/face_shaking.mp4"
-#define DEFAULT_SBD_IMG "/opt/rz-edge-ai-demo/media/shopping_items_003.jpg"
+#define DEFAULT_VIDEO "/opt/rz-edge-ai-demo/media/pose-estimation/exercising_using_battle_ropes.mp4"
+#define DEFAULT_FD_VIDEO "/opt/rz-edge-ai-demo/media/face-detection/face_shaking.mp4"
+#define DEFAULT_SBD_IMG "/opt/rz-edge-ai-demo/media/shopping-basket/shopping_items_003.jpg"
 
 #define OPTION_FD_DETECT_FACE "face"
 #define OPTION_FD_DETECT_IRIS "iris"
