@@ -404,15 +404,14 @@ void MainWindow::setPoseEstimateDelegateType()
 
 void MainWindow::setFaceDetectDelegateType()
 {
-    /* Do not enable ArmNN delegate when not using Face Detection mode on all
+    /* Do not enable ArmNN delegate when using Face Detection mode on all
      * platforms as it does not currently support Const Tensors as
      * inputs for Conv2d */
+    ui->actionEnable_ArmNN_Delegate->setEnabled(false);
+
     if (delegateType == armNN) {
         delegateType = none;
-        ui->actionEnable_ArmNN_Delegate->setEnabled(false);
         ui->actionTensorFlow_Lite->setEnabled(false);
-    } else {
-        ui->actionEnable_ArmNN_Delegate->setEnabled(false);
     }
 }
 
