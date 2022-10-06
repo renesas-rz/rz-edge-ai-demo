@@ -160,9 +160,9 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
         errorPopup(TEXT_CAMERA_OPENING_ERROR);
     } else {
         cameraConnect = true;
-        createVideoWorker();
     }
 
+    createVideoWorker();
     createTfWorker();
 
     if (demoMode == SB)
