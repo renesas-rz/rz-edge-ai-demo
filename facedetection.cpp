@@ -389,6 +389,29 @@ void faceDetection::processFace(const cv::Mat &matToProcess)
         processIris(resizedMat, croppedFaceMat, detectIris);
 }
 
+void faceDetection::updateFrameWithoutInference()
+{
+    int totalIrisModeFps;
+
+    uiFD->labelInferenceTimeFaceDetection->setText(TEXT_INFERENCE_FACE_DETECTION + QString("%1 ms").arg(timeElaspedFaceDetection));
+    uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK + QString("%1 ms").arg(timeElaspedFaceLandmark));
+    uiFD->labelInferenceTimeIrisLandmark->setText(TEXT_INFERENCE_IRIS_LANDMARK);
+
+    emit displayFrame();
+
+    if (continuousMode) {
+        /* Stop Total FPS timer and display it to GUI, then restart timer before getting the next frame */
+        utilFD->timeTotalFps(false);
+        totalIrisModeFps = utilFD->calculateTotalFps();
+        uiFD->labelTotalFpsFace->setText(TEXT_TOTAL_FPS + QString::number(double(totalIrisModeFps), 'f', 1));
+        utilFD->timeTotalFps(true);
+
+        emit getFrame();
+    } else {
+        setButtonState(true);
+    }
+}
+
 void faceDetection::processIris(const cv::Mat &resizedInputMat, const cv::Mat &croppedFaceMat, bool detectIris)
 {
     if (faceVisible) {
@@ -408,13 +431,17 @@ void faceDetection::processIris(const cv::Mat &resizedInputMat, const cv::Mat &c
         eyeLeft.x += faceTopLeftX;
         eyeLeft.y += faceTopLeftY;
 
-        /* Crop cv::Mat using coordinates provided by Face Landmark and
-         * run inference on left eye using Iris Landmark model */
-        cv::Rect cropRegionEyeL(eyeLeft.x, eyeLeft.y, eyeLeft.width, eyeLeft.height);
+        if (eyeLeft.x < 0 || eyeLeft.y < 0 || eyeLeft.width < 0 || eyeLeft.height < 0) {
+            updateFrameWithoutInference();
+        } else {
+            /* Crop cv::Mat using coordinates provided by Face Landmark and
+             * run inference on left eye using Iris Landmark model */
+            cv::Rect cropRegionEyeL(eyeLeft.x, eyeLeft.y, eyeLeft.width, eyeLeft.height);
 
-        croppedEyeMat = resizedInputMat(cropRegionEyeL);
+            croppedEyeMat = resizedInputMat(cropRegionEyeL);
 
-        emit sendMatForInference(croppedEyeMat, faceModel, detectIris);
+            emit sendMatForInference(croppedEyeMat, faceModel, detectIris);
+        }
 
         /* Process right eye */
         faceModel = irisLandmarkR;
@@ -428,33 +455,19 @@ void faceDetection::processIris(const cv::Mat &resizedInputMat, const cv::Mat &c
         eyeRight.x += faceTopLeftX;
         eyeRight.y += faceTopLeftY;
 
-        /* Crop cv::Mat using coordinates provided by Face Landmark and
-         * run inference on right eye using Iris Landmark model */
-        cv::Rect cropRegionEyeR(eyeRight.x, eyeRight.y, eyeRight.width, eyeRight.height);
-
-        croppedEyeMat = resizedInputMat(cropRegionEyeR);
-
-        emit sendMatForInference(croppedEyeMat, faceModel, detectIris);
-    } else {
-        int totalIrisModeFps;
-
-        uiFD->labelInferenceTimeFaceDetection->setText(TEXT_INFERENCE_FACE_DETECTION + QString("%1 ms").arg(timeElaspedFaceDetection));
-        uiFD->labelInferenceTimeFaceLandmark->setText(TEXT_INFERENCE_FACE_LANDMARK + QString("%1 ms").arg(timeElaspedFaceLandmark));
-        uiFD->labelInferenceTimeIrisLandmark->setText(TEXT_INFERENCE_IRIS_LANDMARK);
-
-        emit displayFrame();
-
-        if (continuousMode) {
-            /* Stop Total FPS timer and display it to GUI, then restart timer before getting the next frame */
-            utilFD->timeTotalFps(false);
-            totalIrisModeFps = utilFD->calculateTotalFps();
-            uiFD->labelTotalFpsFace->setText(TEXT_TOTAL_FPS + QString::number(double(totalIrisModeFps), 'f', 1));
-            utilFD->timeTotalFps(true);
-
-            emit getFrame();
+        if (eyeRight.x < 0 || eyeRight.y < 0 || eyeRight.width < 0 || eyeRight.height < 0) {
+            updateFrameWithoutInference();
         } else {
-            setButtonState(true);
+            /* Crop cv::Mat using coordinates provided by Face Landmark and
+             * run inference on right eye using Iris Landmark model */
+            cv::Rect cropRegionEyeR(eyeRight.x, eyeRight.y, eyeRight.width, eyeRight.height);
+
+            croppedEyeMat = resizedInputMat(cropRegionEyeR);
+
+            emit sendMatForInference(croppedEyeMat, faceModel, detectIris);
         }
+    } else {
+        updateFrameWithoutInference();
     }
 }
 

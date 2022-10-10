@@ -86,6 +86,7 @@ private:
     void processIris(const cv::Mat &resizedInputMat, const cv::Mat &croppedFaceMat, bool detectIris);
     QVector<QPair<float, float>> generateAnchorCoords(int inputHeight, int inputWidth);
     QVector<float> sortBoundingBoxes(const QVector<float> receivedConfidenceTensor, const QVector<float> receivedCoordinatesTensor);
+    void updateFrameWithoutInference();
 
     Ui::MainWindow *uiFD;
     Input inputModeFD;
