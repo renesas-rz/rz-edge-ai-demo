@@ -84,7 +84,7 @@ private:
     QString videoLoadedPath;
     std::string webcamName;
     cv::Mat picture;
-    cv::VideoCapture *camera;
+    cv::VideoCapture camera;
     cv::Mat imageFile;
     cv::VideoCapture *videoFile;
     std::string cameraInitialization;

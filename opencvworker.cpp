@@ -132,11 +132,9 @@ void opencvWorker::connectCamera()
     }
 
     /* Define the format for the camera to use */
-    camera = new cv::VideoCapture(webcamName, cv::CAP_V4L2);
-    camera->set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('U', 'Y', 'V', 'Y'));
-    camera->open(webcamName);
+    camera = cv::VideoCapture (webcamName, cv::CAP_V4L2);
 
-    if (!camera->isOpened()) {
+    if (!camera.isOpened()) {
         qWarning("Cannot open the camera");
         webcamOpened = false;
     } else {
@@ -144,14 +142,15 @@ void opencvWorker::connectCamera()
     }
 
     if (!usingMipi) {
-        camera->set(cv::CAP_PROP_FPS, 10);
-        camera->set(cv::CAP_PROP_BUFFERSIZE, 1);
+        camera.set(cv::CAP_PROP_FPS, 10);
+        camera.set(cv::CAP_PROP_BUFFERSIZE, 1);
         cameraWidth = 1280;
         cameraHeight = 720;
     }
 
-    camera->set(cv::CAP_PROP_FRAME_WIDTH, cameraWidth);
-    camera->set(cv::CAP_PROP_FRAME_HEIGHT, cameraHeight);
+    camera.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('U', 'Y', 'V', 'Y'));
+    camera.set(cv::CAP_PROP_FRAME_WIDTH, cameraWidth);
+    camera.set(cv::CAP_PROP_FRAME_HEIGHT, cameraHeight);
 
     checkCamera();
 }
@@ -159,11 +158,11 @@ void opencvWorker::connectCamera()
 void opencvWorker::checkCamera()
 {
     /* Check to see if camera can retrieve a frame*/
-    *camera >> picture;
+    camera >> picture;
 
     if (picture.empty()) {
         qWarning("Lost connection to camera, reconnecting");
-        camera->release();
+        camera.release();
 
         if (connectionAttempts < 3) {
             connectCamera();
@@ -175,7 +174,7 @@ void opencvWorker::checkCamera()
 }
 
 opencvWorker::~opencvWorker() {
-    camera->release();
+    camera.release();
     videoFile->release();
 }
 
@@ -195,7 +194,7 @@ cv::Mat* opencvWorker::getImage(unsigned int iterations)
     } else {
         /* For camera input, grab the latest frame from the camera */
         do {
-            *camera >> picture;
+            camera >> picture;
 
             if (picture.empty()) {
                 qWarning("Image retrieval error");
