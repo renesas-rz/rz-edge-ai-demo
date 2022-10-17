@@ -349,8 +349,13 @@ void faceDetection::runInference(const QVector<float> &receivedTensor, int recei
 
     if (detectMode == irisMode) {
         /* Draw left iris first and then right iris */
-        drawPointsIrisLandmark(leftEyeTensor, true);
-        drawPointsIrisLandmark(outputTensor, false);
+        if (!(eyeLeft.x < 1 || eyeLeft.y < 1 || eyeLeft.width < 1 || eyeLeft.height < 1))
+            drawPointsIrisLandmark(leftEyeTensor, true);
+
+
+        if (!(eyeRight.x < 1 || eyeRight.y < 1 || eyeRight.width < 1 || eyeRight.height < 1))
+            drawPointsIrisLandmark(outputTensor, false);
+
     } else {
         /* Draw onto image first then the graphical view */
         drawPointsFaceLandmark(outputTensor, false);
@@ -416,11 +421,9 @@ void faceDetection::processIris(const cv::Mat &resizedInputMat, const cv::Mat &c
 {
     if (faceVisible) {
         cv::Mat croppedEyeMat;
+        bool leftEyeInvalid, rightEyeInvalid;
         float irisScaleWidth = croppedFaceMat.cols / FACE_LANDMARK_INPUT_SIZE;
         float irisScaleHeight = croppedFaceMat.rows / FACE_LANDMARK_INPUT_SIZE;
-
-        /* Process left eye */
-        faceModel = irisLandmarkL;
 
         eyeLeft.x = eyeCropCoords.at(0) * irisScaleWidth;
         eyeLeft.y = eyeCropCoords.at(1) * irisScaleHeight;
@@ -431,21 +434,6 @@ void faceDetection::processIris(const cv::Mat &resizedInputMat, const cv::Mat &c
         eyeLeft.x += faceTopLeftX;
         eyeLeft.y += faceTopLeftY;
 
-        if (eyeLeft.x < 1 || eyeLeft.y < 1 || eyeLeft.width < 1 || eyeLeft.height < 1) {
-            updateFrameWithoutInference();
-        } else {
-            /* Crop cv::Mat using coordinates provided by Face Landmark and
-             * run inference on left eye using Iris Landmark model */
-            cv::Rect cropRegionEyeL(eyeLeft.x, eyeLeft.y, eyeLeft.width, eyeLeft.height);
-
-            croppedEyeMat = resizedInputMat(cropRegionEyeL);
-
-            emit sendMatForInference(croppedEyeMat, faceModel, detectIris);
-        }
-
-        /* Process right eye */
-        faceModel = irisLandmarkR;
-
         eyeRight.x = eyeCropCoords.at(4) * irisScaleWidth;
         eyeRight.y = eyeCropCoords.at(5) * irisScaleHeight;
         eyeRight.width = (eyeCropCoords.at(6) * irisScaleWidth) - eyeRight.x;
@@ -455,17 +443,46 @@ void faceDetection::processIris(const cv::Mat &resizedInputMat, const cv::Mat &c
         eyeRight.x += faceTopLeftX;
         eyeRight.y += faceTopLeftY;
 
-        if (eyeRight.x < 1 || eyeRight.y < 1 || eyeRight.width < 1 || eyeRight.height < 1) {
+        leftEyeInvalid = eyeLeft.x < 1 || eyeLeft.y < 1 || eyeLeft.width < 1 || eyeLeft.height < 1;
+        rightEyeInvalid = eyeRight.x < 1 || eyeRight.y < 1 || eyeRight.width < 1 || eyeRight.height < 1;
+
+        /* If both eyes are cv::Mat data invalid, do not attempt to run inference */
+        if (leftEyeInvalid && rightEyeInvalid) {
             updateFrameWithoutInference();
-        } else {
+            return;
+        }
+
+        if (!leftEyeInvalid) {
+            /* Process left eye */
+            faceModel = irisLandmarkL;
+
+            /* Crop cv::Mat using coordinates provided by Face Landmark and
+             * run inference on left eye using Iris Landmark model */
+            cv::Rect cropRegionEyeL(eyeLeft.x, eyeLeft.y, eyeLeft.width, eyeLeft.height);
+
+            croppedEyeMat = resizedInputMat(cropRegionEyeL);
+
+            emit sendMatForInference(croppedEyeMat, faceModel, detectIris);
+        }
+
+        /* The right eye must always be sent for inference, even if invalid, as it
+         * is used to indicate readiness to display to GUI as the last part of the
+         * inference chain */
+        faceModel = irisLandmarkR;
+
+        if (!rightEyeInvalid) {
+            /* Process right eye */
+
             /* Crop cv::Mat using coordinates provided by Face Landmark and
              * run inference on right eye using Iris Landmark model */
             cv::Rect cropRegionEyeR(eyeRight.x, eyeRight.y, eyeRight.width, eyeRight.height);
 
             croppedEyeMat = resizedInputMat(cropRegionEyeR);
 
-            emit sendMatForInference(croppedEyeMat, faceModel, detectIris);
         }
+
+        emit sendMatForInference(croppedEyeMat, faceModel, detectIris);
+
     } else {
         updateFrameWithoutInference();
     }
