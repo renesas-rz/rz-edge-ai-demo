@@ -431,7 +431,7 @@ void faceDetection::processIris(const cv::Mat &resizedInputMat, const cv::Mat &c
         eyeLeft.x += faceTopLeftX;
         eyeLeft.y += faceTopLeftY;
 
-        if (eyeLeft.x < 0 || eyeLeft.y < 0 || eyeLeft.width < 0 || eyeLeft.height < 0) {
+        if (eyeLeft.x < 1 || eyeLeft.y < 1 || eyeLeft.width < 1 || eyeLeft.height < 1) {
             updateFrameWithoutInference();
         } else {
             /* Crop cv::Mat using coordinates provided by Face Landmark and
@@ -455,7 +455,7 @@ void faceDetection::processIris(const cv::Mat &resizedInputMat, const cv::Mat &c
         eyeRight.x += faceTopLeftX;
         eyeRight.y += faceTopLeftY;
 
-        if (eyeRight.x < 0 || eyeRight.y < 0 || eyeRight.width < 0 || eyeRight.height < 0) {
+        if (eyeRight.x < 1 || eyeRight.y < 1 || eyeRight.width < 1 || eyeRight.height < 1) {
             updateFrameWithoutInference();
         } else {
             /* Crop cv::Mat using coordinates provided by Face Landmark and
