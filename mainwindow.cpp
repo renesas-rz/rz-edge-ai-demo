@@ -702,6 +702,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_actionShopping_Basket_triggered()
 {
+    if (cameraConnect)
+        vidWorker->StopVideo();
+
     ui->menuDemoMode->setEnabled(false);
 
     /* Store previous demo modes label and model */
@@ -771,6 +774,9 @@ void MainWindow::on_actionObject_Detection_triggered()
 {
     ui->menuDemoMode->setEnabled(false);
 
+    if (cameraConnect)
+        vidWorker->StopVideo();
+
     /* Store previous demo modes label and model */
     if (demoMode == SB) {
         labelSB = labelPath;
@@ -812,11 +818,16 @@ void MainWindow::on_actionObject_Detection_triggered()
     startDefaultMode();
 
     ui->menuDemoMode->setEnabled(true);
+
+    emit stopInference();
 }
 
 void MainWindow::on_actionPose_Estimation_triggered()
 {
     ui->menuDemoMode->setEnabled(false);
+
+    if (cameraConnect)
+        vidWorker->StopVideo();
 
     /* Store previous demo modes label and model */
     if (demoMode == SB) {
@@ -849,11 +860,16 @@ void MainWindow::on_actionPose_Estimation_triggered()
     startDefaultMode();
 
     ui->menuDemoMode->setEnabled(true);
+
+    emit stopInference();
 }
 
 void MainWindow::on_actionFace_Detection_triggered()
 {
     ui->menuDemoMode->setEnabled(false);
+
+    if (cameraConnect)
+        vidWorker->StopVideo();
 
     /* Store previous demo modes label and model */
     if (demoMode == SB) {
@@ -886,6 +902,8 @@ void MainWindow::on_actionFace_Detection_triggered()
     startDefaultMode();
 
     ui->menuDemoMode->setEnabled(true);
+
+    emit stopInference();
 }
 
 void MainWindow::loadAIModel()
