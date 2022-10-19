@@ -20,6 +20,9 @@ QT += core gui multimedia widgets
 
 CONFIG += c++14
 
+# Ignore a lot of build warnings from Qt code
+QMAKE_CXXFLAGS += "-Wno-deprecated-copy"
+
 SOURCES += \
     edge-utils.cpp \
     facedetection.cpp \
