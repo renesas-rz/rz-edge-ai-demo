@@ -40,7 +40,6 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QS
     costs = readPricesFile(pricesFile);
     camConnect = cameraConnect;
 
-    font.setPointSize(EDGE_FONT_SIZE);
     modelName = modelPath.section('/', -1);
 
     uiSB->actionShopping_Basket->setDisabled(true);
@@ -61,7 +60,6 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QS
 
     uiSB->tableWidget->verticalHeader()->setDefaultSectionSize(25);
     uiSB->tableWidget->setHorizontalHeaderLabels({"Item", "Quantity", "Unit Price"});
-    uiSB->tableWidget->horizontalHeader()->setFont(font);
     uiSB->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     uiSB->tableWidget->resizeColumnsToContents();
     double column1Width = uiSB->tableWidget->geometry().width() * 0.5;

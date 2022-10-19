@@ -58,7 +58,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
 
     QSplashScreen *splashScreen = new QSplashScreen(splashScreenImage);
     splashScreen->setAttribute(Qt::WA_DeleteOnClose, true);
-    font.setPointSize(18);
+    font.setPixelSize(SPLASH_SCREEN_TEXT_SIZE);
     splashScreen->setFont(font);
     splashScreen->show();
     splashScreen->showMessage("Loading the \nRZ Edge AI Demo", Qt::AlignCenter, Qt::blue);
@@ -148,6 +148,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     cvWorker = new opencvWorker(cameraLocation, board);
     connect(cvWorker, SIGNAL(resolutionError(QString)), SLOT(errorPopup(QString)), Qt::DirectConnection);
 
+    setGuiPixelSizes();
     splashScreen->close();
 
     if (cvWorker->cameraInit() == false) {
@@ -228,6 +229,103 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
         else if (demoMode == FD)
             ui->pushButtonStartStopFace->pressed();
     }
+}
+
+void MainWindow::setGuiPixelSizes()
+{
+    /* Menu bar */
+    font.setPixelSize(MENUBAR_TEXT_SIZE);
+    ui->menuBar->setFont(font);
+
+    QList<QAction *> allMenuItems = ui->menuDemoMode->actions();
+    allMenuItems.append(ui->menuInput->actions());
+    allMenuItems.append(ui->menuInferenceEngine->actions());
+    allMenuItems.append(ui->menuAbout->actions());
+
+    foreach (QAction *item, allMenuItems)
+        item->setFont(font);
+
+    /* Metrics table */
+    font.setPixelSize(METRICS_TABLE_HEADING_SIZE);
+    ui->labelInferenceTitleSB->setFont(font);
+    ui->labelInferenceTitleFD->setFont(font);
+    ui->labelInferenceTitleOD->setFont(font);
+    ui->labelInferenceTitlePE->setFont(font);
+    ui->labelAIModel->setFont(font);
+    ui->labelDemoMode->setFont(font);
+
+    ui->labelInferenceTimeOD->setFont(font);
+    ui->labelInferenceTimePE->setFont(font);
+    ui->labelInferenceTimeSB->setFont(font);
+    ui->labelInferenceTimeFD->setFont(font);
+
+    font.setPixelSize(METRICS_TABLE_TEXT_SIZE);
+    ui->labelInferenceEngineFD->setFont(font);
+    ui->labelInferenceEngineOD->setFont(font);
+    ui->labelInferenceEnginePE->setFont(font);
+    ui->labelInferenceEngineSB->setFont(font);
+
+    ui->labelAIModelFilenameFD->setFont(font);
+    ui->labelAIModelFilenameOD->setFont(font);
+    ui->labelAIModelFilenamePE->setFont(font);
+    ui->labelAIModelFilenameSB->setFont(font);
+
+    ui->labelInferenceEngineFD->setFont(font);
+    ui->labelInferenceEngineOD->setFont(font);
+    ui->labelInferenceEnginePE->setFont(font);
+    ui->labelInferenceEngineSB->setFont(font);
+
+    /* Face Detection mode */
+    ui->labelInferenceTimeFaceDetection->setFont(font);
+    ui->labelInferenceTimeFaceLandmark->setFont(font);
+    ui->labelInferenceTimeIrisLandmark->setFont(font);
+
+    font.setPixelSize(METRICS_TABLE_TEXT_SIZE);
+    ui->labelTotalFpsFace->setFont(font);
+
+    font.setPixelSize(BLUE_BUTTON_TEXT_SIZE);
+    ui->pushButtonDetectFace->setFont(font);
+    ui->pushButtonDetectIris->setFont(font);
+    ui->pushButtonStartStopFace->setFont(font);
+
+    font.setPixelSize(OUTPUT_GRAPH_TEXT_SIZE);
+    ui->graphicsViewPointPlotFace->setFont(font);
+    ui->labelGraphicalViewTitleFD->setFont(font);
+
+    /* Object Detection mode */
+    font.setPixelSize(BLUE_BUTTON_TEXT_SIZE);
+    ui->pushButtonLoadAIModelOD->setFont(font);
+    ui->pushButtonStartStop->setFont(font);
+
+    font.setPixelSize(OUTPUT_TABLE_HEADING_SIZE);
+    ui->tableWidgetOD->setFont(font);
+
+    /* Shopping Basket mode */
+    font.setPixelSize(BLUE_BUTTON_TEXT_SIZE);
+    ui->pushButtonLoadAIModelSB->setFont(font);
+    ui->pushButtonNextBasket->setFont(font);
+    ui->pushButtonProcessBasket->setFont(font);
+
+    font.setPixelSize(OUTPUT_TABLE_HEADING_SIZE);
+    ui->tableWidget->horizontalHeader()->setFont(font);
+
+    font.setPixelSize(OUTPUT_TABLE_TEXT_SIZE);
+    ui->tableWidget->setFont(font);
+
+    font.setPixelSize(METRICS_TABLE_HEADING_SIZE);
+    ui->labelTotalItems->setFont(font);
+    ui->labelTotalFps->setFont(font);
+
+    /* Pose Estimation mode */
+    font.setPixelSize(METRICS_TABLE_HEADING_SIZE);
+    ui->labelTotalFpsPose->setFont(font);
+
+    font.setPixelSize(BLUE_BUTTON_TEXT_SIZE);
+    ui->pushButtonLoadPoseModel->setFont(font);
+    ui->pushButtonStartStopPose->setFont(font);
+
+    font.setPixelSize(OUTPUT_GRAPH_TEXT_SIZE);
+    ui->labelGraphicalViewTitle->setFont(font);
 }
 
 void MainWindow::setupObjectDetectMode()
@@ -475,6 +573,7 @@ void MainWindow::on_actionLicense_triggered()
                              "You should have received a copy of the GNU General Public License "
                              "along with the RZ Edge AI Demo. If not, see https://www.gnu.org/licenses.",
                              QMessageBox::NoButton, this, Qt::Dialog | Qt::FramelessWindowHint);
+    font.setPixelSize(POPUP_DIALOG_TEXT_SIZE);
     msgBox->setFont(font);
     msgBox->show();
 }
@@ -484,6 +583,7 @@ void MainWindow::on_actionHardware_triggered()
     QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, "Information", boardInfo,
                                  QMessageBox::NoButton, this, Qt::Dialog | Qt::FramelessWindowHint);
     msgBox->setFont(font);
+    font.setPixelSize(POPUP_DIALOG_TEXT_SIZE);
     msgBox->show();
 }
 
@@ -920,6 +1020,8 @@ void MainWindow::loadAIModel()
     dialog.setDirectory(MODEL_DIRECTORY);
     dialog.setNameFilter("TFLite Files (*tflite)");
     dialog.setViewMode(QFileDialog::Detail);
+    font.setPixelSize(FILE_DIALOG_TEXT_SIZE);
+    dialog.setFont(font);
 
     modelPath.clear();
 
@@ -997,6 +1099,8 @@ void MainWindow::on_pushButtonLoadPoseModel_clicked()
     dialog.setDirectory(MODEL_DIRECTORY);
     dialog.setNameFilter("TFLite Files (*tflite)");
     dialog.setViewMode(QFileDialog::Detail);
+    font.setPixelSize(FILE_DIALOG_TEXT_SIZE);
+    dialog.setFont(font);
 
     modelPath.clear();
 
@@ -1044,6 +1148,8 @@ void MainWindow::on_actionLoad_File_triggered()
 
     dialog.setFileMode(QFileDialog::AnyFile);
     dialog.setViewMode(QFileDialog::Detail);
+    font.setPixelSize(FILE_DIALOG_TEXT_SIZE);
+    dialog.setFont(font);
 
     switch (demoMode)
     {
@@ -1072,6 +1178,7 @@ void MainWindow::on_actionLoad_File_triggered()
     if (mediaFileName.isEmpty()) {
         QMessageBox *msgBox = new QMessageBox(QMessageBox::Warning, "Warning", "Could not identify media file",
                                      QMessageBox::NoButton, this, Qt::Dialog | Qt::FramelessWindowHint);
+        font.setPixelSize(POPUP_DIALOG_TEXT_SIZE);
         msgBox->setFont(font);
         msgBox->exec();
         qeventLoop->exec();

@@ -55,10 +55,8 @@ objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList, 
     uiOD->labelDemoMode->setText("Mode: Object Detection");
     uiOD->labelTotalFps->setText(TEXT_TOTAL_FPS);
 
-    font.setPointSize(EDGE_FONT_SIZE);
     uiOD->tableWidgetOD->verticalHeader()->setDefaultSectionSize(25);
     uiOD->tableWidgetOD->setHorizontalHeaderLabels({"Object Name", "Count"});
-    uiOD->tableWidgetOD->horizontalHeader()->setFont(font);
     uiOD->tableWidgetOD->setEditTriggers(QAbstractItemView::NoEditTriggers);
     uiOD->tableWidgetOD->resizeColumnsToContents();
     double objectNameColumnWidth = uiOD->tableWidgetOD->geometry().width() * 0.8;

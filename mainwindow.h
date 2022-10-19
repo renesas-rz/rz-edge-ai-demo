@@ -159,6 +159,7 @@ private:
     void setPoseEstimateDelegateType();
     void setFaceDetectDelegateType();
     void startDefaultMode();
+    void setGuiPixelSizes();
     QStringList readLabelFile(QString labelPath);
 
     Ui::MainWindow *ui;
