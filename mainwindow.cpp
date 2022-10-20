@@ -1019,7 +1019,7 @@ void MainWindow::loadAIModel()
     dialog.setFileMode(QFileDialog::AnyFile);
     dialog.setDirectory(MODEL_DIRECTORY);
     dialog.setNameFilter("TFLite Files (*tflite)");
-    dialog.setViewMode(QFileDialog::Detail);
+    dialog.setViewMode(QFileDialog::List);
     font.setPixelSize(FILE_DIALOG_TEXT_SIZE);
     dialog.setFont(font);
 
@@ -1098,7 +1098,7 @@ void MainWindow::on_pushButtonLoadPoseModel_clicked()
     dialog.setFileMode(QFileDialog::AnyFile);
     dialog.setDirectory(MODEL_DIRECTORY);
     dialog.setNameFilter("TFLite Files (*tflite)");
-    dialog.setViewMode(QFileDialog::Detail);
+    dialog.setViewMode(QFileDialog::List);
     font.setPixelSize(FILE_DIALOG_TEXT_SIZE);
     dialog.setFont(font);
 
@@ -1147,7 +1147,7 @@ void MainWindow::on_actionLoad_File_triggered()
         vidWorker->StopVideo();
 
     dialog.setFileMode(QFileDialog::AnyFile);
-    dialog.setViewMode(QFileDialog::Detail);
+    dialog.setViewMode(QFileDialog::List);
     font.setPixelSize(FILE_DIALOG_TEXT_SIZE);
     dialog.setFont(font);
 
