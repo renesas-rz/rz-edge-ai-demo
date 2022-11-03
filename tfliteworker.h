@@ -45,6 +45,7 @@ public:
     ~tfliteWorker();
     void receiveImage(const cv::Mat&);
     void setDemoMode(Mode demoMode);
+    void processData(void *data, size_t dataSize);
 
 signals:
     void sendOutputTensor(const QVector<float>&, int, int, const cv::Mat&);
@@ -59,6 +60,7 @@ private:
     Mode modeSelected;
     TfLiteDelegate* xnnpack_delegate;
     QVector<float> outputTensor;
+    const cv::Mat *displayMat;
     int wantedWidth, wantedHeight, wantedChannels;
 };
 

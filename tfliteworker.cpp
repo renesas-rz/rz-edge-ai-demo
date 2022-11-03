@@ -86,17 +86,15 @@ tfliteWorker::~tfliteWorker() {
 void tfliteWorker::receiveImage(const cv::Mat& sentMat)
 {
     cv::Mat sentImageMat;
-    std::chrono::high_resolution_clock::time_point startTime, stopTime;
-    QVector<int> outputTensorCount;
-    int timeElapsed;
     int input;
-    int itemStride;
 
     if(sentMat.empty()) {
         qWarning(WARNING_IMAGE_RETREIVAL);
         emit sendInferenceWarning(WARNING_IMAGE_RETREIVAL);
         return;
     }
+
+    displayMat = &sentMat;
 
     input = tfliteInterpreter->inputs()[0];
 
@@ -107,10 +105,23 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
          * The data of the image needs to be divided by 255.0f as CV_8UC3 ranges
          * from 0 to 255, whereas CV_32FC3 ranges from 0 to 1 */
         sentImageMat.convertTo(sentImageMat, CV_32FC3, SCALE_FACTOR_UCHAR_TO_FLOAT);
+    }
 
-        memcpy(tfliteInterpreter->typed_tensor<float>(input), sentImageMat.data, sentImageMat.total() * sentImageMat.elemSize());
+    processData(sentImageMat.data, sentImageMat.total() * sentImageMat.elemSize());
+}
+
+void tfliteWorker::processData(void *data, size_t inputDataSize)
+{
+    std::chrono::high_resolution_clock::time_point startTime, stopTime;
+    QVector<int> outputTensorCount;
+    int timeElapsed;
+    int itemStride;
+    int input = tfliteInterpreter->inputs()[0];
+
+    if (tfliteInterpreter->tensor(input)->type == kTfLiteFloat32) {
+        memcpy(tfliteInterpreter->typed_tensor<float>(input), data, inputDataSize);
     } else if (tfliteInterpreter->tensor(input)->type == kTfLiteUInt8) {
-        memcpy(tfliteInterpreter->typed_tensor<uint8_t>(input), sentImageMat.data, sentImageMat.total() * sentImageMat.elemSize());
+        memcpy(tfliteInterpreter->typed_tensor<uint8_t>(input), data, inputDataSize);
     } else {
         qWarning("Model data type currently not supported!");
         emit sendInferenceWarning(WARNING_UNSUPPORTED_DATA_TYPE);
@@ -164,7 +175,7 @@ void tfliteWorker::receiveImage(const cv::Mat& sentMat)
     if (modeSelected == FD && modelName != MODEL_PATH_FD_FACE_DETECTION)
         emit sendOutputTensorImageless(outputTensor, itemStride, timeElapsed);
     else
-        emit sendOutputTensor(outputTensor, itemStride, timeElapsed, sentMat);
+        emit sendOutputTensor(outputTensor, itemStride, timeElapsed, *displayMat);
 
     outputTensor.clear();
 }
