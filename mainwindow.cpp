@@ -29,6 +29,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "audiocommand.h"
 #include "facedetection.h"
 #include "objectdetection.h"
 #include "opencvworker.h"
@@ -51,7 +52,10 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     labelOD = LABEL_PATH_OD;
     modelOD = MODEL_PATH_OD;
     labelSB = LABEL_PATH_SB;
+    labelAC = LABEL_PATH_AC;
     modelSB = MODEL_PATH_SB;
+    scene = new QGraphicsScene(this);
+    sceneAC = new QGraphicsScene(this);
     bool mediaExists = QFile::exists(mediaPath);
 
     QPixmap splashScreenImage(SPLASH_SCREEN_PATH);
@@ -80,8 +84,12 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
 
     ui->setupUi(this);
     this->resize(APP_WIDTH, APP_HEIGHT);
-    scene = new QGraphicsScene(this);
-    ui->graphicsView->setScene(scene);
+
+    if (demoMode == AC)
+        ui->graphicsView->setScene(sceneAC);
+    else
+        ui->graphicsView->setScene(scene);
+
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
@@ -141,10 +149,12 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
 
     if (demoMode == PE)
         setPoseEstimateDelegateType();
-    else if (demoMode == FD)
+    else if (demoMode == FD || demoMode == AC)
         disableArmNNDelegate();
 
+    qRegisterMetaType<size_t>("size_t");
     qRegisterMetaType<cv::Mat>();
+
     cvWorker = new opencvWorker(cameraLocation, board);
     connect(cvWorker, SIGNAL(resolutionError(QString)), SLOT(errorPopup(QString)), Qt::DirectConnection);
 
@@ -174,6 +184,8 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
         setupPoseEstimateMode();
     else if (demoMode == FD)
         setupFaceDetectMode();
+    else if (demoMode == AC)
+        setupAudioCommandMode();
 
     if (mediaExists) {
         bool video = false;
@@ -198,7 +210,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
         }
     }
 
-    if (cameraConnect) {
+    if (cameraConnect && demoMode != AC) {
         /* Limit camera loop speed if using mipi camera to save on CPU
          * USB camera is alreay limited to 10 FPS */
         if (cvWorker->getUsingMipi())
@@ -210,16 +222,18 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
 
 
     /* If there is no camera or file selected, select a default file */
-    if (!mediaExists && !cameraConnect) {
+    if (!mediaExists && !cameraConnect && demoMode != AC) {
         mediaPath = DEFAULT_VIDEO;
         inputMode = videoMode;
         cvWorker->useVideoMode(mediaPath);
     }
 
     checkInputMode();
-    getImageFrame();
 
-    if (autoStart && (mediaExists || cameraConnect)) {
+    if (demoMode != AC)
+        getImageFrame();
+
+    if (autoStart && (mediaExists || cameraConnect) && demoMode != AC) {
         if (demoMode == PE)
             ui->pushButtonStartStopPose->pressed();
         else if (demoMode == OD)
@@ -251,6 +265,7 @@ void MainWindow::setGuiPixelSizes()
     ui->labelInferenceTitleFD->setFont(font);
     ui->labelInferenceTitleOD->setFont(font);
     ui->labelInferenceTitlePE->setFont(font);
+    ui->labelInferenceTitleAC->setFont(font);
     ui->labelAIModel->setFont(font);
     ui->labelDemoMode->setFont(font);
 
@@ -258,22 +273,26 @@ void MainWindow::setGuiPixelSizes()
     ui->labelInferenceTimePE->setFont(font);
     ui->labelInferenceTimeSB->setFont(font);
     ui->labelInferenceTimeFD->setFont(font);
+    ui->labelInferenceTimeAC->setFont(font);
 
     font.setPixelSize(METRICS_TABLE_TEXT_SIZE);
     ui->labelInferenceEngineFD->setFont(font);
     ui->labelInferenceEngineOD->setFont(font);
     ui->labelInferenceEnginePE->setFont(font);
     ui->labelInferenceEngineSB->setFont(font);
+    ui->labelInferenceEngineAC->setFont(font);
 
     ui->labelAIModelFilenameFD->setFont(font);
     ui->labelAIModelFilenameOD->setFont(font);
     ui->labelAIModelFilenamePE->setFont(font);
     ui->labelAIModelFilenameSB->setFont(font);
+    ui->labelAIModelFilenameAC->setFont(font);
 
     ui->labelInferenceEngineFD->setFont(font);
     ui->labelInferenceEngineOD->setFont(font);
     ui->labelInferenceEnginePE->setFont(font);
     ui->labelInferenceEngineSB->setFont(font);
+    ui->labelInferenceEngineAC->setFont(font);
 
     /* Face Detection mode */
     ui->labelInferenceTimeFaceDetection->setFont(font);
@@ -326,12 +345,29 @@ void MainWindow::setGuiPixelSizes()
 
     font.setPixelSize(OUTPUT_GRAPH_TEXT_SIZE);
     ui->labelGraphicalViewTitle->setFont(font);
+
+    /* Audio Command mode */
+    font.setPixelSize(BLUE_BUTTON_TEXT_SIZE);
+    ui->pushButtonTalk->setFont(font);
+
+    font.setPixelSize(OUTPUT_TABLE_HEADING_SIZE);
+    ui->tableWidgetAC->horizontalHeader()->setFont(font);
+
+    font.setPixelSize(OUTPUT_TABLE_TEXT_SIZE);
+    ui->tableWidgetAC->setFont(font);
+    ui->commandReaderAC->setFont(font);
+
+    font.setPixelSize(OUTPUT_TABLE_HEADING_SIZE);
+    ui->labelCountAC->setFont(font);
+    ui->labelHistoryAC->setFont(font);
+    ui->commandList->setFont(font);
 }
 
 void MainWindow::setupObjectDetectMode()
 {
     demoMode = OD;
     tfWorker->setDemoMode(demoMode);
+    ui->graphicsView->setScene(scene);
 
     objectDetectMode = new objectDetection(ui, labelFileList, modelPath, inferenceEngine, cameraConnect);
 
@@ -354,6 +390,7 @@ void MainWindow::setupShoppingMode()
 {
     demoMode = SB;
     tfWorker->setDemoMode(demoMode);
+    ui->graphicsView->setScene(scene);
 
     shoppingBasketMode = new shoppingBasket(ui, labelFileList, pricesPath, modelPath, inferenceEngine, cameraConnect);
 
@@ -377,6 +414,7 @@ void MainWindow::setupPoseEstimateMode()
 {
     demoMode = PE;
     tfWorker->setDemoMode(demoMode);
+    ui->graphicsView->setScene(scene);
 
     poseEstimateMode = new poseEstimation(ui, modelPath, inferenceEngine, cameraConnect);
 
@@ -402,6 +440,7 @@ void MainWindow::setupFaceDetectMode()
     tfWorkerFaceLandmark->setDemoMode(demoMode);
     tfWorkerIrisLandmarkL->setDemoMode(demoMode);
     tfWorkerIrisLandmarkR->setDemoMode(demoMode);
+    ui->graphicsView->setScene(scene);
 
     if (faceDetectIrisMode)
         detectModeToUse = irisMode;
@@ -438,6 +477,27 @@ void MainWindow::setupFaceDetectMode()
         connect(tfWorkerFaceLandmark, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
                 faceDetectMode, SLOT(runInference(QVector<float>, int, int)));
     }
+}
+
+void MainWindow::setupAudioCommandMode()
+{
+    demoMode = AC;
+    tfWorker->setDemoMode(demoMode);
+    ui->graphicsView->setScene(sceneAC);
+    sceneAC->clear();
+    labelPath = labelAC;
+    labelFileList = readLabelFile(labelAC);
+
+    disableXnnPackDelegate();
+    disableArmNNDelegate();
+
+    audioCommandMode = new audioCommand(ui, labelFileList, inferenceEngine);
+
+    connect(audioCommandMode, SIGNAL(requestInference(void*, size_t)), tfWorker, SLOT(processData(void*, size_t)));
+    connect(tfWorker, SIGNAL(sendOutputTensorBasic(QVector<float>, int)), audioCommandMode, SLOT(interpretInference(QVector<float>, int)));
+    connect(ui->pushButtonTalk, SIGNAL(pressed()), audioCommandMode, SLOT(startListening()));
+
+    audioCommandMode->readAudioFile(DEFAULT_WAV_FILE);
 }
 
 void MainWindow::createVideoWorker()
@@ -507,6 +567,18 @@ void MainWindow::disableArmNNDelegate()
     ui->actionEnable_ArmNN_Delegate->setEnabled(false);
 
     if (delegateType == armNN) {
+        delegateType = none;
+        ui->actionTensorFlow_Lite->setEnabled(false);
+    }
+}
+
+void MainWindow::disableXnnPackDelegate()
+{
+    /* Do not enable XNNPack delegate when using models that require
+     * dynamic-sized tensors */
+    ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(false);
+
+    if (delegateType == xnnpack) {
         delegateType = none;
         ui->actionTensorFlow_Lite->setEnabled(false);
     }
@@ -707,6 +779,9 @@ void MainWindow::remakeTfWorker()
     } else if (demoMode == FD) {
         setupFaceDetectMode();
         emit stopInference();
+    } else if (demoMode == AC) {
+        setupAudioCommandMode();
+        emit stopInference();
     }
 
     checkInputMode();
@@ -727,15 +802,15 @@ void MainWindow::on_actionTensorflow_Lite_XNNPack_delegate_triggered()
 {
     delegateType = xnnpack;
 
-    if (demoMode == PE) {
+    if (demoMode == PE)
         setPoseEstimateDelegateType();
-    } else if (demoMode == FD) {
+    else if (demoMode == FD)
         faceDetectIrisMode = faceDetectMode->getUseIrisMode();
-
-        disableArmNNDelegate();
-    } else {
+    else
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
-    }
+
+    if(demoMode == FD || demoMode == AC)
+        disableArmNNDelegate();
 
     ui->actionTensorFlow_Lite->setEnabled(true);
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(false);
@@ -747,15 +822,18 @@ void MainWindow::on_actionTensorFlow_Lite_triggered()
 {
     delegateType = none;
 
-    if (demoMode == PE) {
+    if (demoMode == PE)
         setPoseEstimateDelegateType();
-    } else if (demoMode == FD) {
+    else if (demoMode == FD)
         faceDetectIrisMode = faceDetectMode->getUseIrisMode();
-
-        disableArmNNDelegate();
-    } else {
+    else
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
-    }
+
+    if (demoMode == FD || demoMode == AC)
+        disableArmNNDelegate();
+
+    if (demoMode == AC)
+        disableXnnPackDelegate();
 
     ui->actionTensorFlow_Lite->setEnabled(false);
     ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(true);
@@ -823,6 +901,11 @@ void MainWindow::on_actionShopping_Basket_triggered()
         /* If coming from the Face Detection mode, enable ArmNN Delegate which
          * that mode doesn't support */
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+    } else if (demoMode == AC) {
+        labelAC = labelPath;
+
+        ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+        ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(true);
     }
 
     deleteTfWorker();
@@ -893,6 +976,11 @@ void MainWindow::on_actionObject_Detection_triggered()
         /* If coming from the Face Detection mode, enable ArmNN Delegate which
          * that mode doesn't support */
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+    } else if (demoMode == AC) {
+        labelAC = labelPath;
+
+        ui->actionEnable_ArmNN_Delegate->setEnabled(true);
+        ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(true);
     }
 
     deleteTfWorker();
@@ -937,6 +1025,10 @@ void MainWindow::on_actionPose_Estimation_triggered()
         modelOD = modelPath;
     } else if (demoMode == FD) {
         faceDetectIrisMode = faceDetectMode->getUseIrisMode();
+    } else if (demoMode == AC) {
+        labelAC = labelPath;
+
+        ui->actionTensorflow_Lite_XNNPack_delegate->setEnabled(true);
     }
 
     deleteTfWorker();
@@ -979,6 +1071,8 @@ void MainWindow::on_actionFace_Detection_triggered()
         modelOD = modelPath;
     } else if (demoMode == PE) {
         modelPE = modelPath;
+    } else if (demoMode == AC) {
+        labelAC = labelPath;
     }
 
     deleteTfWorker();
@@ -998,6 +1092,46 @@ void MainWindow::on_actionFace_Detection_triggered()
     disableArmNNDelegate();
     createTfWorker();
     setupFaceDetectMode();
+    startDefaultMode();
+
+    ui->menuDemoMode->setEnabled(true);
+
+    emit stopInference();
+}
+
+void MainWindow::on_actionAudio_Command_triggered()
+{
+    ui->menuDemoMode->setEnabled(false);
+
+    if (cameraConnect)
+        vidWorker->StopVideo();
+
+    /* Store previous demo modes label and model */
+    if (demoMode == SB) {
+        labelSB = labelPath;
+        modelSB = modelPath;
+    } else if (demoMode == OD) {
+        labelOD = labelPath;
+        modelOD = modelPath;
+    } else if (demoMode == FD) {
+        faceDetectIrisMode = faceDetectMode->getUseIrisMode();
+    } else if (demoMode == PE) {
+        modelPE = modelPath;
+    }
+
+    deleteTfWorker();
+    disconnectSignals();
+
+    demoMode = AC;
+    modelPath = MODEL_PATH_AC;
+    mediaPath = DEFAULT_WAV_FILE;
+    labelPath = labelAC;
+    inputMode = audioFileMode;
+
+    disableArmNNDelegate();
+    disableXnnPackDelegate();
+    createTfWorker();
+    setupAudioCommandMode();
     startDefaultMode();
 
     ui->menuDemoMode->setEnabled(true);
@@ -1160,14 +1294,20 @@ void MainWindow::on_actionLoad_File_triggered()
          break;
        case FD: mediaDir = MEDIA_DIRECTORY_FD;
          break;
+       case AC: mediaDir = MEDIA_DIRECTORY_AC;
+         break;
        default: mediaDir = MEDIA_DIRECTORY;
     }
     dialog.setDirectory(mediaDir);
 
-    if (demoMode != SB)
-        mediaFileFilter += VIDEO_FILE_FILTER;
+    if (demoMode == AC) {
+        mediaFileFilter += AUDIO_FILE_FILTER;
+    } else {
+        if (demoMode != SB)
+            mediaFileFilter += VIDEO_FILE_FILTER;
 
-    mediaFileFilter += IMAGE_FILE_FILTER;
+        mediaFileFilter += IMAGE_FILE_FILTER;
+    }
 
     dialog.setNameFilter(mediaFileFilter);
 
@@ -1186,7 +1326,7 @@ void MainWindow::on_actionLoad_File_triggered()
 
     mediaPath = QDir::current().absoluteFilePath(mediaFileName);
 
-    if (cameraConnect)
+    if (cameraConnect && demoMode != AC)
         ui->actionLoad_Camera->setEnabled(true);
 
     if (dialog.selectedNameFilter().contains("Images")) {
@@ -1207,10 +1347,17 @@ void MainWindow::on_actionLoad_File_triggered()
         }
 
         inputMode = videoMode;
+    } else if (dialog.selectedNameFilter().contains("Audio Files")) {
+        inputMode = audioFileMode;
+
+        audioCommandMode->readAudioFile(mediaPath);
     }
 
     checkInputMode();
-    getImageFrame();
+
+    if (demoMode != AC)
+        getImageFrame();
+
     emit fileLoaded();
     ui->labelTotalFps->setText(TEXT_TOTAL_FPS);
     dialog.close();

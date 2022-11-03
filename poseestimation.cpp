@@ -77,6 +77,7 @@ poseEstimation::poseEstimation(Ui::MainWindow *ui, QString modelPath, QString in
     uiPE->actionObject_Detection->setDisabled(false);
     uiPE->actionPose_Estimation->setDisabled(true);
     uiPE->actionFace_Detection->setDisabled(false);
+    uiPE->actionAudio_Command->setDisabled(false);
     uiPE->actionLoad_File->setText(TEXT_LOAD_FILE);
     uiPE->actionLoad_Camera->setDisabled(true);
 

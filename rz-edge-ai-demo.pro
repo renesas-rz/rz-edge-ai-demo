@@ -24,6 +24,7 @@ CONFIG += c++14
 QMAKE_CXXFLAGS += "-Wno-deprecated-copy"
 
 SOURCES += \
+    audiocommand.cpp \
     edge-utils.cpp \
     facedetection.cpp \
     main.cpp \
@@ -36,6 +37,7 @@ SOURCES += \
     videoworker.cpp
 
 HEADERS += \
+    audiocommand.h \
     edge-utils.h \
     facedetection.h \
     mainwindow.h \
@@ -74,4 +76,5 @@ LIBS += \
     -lcpuinfo \
     -lclog \
     -lfft2d_fftsg \
-    -lfarmhash
+    -lfarmhash \
+    -lsndfile

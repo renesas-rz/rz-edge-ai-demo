@@ -174,6 +174,8 @@ void tfliteWorker::processData(void *data, size_t inputDataSize)
 
     if (modeSelected == FD && modelName != MODEL_PATH_FD_FACE_DETECTION)
         emit sendOutputTensorImageless(outputTensor, itemStride, timeElapsed);
+    else if (modeSelected == AC)
+        emit sendOutputTensorBasic(outputTensor, timeElapsed);
     else
         emit sendOutputTensor(outputTensor, itemStride, timeElapsed, *displayMat);
 

@@ -34,6 +34,7 @@
 #define TEXT_INFERENCE "Inference Time: "
 #define TEXT_LOAD_FILE "Load Image/Video"
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"
+#define TEXT_LOAD_AUDIO_FILE "Load Audio File"
 #define TEXT_TOTAL_FPS "Total FPS: "
 
 #define DETECT_DEFAULT_THRESHOLD 0.5
@@ -55,6 +56,7 @@
 #define STACK_WIDGET_INDEX_OD 1
 #define STACK_WIDGET_INDEX_PE 2
 #define STACK_WIDGET_INDEX_FD 3
+#define STACK_WIDGET_INDEX_AC 4
 
 #define SPLASH_SCREEN_TEXT_SIZE 22
 #define MENUBAR_TEXT_SIZE 15
@@ -68,8 +70,8 @@
 #define POPUP_DIALOG_TEXT_SIZE 14
 
 enum Board { G2E, G2L, G2LC, G2M, Unknown };
-enum Input { cameraMode, imageMode, videoMode };
-enum Mode { SB, OD, PE, FD };
+enum Input { cameraMode, imageMode, videoMode, audioFileMode };
+enum Mode { SB, OD, PE, FD, AC };
 enum FaceModel { faceDetect, faceLandmark, irisLandmarkL, irisLandmarkR };
 
 class edgeUtils : public QObject

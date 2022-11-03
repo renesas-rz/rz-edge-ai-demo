@@ -62,6 +62,7 @@ faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine, Detect
     uiFD->actionShopping_Basket->setDisabled(false);
     uiFD->actionObject_Detection->setDisabled(false);
     uiFD->actionPose_Estimation->setDisabled(false);
+    uiFD->actionAudio_Command->setDisabled(false);
     uiFD->actionFace_Detection->setDisabled(true);
 
     uiFD->actionLoad_Camera->setDisabled(true);

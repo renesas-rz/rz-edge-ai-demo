@@ -33,15 +33,18 @@
 
 #define IMAGE_FILE_FILTER "Images (*.bmp *.dib *.jpeg *.jpg *.jpe *.png *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif)"
 #define VIDEO_FILE_FILTER "Videos (*.asf *.avi *.3gp *.mp4 *m4v *.mov *.flv *.mpeg *.mkv *.webm *.mxf *.ogg);;"
+#define AUDIO_FILE_FILTER "Audio Files (*.wav)"
 
 #define LABEL_DIRECTORY "/opt/rz-edge-ai-demo/labels/"
 #define LABEL_PATH_OD "/opt/rz-edge-ai-demo/labels/mobilenet_ssd_v2_coco_quant_postprocess_labels.txt"
 #define LABEL_PATH_SB "/opt/rz-edge-ai-demo/labels/shoppingBasketDemo_labels.txt"
+#define LABEL_PATH_AC "/opt/rz-edge-ai-demo/labels/audioDemo_labels.txt"
 #define MEDIA_DIRECTORY "/opt/rz-edge-ai-demo/media/"
 #define MEDIA_DIRECTORY_SB "/opt/rz-edge-ai-demo/media/shopping-basket/"
 #define MEDIA_DIRECTORY_FD "/opt/rz-edge-ai-demo/media/face-detection/"
 #define MEDIA_DIRECTORY_PE "/opt/rz-edge-ai-demo/media/pose-estimation/"
 #define MEDIA_DIRECTORY_OD "/opt/rz-edge-ai-demo/media/object-detection/"
+#define MEDIA_DIRECTORY_AC "/opt/rz-edge-ai-demo/media/audio-command/"
 #define MODEL_DIRECTORY "/opt/rz-edge-ai-demo/models/"
 #define MODEL_PATH_OD "/opt/rz-edge-ai-demo/models/mobilenet_ssd_v2_coco_quant_postprocess.tflite"
 #define MODEL_PATH_SB "/opt/rz-edge-ai-demo/models/shoppingBasketDemo.tflite"
@@ -54,10 +57,12 @@
 #define MODEL_PATH_PE_BLAZE_POSE_FULL "/opt/rz-edge-ai-demo/models/pose_landmark_full.tflite"
 #define MODEL_PATH_PE_HAND_POSE_LITE "/opt/rz-edge-ai-demo/models/hand_landmark_lite.tflite"
 #define MODEL_PATH_PE_HAND_POSE_FULL "/opt/rz-edge-ai-demo/models/hand_landmark_full.tflite"
+#define MODEL_PATH_AC "/opt/rz-edge-ai-demo/models/browserfft-speech-renesas.tflite"
 #define RENESAS_RZ_LOGO_PATH "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
 #define SPLASH_SCREEN_PATH "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
 #define DEFAULT_VIDEO "/opt/rz-edge-ai-demo/media/pose-estimation/exercising_using_battle_ropes.mp4"
 #define DEFAULT_FD_VIDEO "/opt/rz-edge-ai-demo/media/face-detection/face_shaking.mp4"
+#define DEFAULT_WAV_FILE "/opt/rz-edge-ai-demo/media/audio-command/right/right_1.wav"
 #define DEFAULT_SBD_IMG "/opt/rz-edge-ai-demo/media/shopping-basket/shopping_items_003.jpg"
 
 #define OPTION_FD_DETECT_FACE "face"
@@ -93,6 +98,7 @@ class QGraphicsScene;
 class QGraphicsView;
 class faceDetection;
 class objectDetection;
+class audioCommand;
 class opencvWorker;
 class poseEstimation;
 class shoppingBasket;
@@ -137,6 +143,7 @@ private slots:
     void on_actionObject_Detection_triggered();
     void on_actionPose_Estimation_triggered();
     void on_actionFace_Detection_triggered();
+    void on_actionAudio_Command_triggered();
     void on_actionHardware_triggered();
     void on_actionExit_triggered();
     void on_actionLoad_Camera_triggered();
@@ -154,10 +161,12 @@ private:
     void setupObjectDetectMode();
     void setupPoseEstimateMode();
     void setupShoppingMode();
+    void setupAudioCommandMode();
     void disconnectSignals();
     void checkInputMode();
     void setPoseEstimateDelegateType();
     void disableArmNNDelegate();
+    void disableXnnPackDelegate();
     void startDefaultMode();
     void setGuiPixelSizes();
     QStringList readLabelFile(QString labelPath);
@@ -168,12 +177,14 @@ private:
     QFont font;
     QPixmap image;
     QGraphicsScene *scene;
+    QGraphicsScene *sceneAC;
     QGraphicsView *graphicsView;
     opencvWorker *cvWorker;
     shoppingBasket *shoppingBasketMode;
     objectDetection *objectDetectMode;
     poseEstimation *poseEstimateMode;
     faceDetection *faceDetectMode;
+    audioCommand *audioCommandMode;
     tfliteWorker *tfWorker;
     tfliteWorker *tfWorkerFaceDetection;
     tfliteWorker *tfWorkerFaceLandmark;
@@ -190,6 +201,7 @@ private:
     QString labelPath;
     QString labelOD;
     QString labelSB;
+    QString labelAC;
     QString inferenceEngine;
     QStringList labelFileList;
     bool faceDetectIrisMode;

@@ -45,11 +45,14 @@ public:
     ~tfliteWorker();
     void receiveImage(const cv::Mat&);
     void setDemoMode(Mode demoMode);
+
+public slots:
     void processData(void *data, size_t dataSize);
 
 signals:
     void sendOutputTensor(const QVector<float>&, int, int, const cv::Mat&);
     void sendOutputTensorImageless(const QVector<float>&, int, int);
+    void sendOutputTensorBasic(const QVector<float>&, int);
     void sendInferenceWarning(QString warningMessage);
 
 private:

@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     QCommandLineOption labelOption (QStringList() << "l" << "label", "Choose a label for selected demo mode.", "file");
     QCommandLineOption modelOption (QStringList() << "m" << "model", "Choose a model for selected demo mode.", "file");
     QCommandLineOption modeOption (QStringList() << "s" << "start-mode",
-                                   "Choose a mode to start the application in: [shopping-basket|object-detection|pose-estimation|\nface-detection].",
+                                   "Choose a mode to start the application in: [shopping-basket|object-detection|pose-estimation|\nface-detection|audio-command].",
                                    "mode", QString("pose-estimation"));
     QCommandLineOption pricesOption (QStringList() << "p" << "prices-file",
                                    "Choose a text file listing the prices to use for the shopping basket mode", "file", PRICES_PATH_DEFAULT);
@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
     "Demo Mode->Object Detection: Object Detection Mode.\n"
     "Demo Mode->Shopping Basket: Shopping Basket Mode.\n"
     "Demo Mode->Pose Estimation: Pose Estimation Mode.\n"
-    "Demo Mode->Face Detection: Face Detection Mode.\n\n"
+    "Demo Mode->Face Detection: Face Detection Mode.\n"
+    "Demo Mode->Audio Detection: Audio Command Mode.\n\n"
     "Required Hardware:\n"
     "  Camera: Currently the Google Coral Mipi camera is supported,\n"
     "          but should work with any UVC compatible USB camera.\n\n"
@@ -108,8 +109,22 @@ int main(int argc, char *argv[])
     "                                  grabs the frame and runs inference or just\n"
     "                                  displays the live camera feed/media file.\n"
     "  Input->Load Image/Video: Load an image or video file.\n\n"
+    "Audio Command Mode\n"
+    "  Listens to audio based commands to move an arrow across a grid on screen.\n"
+    "  This displays the inference time, command history and command count.\n"
+    "  The go command moves the arrow one space in the direction it is pointing.\n"
+    "  The off commands reset arrow position, command history and count.\n"
+    "  The stop command halts recording from the audio source.\n\n"
+    "Buttons:\n"
+    " Talk: Run inference on the currently selected audio source.\n"
+    " Input->Load Audio File: Load a .wav file.\n"
+    "        .wav files must be:\n"
+    "             44100hz\n"
+    "             1 Second (44034 frames) duration\n"
+    "             32 bit float data\n"
+    "             RIFF (little-endian) format\n\n"
     "Common Mode Buttons:\n"
-    "  Input->Load Camera Feed: Removes media file and resumes live camera feed.\n"
+    "  Input->Load Camera Feed: Removes media file and resumes live camera feed in supporting modes.\n"
     "  Inference Engine->TensorFlow Lite + ArmNN delegate: Run inference using TensorFlow\n"
     "                                                      Lite with ArmNN delegate enabled.\n"
     "  Inference Engine->TensorFlow Lite + XNNPack delegate: Run inference using TensorFlow\n"
@@ -123,11 +138,13 @@ int main(int argc, char *argv[])
     "  Label:\n"
     "    Object Detection Mode: mobilenet_ssd_v2_coco_quant_postprocess_labels.txt\n"
     "    Shopping Basket Mode: shoppingBasketDemo_labels.txt\n"
+    "    Audio Command Mode: audioDemo_labels.txt\n"
     "  Model:\n"
     "    Object Detection Mode: mobilenet_ssd_v2_coco_quant_postprocess.tflite\n"
     "    Shopping Basket Mode: shoppingBasketDemo.tflite\n"
     "    Pose Estimation Mode: pose_landmark_lite.tflite\n"
     "    Face Detection Mode: face_detection_short_range.tflite + face_landmark.tflite\n"
+    "    Audio Command Mode: browserfft-speech-renesas.tflite\n"
     "  Mode Specific Files:\n"
     "    Shopping Basket Prices: shoppingBasketDemo_prices.txt\n\n"
 
@@ -187,6 +204,9 @@ int main(int argc, char *argv[])
             irisOption = false;
             modelLocation = MODEL_PATH_FD_FACE_DETECTION;
         }
+    } else if (modeString == "audio-command") {
+        mode = AC;
+        modelLocation = MODEL_PATH_AC;
     } else {
         qWarning("Warning: unknown demo mode requested, starting in default mode...");
     }
