@@ -44,6 +44,8 @@
 #define LINE_RED Qt::red
 #define TEXT_GREEN Qt::green
 
+#define PEN_THICKNESS 2
+
 #define GRAPHICS_VIEW_HEIGHT 600
 #define GRAPHICS_VIEW_WIDTH 800
 

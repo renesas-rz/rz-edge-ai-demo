@@ -32,8 +32,6 @@
 #define IRIS_LANDMARK_INPUT_SIZE 64.0
 #define IRIS_LANDMARK_IRIS_OUTPUT_INDEX 10
 
-#define PEN_THICKNESS 2
-
 #define DETECT_THRESHOLD_FACE 0.5
 #define ANCHOR_CENTER 0.5
 #define DETECT_BOUNDING_BOX_INCREASE 0.1 //Needed to ensure crop contains entire face
