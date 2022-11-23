@@ -231,7 +231,7 @@ void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, b
         }
     } else {
         /* Draw dots on each detected landmark */
-        for (int i = 0; i < (outputTensor.size() / 2); i ++) {
+        for (int i = 0; i < (outputTensor.size() / 2); i++) {
             QBrush brush;
 
             float x = xCoordinate[i];
