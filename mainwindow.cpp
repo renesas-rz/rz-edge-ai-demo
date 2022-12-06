@@ -530,28 +530,28 @@ void MainWindow::ShowVideo()
 void MainWindow::drawBoxes(const QVector<float>& outputTensor, QStringList labelList)
 {
     for (int i = 0; (i + 5) < outputTensor.size(); i += 6) {
-            QPen pen;
-            QBrush brush;
-            QGraphicsTextItem* itemName = scene->addText(nullptr);
-            float ymin = outputTensor[i + 0] * float(scene->height());
-            float xmin = outputTensor[i + 1] * float(scene->width());
-            float ymax = outputTensor[i + 2] * float(scene->height());
-            float xmax = outputTensor[i + 3] * float(scene->width());
-            float scorePercentage = outputTensor[i + CONFIDENCE_OFFSET_SSD] * 100;
+        QPen pen;
+        QBrush brush;
+        QGraphicsTextItem* itemName = scene->addText(nullptr);
+        float ymin = outputTensor[i + 0] * float(scene->height());
+        float xmin = outputTensor[i + 1] * float(scene->width());
+        float ymax = outputTensor[i + 2] * float(scene->height());
+        float xmax = outputTensor[i + 3] * float(scene->width());
+        float scorePercentage = outputTensor[i + CONFIDENCE_OFFSET_SSD] * 100;
 
-            pen.setColor(BOX_GREEN);
-            pen.setWidth(BOX_WIDTH);
+        pen.setColor(BOX_GREEN);
+        pen.setWidth(BOX_WIDTH);
 
-            itemName->setHtml(QString("<div style='background:rgba(0, 0, 0, 100%);font-size:xx-large;'>" +
-                                      QString(labelList[int(outputTensor[i + ITEM_OFFSET_SSD])] + " " +
-                                      QString::number(double(scorePercentage), 'f', 1) + "%") +
-                                      QString("</div>")));
-            itemName->setPos(xmin, ymin);
-            itemName->setDefaultTextColor(TEXT_GREEN);
-            itemName->setZValue(1);
+        itemName->setHtml(QString("<div style='background:rgba(0, 0, 0, 100%);font-size:xx-large;'>" +
+                                  QString(labelList[int(outputTensor[i + ITEM_OFFSET_SSD])] + " " +
+                                  QString::number(double(scorePercentage), 'f', 1) + "%") +
+                                  QString("</div>")));
+        itemName->setPos(xmin, ymin);
+        itemName->setDefaultTextColor(TEXT_GREEN);
+        itemName->setZValue(1);
 
-            scene->addRect(double(xmin), double(ymin), double(xmax - xmin), double(ymax - ymin), pen, brush);
-        }
+        scene->addRect(double(xmin), double(ymin), double(xmax - xmin), double(ymax - ymin), pen, brush);
+    }
 
     if (demoMode == SB)
         ui->labelTotalItems->setText(TEXT_TOTAL_ITEMS + QString("%1").arg(outputTensor.size() / 6));
