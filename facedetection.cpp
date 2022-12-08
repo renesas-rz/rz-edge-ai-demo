@@ -32,7 +32,6 @@
 #define IRIS_LANDMARK_INPUT_SIZE 64.0
 #define IRIS_LANDMARK_IRIS_OUTPUT_INDEX 10
 
-#define DETECT_THRESHOLD_FACE 0.5
 #define ANCHOR_CENTER 0.5
 #define DETECT_BOUNDING_BOX_INCREASE 0.1 //Needed to ensure crop contains entire face
 
@@ -138,7 +137,7 @@ QVector<float> faceDetection::sortTensorFaceLandmark(const QVector<float> receiv
 
     for (int i = 0; i < receivedStride; i += 3) {
 
-        if (confidenceLevel > DETECT_THRESHOLD_FACE && confidenceLevel <= 1.0) {
+        if (confidenceLevel > DETECT_DEFAULT_THRESHOLD && confidenceLevel <= 1.0) {
             sortedTensor.push_back(receivedTensor.at(i));     // x-coordinate
             sortedTensor.push_back(receivedTensor.at(i + 1)); // y-coordinate
         } else {
@@ -505,7 +504,7 @@ void faceDetection::cropImageFace(const QVector<float> &faceDetectOutputTensor, 
         int iteration = j - receivedStride;
         float confidenceLevel = edgeUtils::calculateSigmoid(faceDetectOutputTensor.at(j));
 
-        if (confidenceLevel > DETECT_THRESHOLD_FACE && confidenceLevel <= 1.0) {
+        if (confidenceLevel > DETECT_DEFAULT_THRESHOLD && confidenceLevel <= 1.0) {
             /* BlazeFace outputs the x and y coordinates as offsets from an anchor point, so
              * the anchor coordinates must be added to the values */
             float yCenter = faceDetectOutputTensor.at(iteration * FACE_DETECTION_OUTPUT_INDEX) + anchorCoords.at(iteration).second;
@@ -621,7 +620,7 @@ void faceDetection::setIrisCropDims(const QVector<float> &detectedFaceTensor, in
 
     timeElaspedFaceLandmark = timeElapsed;
 
-    if (confidenceLevel >= DETECT_THRESHOLD_FACE)
+    if (confidenceLevel >= DETECT_DEFAULT_THRESHOLD)
         faceVisible = true;
     else
         faceVisible = false;

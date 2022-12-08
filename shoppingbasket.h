@@ -27,8 +27,6 @@
 #define TEXT_LOAD_NEW_IMAGE "Load New Image"
 #define TEXT_TOTAL_ITEMS "Total Items: "
 
-#define DETECT_THRESHOLD 0.5
-
 class QGraphicsScene;
 
 namespace Ui { class MainWindow; }

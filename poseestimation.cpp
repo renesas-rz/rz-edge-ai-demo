@@ -28,7 +28,7 @@
 
 #define HAND_POSE_CONFIDENCE_INDEX 63
 
-#define DETECT_THRESHOLD 0.3
+#define POSE_DETECT_THRESHOLD 0.3
 
 enum MoveNetPoints { NOSE, LEFT_EYE, RIGHT_EYE, LEFT_EAR, RIGHT_EAR, LEFT_SHOULDER, RIGHT_SHOULDER,
                      LEFT_ELBOW, RIGHT_ELBOW, LEFT_WRIST, RIGHT_WRIST, LEFT_HIP, RIGHT_HIP, LEFT_KNEE,
@@ -117,7 +117,7 @@ QVector<float> poseEstimation::sortTensorMoveNet(const QVector<float> receivedTe
     for(int i = 0; i < receivedStride; i += 3) {
         float confidenceLevel = receivedTensor.at(i + 2);
 
-        if (confidenceLevel > DETECT_THRESHOLD && confidenceLevel <= 1.0) {
+        if (confidenceLevel > POSE_DETECT_THRESHOLD && confidenceLevel <= 1.0) {
             sortedTensor.push_back(receivedTensor.at(i));     // y-coordinate
             sortedTensor.push_back(receivedTensor.at(i + 1)); // x-coordinate
             sortedTensor.push_back(receivedTensor.at(i + 2)); // confidence

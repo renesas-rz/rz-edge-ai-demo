@@ -36,6 +36,8 @@
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"
 #define TEXT_TOTAL_FPS "Total FPS: "
 
+#define DETECT_DEFAULT_THRESHOLD 0.5
+
 #define BOX_GREEN Qt::green
 #define DOT_GREEN Qt::green
 #define DOT_RED Qt::red

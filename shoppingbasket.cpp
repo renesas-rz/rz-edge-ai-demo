@@ -162,7 +162,7 @@ QVector<float> shoppingBasket::sortTensor(QVector<float> &receivedTensor, int re
         float confidenceLevel = receivedTensor.at(receivedTensor.size() - i);
 
         /* Only include the item if the confidence level is at threshold */
-        if (confidenceLevel > DETECT_THRESHOLD && confidenceLevel <= float(1.0)) {
+        if (confidenceLevel > DETECT_DEFAULT_THRESHOLD && confidenceLevel <= float(1.0)) {
             /* Box points */
             for(int j = 0; j < BOX_POINTS; j++)
                 sortedTensor.push_back(receivedTensor.at((receivedStride - i) * BOX_POINTS + j));
