@@ -639,9 +639,9 @@ border-style: outset;
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>160</y>
+        <y>120</y>
         <width>111</width>
-        <height>251</height>
+        <height>321</height>
        </rect>
       </property>
       <property name="text">
@@ -654,8 +654,11 @@ Right
 Off/Stop
 Go
 
-Off/Stop
-Resets state.</string>
+Off
+Resets state
+
+Stop
+Halts recording</string>
       </property>
      </widget>
     </widget>

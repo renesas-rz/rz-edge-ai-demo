@@ -24,6 +24,7 @@
 #include <cstring>
 #include <math.h>
 
+#include <QDebug>
 #include <QGraphicsPolygonItem>
 #include <QGraphicsScene>
 
@@ -46,6 +47,30 @@
 #define ARROW_DOWN -90
 #define ARROW_UP 90
 
+#define BACKGROUND_OVERHEAD 2 // How many times louder we expect speech to be than ambiant
+
+#define MIC_CHANNELS 1
+#define MIC_DEVICE "plughw:0,0"
+
+#define MODEL_SAMPLE_RATE 44100
+#define AUDIO_DETECT_THRESHOLD 0.80
+
+#define MIC_OPEN_WARNING "Warning: Cannot open audio device"
+#define MIC_HW_PARAM_ALLOC_WARNING "Warning: Cannot allocate hardware parameter structure"
+#define MIC_HW_DETAILS_WARNING "Warning: Cannot setup hardware details structure"
+#define MIC_ACCESS_TYPE_WARNING "Warning: Cannot hardware set access type"
+#define MIC_SAMPLE_FORMAT_WARNING "Warning: Cannot set sample format"
+#define MIC_SAMPLE_RATE_WARNING "Warning: Cannot set sample rate"
+#define MIC_CHANNEL_WARNING "Warning: Cannot set channel count"
+#define MIC_PARAMETER_SET_WARNING "Warning: Cannot set parameters"
+#define MIC_PREPARE_WARNING "Warning: Cannot prepare audio interface for use"
+
+#define READ_OVERRUN_ERROR "Error: Overrun occurred during microphone read"
+#define READ_PCM_ERROR "Error: Bad PCM State"
+#define READ_SUSPEND_ERROR "Error: Suspend event occurred"
+#define READ_INCOMPLETE_WARNING "Warning: Incomplete read from microphone"
+
+
 audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QString inferenceEngine)
 {
     uiAC = ui;
@@ -56,6 +81,12 @@ audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QStrin
     QPen pen = QPen(THEME_BLUE);
     int width = uiAC->graphicsView->width();
     int height = uiAC->graphicsView->height();
+    inputModeAC = micMode;
+    buttonIdleBlue = true;
+    firstBlock = true;
+    ambiantVol = 0;
+    sampleRate = MODEL_SAMPLE_RATE;
+    recordButtonMutex = false;
 
     pen.setWidth(GRID_THICKNESS);
 
@@ -82,6 +113,7 @@ audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QStrin
     uiAC->actionAudio_Command->setDisabled(true);
     uiAC->actionLoad_File->setText(TEXT_LOAD_AUDIO_FILE);
     uiAC->actionLoad_Periph->setDisabled(true);
+    uiAC->actionLoad_Periph->setText(TEXT_LOAD_MIC);
 
     /* Output Table setup */
     uiAC->tableWidgetAC->verticalHeader()->setDefaultSectionSize(25);
@@ -171,11 +203,14 @@ void audioCommand::updateArrow(QString instruction)
         else if (arrow->rotation() == ARROW_UP)
             updateArrow(QString("up"));
 
-    } else if (instruction.compare("off") == 0 || instruction.compare("stop") == 0) {
+    } else if (instruction.compare("off") == 0) {
         arrow->setPos(gridCentre);
         arrow->setRotation(ARROW_UP);
         clearTrail();
-
+        return;
+    } else if (instruction.compare("stop") == 0
+               && inputModeAC == micMode && !buttonIdleBlue) {
+        toggleAudioInput();
         return;
     }
 
@@ -197,12 +232,12 @@ void audioCommand::clearTrail()
 void audioCommand::interpretInference(const QVector<float> &receivedTensor, int receivedTimeElapsed)
 {
     QString label = "Unknown";
-    float confidence = DETECT_DEFAULT_THRESHOLD;
+    float confidence = AUDIO_DETECT_THRESHOLD;
 
     for (int i = 0; i < receivedTensor.size(); i++) {
         float tmp = receivedTensor.at(i);
 
-        if (tmp > confidence) {
+        if (tmp >= confidence) {
             confidence = tmp;
             label = labelList.at(i);
         }
@@ -210,15 +245,60 @@ void audioCommand::interpretInference(const QVector<float> &receivedTensor, int 
 
     uiAC->labelInferenceTimeAC->setText(TEXT_INFERENCE + QString("%1 ms").arg(receivedTimeElapsed));
 
-    updateDetectedWords(label);
-    updateArrow(label);
+    if (label != "Unknown") {
+        updateDetectedWords(label);
+        updateArrow(label);
+    }
+    qApp->processEvents(QEventLoop::AllEvents);
+
+    if (inputModeAC == micMode) {
+        /* If inference failed the first time, run inference a second time but
+         * half a second back to ensure the second of data provided to TFL has
+         * not completed whilst a word is being spoken */
+        if (firstBlock && label == "Unknown") {
+            firstBlock = false;
+            emit requestInference(content.data() + sampleRate / 2, (size_t) sampleRate * sizeof(float));
+        } else {
+            firstBlock = true;
+
+            if (secThread.joinable())
+                secThread.join();
+
+            secThread = std::thread(&audioCommand::startListening, this);
+        }
+    } else {
+        toggleTalkButtonState();
+    }
 }
 
-void audioCommand::triggerInference()
+void audioCommand::toggleAudioInput()
 {
-    continuousMode = true;
+    if (recordButtonMutex)
+        return;
 
-    startListening();
+    recordButtonMutex = true;
+
+    toggleTalkButtonState();
+
+    if (!buttonIdleBlue && inputModeAC == micMode) {
+        if (setupMic()) {
+            if (secThread.joinable())
+                secThread.join();
+
+            secThread = std::thread(&audioCommand::startListening, this);
+        } else {
+            toggleTalkButtonState();
+        }
+    } else if (buttonIdleBlue && inputModeAC == micMode) {
+        if (secThread.joinable())
+            secThread.join();
+
+        closeMic();
+    } else if (inputModeAC == audioFileMode) {
+        startListening();
+    }
+
+    recordButtonMutex = false;
 }
 
 void audioCommand::readAudioFile(QString filePath)
@@ -228,6 +308,9 @@ void audioCommand::readAudioFile(QString filePath)
     sf_count_t readFloats;
     SNDFILE* soundFile;
     SF_INFO metaData;
+
+    if(!buttonIdleBlue)
+        toggleAudioInput();
 
     content.clear();
 
@@ -245,11 +328,50 @@ void audioCommand::readAudioFile(QString filePath)
 
         readFloats = sf_readf_float(soundFile, data, BUFFER_SIZE);
     }
+
+    inputModeAC = audioFileMode;
+    uiAC->actionLoad_Periph->setEnabled(true);
+}
+
+bool audioCommand::checkForVolIncrease()
+{
+    float currentAverage = 0;
+
+    if (content.size() < sampleRate*2)
+        return false;
+
+    for (auto ptr = content.begin() + sampleRate; ptr != content.end(); ptr++)
+        currentAverage += std::fabs(*ptr);
+
+    currentAverage /= (content.size()/2);
+
+    return currentAverage > ambiantVol;
+}
+
+void audioCommand::setMicMode()
+{
+    inputModeAC = micMode;
 }
 
 void audioCommand::startListening()
 {
-    emit requestInference(content.data(), (size_t) content.size() * sizeof(float));
+    bool possibleCommand = false;
+    bool micAlive = true;
+
+    if (inputModeAC == micMode && !buttonIdleBlue) {
+        while (!possibleCommand && micAlive) {
+            micAlive = recordSecond();
+            possibleCommand = checkForVolIncrease();
+
+            /* Allow the GUI to be updated between read cycles */
+            qApp->processEvents(QEventLoop::AllEvents);
+        }
+    }
+
+    if (inputModeAC == audioFileMode)
+        emit requestInference(content.data(), (size_t) sampleRate * sizeof(float));
+    else if (possibleCommand && inputModeAC == micMode && !buttonIdleBlue)
+        emit requestInference(content.data() + sampleRate, (size_t) sampleRate * sizeof(float));
 }
 
 void audioCommand::updateDetectedWords(QString word)
@@ -283,8 +405,8 @@ void audioCommand::updateDetectedWords(QString word)
 
     uiAC->tableWidgetAC->scrollToBottom();
 
-    /* Clear history on keyword "off" or "stop" */
-    if (word.compare("off") == 0 || word.compare("stop") == 0) {
+    /* Clear history on keyword "off" */
+    if (word.compare("off") == 0) {
         history.clear();
         activeCommands.clear();
         table->setRowCount(0);
@@ -294,4 +416,129 @@ void audioCommand::updateDetectedWords(QString word)
 
     /* Active commands update */
     uiAC->commandReaderAC->setText(history);
+}
+
+bool audioCommand::setupMic()
+{
+    int err;
+    bool retVal = false;
+
+    /* ALSA setup */
+    if ((err = snd_pcm_open(&mic_pcm, MIC_DEVICE, SND_PCM_STREAM_CAPTURE, 0)) < 0) {
+        qWarning(MIC_OPEN_WARNING);
+        emit micWarning(MIC_OPEN_WARNING);
+    } else if ((err = snd_pcm_hw_params_malloc(&hw_params)) < 0) {
+        qWarning(MIC_HW_PARAM_ALLOC_WARNING);
+    } else if ((err = snd_pcm_hw_params_any(mic_pcm, hw_params)) < 0) {
+        qWarning(MIC_HW_DETAILS_WARNING);
+        emit micWarning(MIC_HW_DETAILS_WARNING);
+    } else if ((err = snd_pcm_hw_params_set_access(mic_pcm, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
+        qWarning(MIC_ACCESS_TYPE_WARNING);
+        emit micWarning(MIC_ACCESS_TYPE_WARNING);
+    } else if ((err = snd_pcm_hw_params_set_format(mic_pcm, hw_params, SND_PCM_FORMAT_FLOAT)) < 0) {
+        qWarning(MIC_SAMPLE_FORMAT_WARNING);
+        emit micWarning(MIC_SAMPLE_FORMAT_WARNING);
+    } else if ((err = snd_pcm_hw_params_set_rate(mic_pcm, hw_params, sampleRate, 0)) < 0) {
+        qWarning(MIC_SAMPLE_RATE_WARNING);
+        emit micWarning(MIC_SAMPLE_RATE_WARNING);
+    } else if ((err = snd_pcm_hw_params_set_channels(mic_pcm, hw_params, MIC_CHANNELS)) < 0) {
+        qWarning(MIC_CHANNEL_WARNING);
+        emit micWarning(MIC_CHANNEL_WARNING);
+    } else if ((err = snd_pcm_hw_params(mic_pcm, hw_params)) < 0) {
+        qWarning(MIC_PARAMETER_SET_WARNING);
+        emit micWarning(MIC_PARAMETER_SET_WARNING);
+    } else if ((err = snd_pcm_prepare(mic_pcm)) < 0) {
+        qWarning(MIC_PREPARE_WARNING);
+        emit micWarning(MIC_PREPARE_WARNING);
+    } else {
+        /* Take an average of the ambiant background noise volume from the microphone,
+         * then add an overhead percentage to that to make a threshold volume to listen for */
+        content.clear();
+
+        if (!recordSecond())
+            return false;
+
+        for (auto ptr = content.begin(); ptr != content.end(); ptr++)
+            ambiantVol += std::fabs(*ptr);
+
+        ambiantVol /= content.size();
+        ambiantVol *= BACKGROUND_OVERHEAD;
+
+        content.clear();
+
+        retVal = true;
+    }
+
+    return retVal;
+}
+
+void audioCommand::closeMic()
+{
+    /* Close data structures */
+    snd_pcm_close(mic_pcm);
+    snd_pcm_hw_params_free(hw_params);
+}
+
+bool audioCommand::recordSecond()
+{
+    int err;
+    float buffer[sampleRate];
+
+    if (buttonIdleBlue)
+        return false;
+
+    qApp->processEvents(QEventLoop::AllEvents);
+
+    /* The last parameter is the number of frames to read from the mic.
+     * We match that to our rate per second to retreive 1 second worth of data from the microphone */
+    err = snd_pcm_readi(mic_pcm, buffer, sampleRate);
+
+    if (err == -EPIPE) {
+        qWarning(READ_OVERRUN_ERROR);
+        return false;
+    } else if (err == -EBADFD) {
+        qWarning(READ_PCM_ERROR);
+        return false;
+    } else if (err == -ESTRPIPE) {
+        qWarning(READ_SUSPEND_ERROR);
+        return false;
+    } else if (err < 0) {
+        qWarning() << "error: Microphone returned:" << err;
+        return false;
+    } else if ((unsigned int) err != sampleRate) {
+        qWarning(READ_INCOMPLETE_WARNING);
+        return false;
+    }
+
+    /* Clear the second before last */
+    if (content.size() > sampleRate)
+        content.erase(content.begin(), content.begin() + sampleRate);
+
+    /* Place new elements to the back of the vector */
+    content.insert(content.end(), buffer, buffer+sampleRate);
+
+    qApp->processEvents(QEventLoop::AllEvents);
+
+    return true;
+}
+
+void audioCommand::toggleTalkButtonState()
+{
+    buttonIdleBlue = !buttonIdleBlue;
+
+    if (buttonIdleBlue) {
+        uiAC->pushButtonTalk->setText("Talk");
+        uiAC->pushButtonTalk->setStyleSheet(BUTTON_BLUE);
+    } else {
+        uiAC->pushButtonTalk->setText("Stop");
+        uiAC->pushButtonTalk->setStyleSheet(BUTTON_RED);
+    }
+
+    qApp->processEvents(QEventLoop::WaitForMoreEvents);
+}
+
+audioCommand::~audioCommand()
+{
+    if (!buttonIdleBlue && inputModeAC == micMode)
+        toggleAudioInput();
 }

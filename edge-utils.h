@@ -27,6 +27,7 @@
 #define TEXT_LOAD_FILE "Load Image/Video"
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"
 #define TEXT_LOAD_CAMERA "Use Camera"
+#define TEXT_LOAD_MIC "Use Microphone"
 #define TEXT_TOTAL_FPS "Total FPS: "
 
 #define DETECT_DEFAULT_THRESHOLD 0.5
@@ -52,7 +53,7 @@
 #define STACK_WIDGET_INDEX_AC 4
 
 enum Board { G2E, G2L, G2LC, G2M, Unknown };
-enum Input { cameraMode, imageMode, videoMode, audioFileMode };
+enum Input { cameraMode, imageMode, videoMode, audioFileMode, micMode };
 enum Mode { SB, OD, PE, FD, AC };
 enum FaceModel { faceDetect, faceLandmark, irisLandmarkL, irisLandmarkR };
 

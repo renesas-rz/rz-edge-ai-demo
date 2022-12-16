@@ -61,6 +61,7 @@ LIBS += \
     -larmnn \
     -larmnnDelegate \
     -larmnnUtils \
+    -lasound \
     -lopencv_core \
     -lopencv_imgproc \
     -lopencv_imgcodecs \

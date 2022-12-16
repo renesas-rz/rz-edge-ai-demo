@@ -289,7 +289,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     if (demoMode != AC)
         getImageFrame();
 
-    if (autoStart && (mediaExists || cameraConnect) && demoMode != AC) {
+    if (autoStart && (mediaExists || cameraConnect || demoMode == AC)) {
         if (demoMode == PE)
             ui->pushButtonStartStopPose->pressed();
         else if (demoMode == OD)
@@ -298,6 +298,8 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
             ui->pushButtonProcessBasket->pressed();
         else if (demoMode == FD)
             ui->pushButtonStartStopFace->pressed();
+        else if (demoMode == AC)
+            ui->pushButtonTalk->pressed();
     }
 }
 
@@ -425,6 +427,9 @@ void MainWindow::setupObjectDetectMode()
     tfWorker->setDemoMode(demoMode);
     ui->graphicsView->setScene(scene);
 
+    if (audioCommandMode)
+        delete audioCommandMode;
+
     objectDetectMode = new objectDetection(ui, labelFileList, modelPath, inferenceEngine, cameraConnect);
 
     connect(this, SIGNAL(stopProcessing()), objectDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
@@ -447,6 +452,9 @@ void MainWindow::setupShoppingMode()
     demoMode = SB;
     tfWorker->setDemoMode(demoMode);
     ui->graphicsView->setScene(scene);
+
+    if (audioCommandMode)
+        delete audioCommandMode;
 
     shoppingBasketMode = new shoppingBasket(ui, labelFileList, pricesPath, modelPath, inferenceEngine, cameraConnect);
 
@@ -471,6 +479,9 @@ void MainWindow::setupPoseEstimateMode()
     demoMode = PE;
     tfWorker->setDemoMode(demoMode);
     ui->graphicsView->setScene(scene);
+
+    if (audioCommandMode)
+        delete audioCommandMode;
 
     poseEstimateMode = new poseEstimation(ui, modelPath, inferenceEngine, cameraConnect);
 
@@ -497,6 +508,9 @@ void MainWindow::setupFaceDetectMode()
     tfWorkerIrisLandmarkL->setDemoMode(demoMode);
     tfWorkerIrisLandmarkR->setDemoMode(demoMode);
     ui->graphicsView->setScene(scene);
+
+    if (audioCommandMode)
+        delete audioCommandMode;
 
     if (faceDetectIrisMode)
         detectModeToUse = irisMode;
@@ -549,11 +563,10 @@ void MainWindow::setupAudioCommandMode()
 
     audioCommandMode = new audioCommand(ui, labelFileList, inferenceEngine);
 
-    connect(audioCommandMode, SIGNAL(requestInference(void*, size_t)), tfWorker, SLOT(processData(void*, size_t)));
-    connect(tfWorker, SIGNAL(sendOutputTensorBasic(QVector<float>, int)), audioCommandMode, SLOT(interpretInference(QVector<float>, int)));
-    connect(ui->pushButtonTalk, SIGNAL(pressed()), audioCommandMode, SLOT(startListening()));
-
-    audioCommandMode->readAudioFile(DEFAULT_WAV_FILE);
+    connect(audioCommandMode, SIGNAL(requestInference(void*, size_t)), tfWorker, SLOT(processData(void*, size_t)), Qt::QueuedConnection); // this is running on reciever thread, try direct for caller thread
+    connect(audioCommandMode, SIGNAL(micWarning(QString)), SLOT(errorPopup(QString)), Qt::DirectConnection);
+    connect(tfWorker, SIGNAL(sendOutputTensorBasic(QVector<float>, int)), audioCommandMode, SLOT(interpretInference(QVector<float>, int)), Qt::DirectConnection);
+    connect(ui->pushButtonTalk, SIGNAL(pressed()), audioCommandMode, SLOT(toggleAudioInput()));
 }
 
 void MainWindow::createVideoWorker()
@@ -1446,10 +1459,16 @@ QStringList MainWindow::readLabelFile(QString labelPath)
 
 void MainWindow::on_actionLoad_Periph_triggered()
 {
-    inputMode = cameraMode;
+    if (demoMode == AC)
+        inputMode = micMode;
+    else
+        inputMode = cameraMode;
 
     ui->actionLoad_Periph->setEnabled(false);
-    cvWorker->useCameraMode();
+
+    if (demoMode != AC)
+        cvWorker->useCameraMode();
+
     checkInputMode();
 
     if (demoMode != SB)
@@ -1486,6 +1505,8 @@ void MainWindow::checkInputMode()
             poseEstimateMode->setCameraMode();
         else if (demoMode == FD)
             faceDetectMode->setCameraMode();
+    } else if (inputMode == micMode) {
+        audioCommandMode->setMicMode();
     }
 }
 
