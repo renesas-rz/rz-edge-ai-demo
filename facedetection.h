@@ -30,8 +30,6 @@
 #define TEXT_INFERENCE_FACE_DETECTION "Face Detection: "
 #define TEXT_INFERENCE_FACE_LANDMARK "Face Landmark: "
 #define TEXT_INFERENCE_IRIS_LANDMARK "Iris Landmark: "
-#define TEXT_LOAD_FILE "Load Image/Video"
-#define TEXT_LOAD_NEW_FILE "Load New Image/Video"
 
 #define IRIS_DIAGRAM_PATH "/opt/rz-edge-ai-demo/logos/iris-detection-diagram.png"
 
