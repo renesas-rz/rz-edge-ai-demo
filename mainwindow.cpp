@@ -247,7 +247,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
         bool video = false;
 
         if (cameraConnect)
-            ui->actionLoad_Camera->setEnabled(true);
+            ui->actionLoad_Periph->setEnabled(true);
 
         QList<QString> supportedFormats = {".asf", ".avi", ".3gp", ".mp4", ".m4v", ".mov",
                                            ".flv", ".mpeg", ".mkv", ".webm", ".mxf", ".ogg"};
@@ -1380,7 +1380,7 @@ void MainWindow::on_actionLoad_File_triggered()
     mediaPath = QDir::current().absoluteFilePath(mediaFileName);
 
     if (cameraConnect && demoMode != AC)
-        ui->actionLoad_Camera->setEnabled(true);
+        ui->actionLoad_Periph->setEnabled(true);
 
     if (dialog.selectedNameFilter().contains("Images")) {
         inputMode = imageMode;
@@ -1392,7 +1392,7 @@ void MainWindow::on_actionLoad_File_triggered()
             /* If there is an attached camera return to that, otherwise
              * give the user the opportunity to select another file */
             if (cameraConnect)
-                on_actionLoad_Camera_triggered();
+                on_actionLoad_Periph_triggered();
             else
                 on_actionLoad_File_triggered();
 
@@ -1444,11 +1444,11 @@ QStringList MainWindow::readLabelFile(QString labelPath)
     return labelList;
 }
 
-void MainWindow::on_actionLoad_Camera_triggered()
+void MainWindow::on_actionLoad_Periph_triggered()
 {
     inputMode = cameraMode;
 
-    ui->actionLoad_Camera->setEnabled(false);
+    ui->actionLoad_Periph->setEnabled(false);
     cvWorker->useCameraMode();
     checkInputMode();
 

@@ -92,7 +92,7 @@ private slots:
     void on_actionAudio_Command_triggered();
     void on_actionHardware_triggered();
     void on_actionExit_triggered();
-    void on_actionLoad_Camera_triggered();
+    void on_actionLoad_Periph_triggered();
     void on_actionLoad_File_triggered();
     void on_pushButtonLoadPoseModel_clicked();
     void errorPopup(QString errorMessage);

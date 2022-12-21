@@ -1859,7 +1859,7 @@ Resets state.</string>
     <property name="title">
      <string>Input</string>
     </property>
-    <addaction name="actionLoad_Camera"/>
+    <addaction name="actionLoad_Periph"/>
     <addaction name="actionLoad_File"/>
    </widget>
    <addaction name="menuDemoMode"/>
@@ -1911,7 +1911,7 @@ Resets state.</string>
     <string>Load Image/Video</string>
    </property>
   </action>
-  <action name="actionLoad_Camera">
+  <action name="actionLoad_Periph">
    <property name="text">
     <string>Load Camera Feed</string>
    </property>

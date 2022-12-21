@@ -81,7 +81,7 @@ audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QStrin
     uiAC->actionFace_Detection->setDisabled(false);
     uiAC->actionAudio_Command->setDisabled(true);
     uiAC->actionLoad_File->setText(TEXT_LOAD_AUDIO_FILE);
-    uiAC->actionLoad_Camera->setDisabled(true);
+    uiAC->actionLoad_Periph->setDisabled(true);
 
     /* Output Table setup */
     uiAC->tableWidgetAC->verticalHeader()->setDefaultSectionSize(25);

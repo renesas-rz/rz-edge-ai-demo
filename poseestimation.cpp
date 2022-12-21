@@ -81,7 +81,7 @@ poseEstimation::poseEstimation(Ui::MainWindow *ui, QString modelPath, QString in
     uiPE->actionFace_Detection->setDisabled(false);
     uiPE->actionAudio_Command->setDisabled(false);
     uiPE->actionLoad_File->setText(TEXT_LOAD_FILE);
-    uiPE->actionLoad_Camera->setDisabled(true);
+    uiPE->actionLoad_Periph->setDisabled(true);
 
     uiPE->labelAIModelFilenamePE->setText(modelName);
     uiPE->labelInferenceEnginePE->setText(inferenceEngine);
@@ -534,7 +534,7 @@ void poseEstimation::setCameraMode()
 {
     inputModePE = cameraMode;
 
-    uiPE->actionLoad_Camera->setEnabled(false);
+    uiPE->actionLoad_Periph->setEnabled(false);
     uiPE->actionLoad_File->setText(TEXT_LOAD_FILE);
 }
 
@@ -542,7 +542,7 @@ void poseEstimation::setImageMode()
 {
     inputModePE = imageMode;
 
-    uiPE->actionLoad_Camera->setEnabled(camConnect);
+    uiPE->actionLoad_Periph->setEnabled(camConnect);
     uiPE->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
 }
 
@@ -550,7 +550,7 @@ void poseEstimation::setVideoMode()
 {
     inputModePE = videoMode;
 
-    uiPE->actionLoad_Camera->setEnabled(camConnect);
+    uiPE->actionLoad_Periph->setEnabled(camConnect);
     uiPE->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
 }
 

@@ -70,7 +70,7 @@ faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine, Detect
     uiFD->actionAudio_Command->setDisabled(false);
     uiFD->actionFace_Detection->setDisabled(true);
 
-    uiFD->actionLoad_Camera->setDisabled(true);
+    uiFD->actionLoad_Periph->setDisabled(true);
     uiFD->actionLoad_File->setText(TEXT_LOAD_FILE);
 
     uiFD->labelIrisDiagram->setPixmap(irisDiagram);
@@ -755,7 +755,7 @@ void faceDetection::setCameraMode()
 {
     inputModeFD = cameraMode;
 
-    uiFD->actionLoad_Camera->setEnabled(false);
+    uiFD->actionLoad_Periph->setEnabled(false);
     uiFD->actionLoad_File->setText(TEXT_LOAD_FILE);
 }
 
@@ -763,7 +763,7 @@ void faceDetection::setImageMode()
 {
     inputModeFD = imageMode;
 
-    uiFD->actionLoad_Camera->setEnabled(camConnect);
+    uiFD->actionLoad_Periph->setEnabled(camConnect);
     uiFD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
 }
 
@@ -771,7 +771,7 @@ void faceDetection::setVideoMode()
 {
     inputModeFD = videoMode;
 
-    uiFD->actionLoad_Camera->setEnabled(camConnect);
+    uiFD->actionLoad_Periph->setEnabled(camConnect);
     uiFD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
 }
 

@@ -50,7 +50,7 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QS
     uiSB->actionPose_Estimation->setDisabled(false);
     uiSB->actionFace_Detection->setDisabled(false);
     uiSB->actionAudio_Command->setDisabled(false);
-    uiSB->actionLoad_Camera->setDisabled(true);
+    uiSB->actionLoad_Periph->setDisabled(true);
     uiSB->actionLoad_File->setText(TEXT_LOAD_IMAGE);
 
     uiSB->labelAIModelFilenameSB->setText(modelName);
@@ -255,7 +255,7 @@ void shoppingBasket::setImageMode(bool imageStatus)
 
         emit startVideo();
     }
-    uiSB->actionLoad_Camera->setEnabled(imageStatus && camConnect);
+    uiSB->actionLoad_Periph->setEnabled(imageStatus && camConnect);
     uiSB->labelInferenceTimeSB->setText(TEXT_INFERENCE);
     uiSB->labelTotalItems->setText(TEXT_TOTAL_ITEMS);
     uiSB->tableWidget->setRowCount(0);

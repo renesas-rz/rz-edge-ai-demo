@@ -43,7 +43,7 @@ objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList, 
     uiOD->actionPose_Estimation->setDisabled(false);
     uiOD->actionFace_Detection->setDisabled(false);
     uiOD->actionAudio_Command->setDisabled(false);
-    uiOD->actionLoad_Camera->setDisabled(true);
+    uiOD->actionLoad_Periph->setDisabled(true);
     uiOD->actionLoad_File->setText(TEXT_LOAD_FILE);
 
     uiOD->labelAIModelFilenameOD->setText(modelName);
@@ -205,7 +205,7 @@ void objectDetection::setCameraMode()
 {
     inputModeOD = cameraMode;
 
-    uiOD->actionLoad_Camera->setEnabled(false);
+    uiOD->actionLoad_Periph->setEnabled(false);
     uiOD->actionLoad_File->setText(TEXT_LOAD_FILE);
 }
 
@@ -213,7 +213,7 @@ void objectDetection::setImageMode()
 {
     inputModeOD = imageMode;
 
-    uiOD->actionLoad_Camera->setEnabled(camConnect);
+    uiOD->actionLoad_Periph->setEnabled(camConnect);
     uiOD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
 }
 
@@ -221,7 +221,7 @@ void objectDetection::setVideoMode()
 {
     inputModeOD = videoMode;
 
-    uiOD->actionLoad_Camera->setEnabled(camConnect);
+    uiOD->actionLoad_Periph->setEnabled(camConnect);
     uiOD->actionLoad_File->setText(TEXT_LOAD_NEW_FILE);
 }
 
