@@ -547,7 +547,7 @@ void MainWindow::setPoseEstimateDelegateType()
     /* Only enable ArmNN delegate when not using BlazePose/HandPose models on the
      * RZ/G2L and RZ/G2LC platforms as it does not currently support Const
      * Tensors as inputs for Conv2d */
-    if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET)) {
+    if (!modelPath.contains(IDENTIFIER_MOVE_NET)) {
         if (delegateType == armNN) {
             delegateType = none;
             ui->actionEnable_ArmNN_Delegate->setEnabled(false);
@@ -890,7 +890,7 @@ void MainWindow::on_actionShopping_Basket_triggered()
 
         /* Only enable ArmNN delegate when switching from BlazePose/HandPose models
          * as it does not currently support Const Tensors as inputs for Conv2d */
-        if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET))
+        if (!modelPath.contains(IDENTIFIER_MOVE_NET))
             ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     } else if (demoMode == FD) {
         faceDetectIrisMode = faceDetectMode->getUseIrisMode();
@@ -965,7 +965,7 @@ void MainWindow::on_actionObject_Detection_triggered()
 
         /* Only enable ArmNN delegate when switching from BlazePose/HandPose models
          * as it does not currently support Const Tensors as inputs for Conv2d */
-        if ((board == G2E || board == G2M) || !modelPath.contains(IDENTIFIER_MOVE_NET))
+        if (!modelPath.contains(IDENTIFIER_MOVE_NET))
             ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     } else if (demoMode == FD) {
         faceDetectIrisMode = faceDetectMode->getUseIrisMode();
