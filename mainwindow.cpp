@@ -768,21 +768,18 @@ void MainWindow::remakeTfWorker()
     createTfWorker();
     disconnectSignals();
 
-    if (demoMode == SB) {
+    emit stopInference();
+
+    if (demoMode == SB)
         setupShoppingMode();
-    } else if (demoMode == OD) {
+    else if (demoMode == OD)
         setupObjectDetectMode();
-        emit stopInference();
-    } else if (demoMode == PE) {
+    else if (demoMode == PE)
         setupPoseEstimateMode();
-        emit stopInference();
-    } else if (demoMode == FD) {
+    else if (demoMode == FD)
         setupFaceDetectMode();
-        emit stopInference();
-    } else if (demoMode == AC) {
+    else if (demoMode == AC)
         setupAudioCommandMode();
-        emit stopInference();
-    }
 
     checkInputMode();
 }
