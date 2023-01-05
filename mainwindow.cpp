@@ -142,7 +142,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     if (demoMode == PE)
         setPoseEstimateDelegateType();
     else if (demoMode == FD)
-        setFaceDetectDelegateType();
+        disableArmNNDelegate();
 
     qRegisterMetaType<cv::Mat>();
     cvWorker = new opencvWorker(cameraLocation, board);
@@ -500,11 +500,10 @@ void MainWindow::setPoseEstimateDelegateType()
     }
 }
 
-void MainWindow::setFaceDetectDelegateType()
+void MainWindow::disableArmNNDelegate()
 {
-    /* Do not enable ArmNN delegate when using Face Detection mode on all
-     * platforms as it does not currently support Const Tensors as
-     * inputs for Conv2d */
+    /* Do not enable ArmNN delegate when using modes that require
+     * Const Tensors as inputs for Conv2d or dynamic-sized tensors */
     ui->actionEnable_ArmNN_Delegate->setEnabled(false);
 
     if (delegateType == armNN) {
@@ -733,7 +732,7 @@ void MainWindow::on_actionTensorflow_Lite_XNNPack_delegate_triggered()
     } else if (demoMode == FD) {
         faceDetectIrisMode = faceDetectMode->getUseIrisMode();
 
-        setFaceDetectDelegateType();
+        disableArmNNDelegate();
     } else {
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
@@ -753,7 +752,7 @@ void MainWindow::on_actionTensorFlow_Lite_triggered()
     } else if (demoMode == FD) {
         faceDetectIrisMode = faceDetectMode->getUseIrisMode();
 
-        setFaceDetectDelegateType();
+        disableArmNNDelegate();
     } else {
         ui->actionEnable_ArmNN_Delegate->setEnabled(true);
     }
@@ -996,7 +995,7 @@ void MainWindow::on_actionFace_Detection_triggered()
     else
         inputMode = videoMode;
 
-    setFaceDetectDelegateType();
+    disableArmNNDelegate();
     createTfWorker();
     setupFaceDetectMode();
     startDefaultMode();

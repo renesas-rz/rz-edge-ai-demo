@@ -157,7 +157,7 @@ private:
     void disconnectSignals();
     void checkInputMode();
     void setPoseEstimateDelegateType();
-    void setFaceDetectDelegateType();
+    void disableArmNNDelegate();
     void startDefaultMode();
     void setGuiPixelSizes();
     QStringList readLabelFile(QString labelPath);
