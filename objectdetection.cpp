@@ -43,6 +43,7 @@ objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList, 
     uiOD->actionPose_Estimation->setDisabled(false);
     uiOD->actionFace_Detection->setDisabled(false);
     uiOD->actionAudio_Command->setDisabled(false);
+    uiOD->actionLoad_Periph->setText(TEXT_LOAD_CAMERA);
     uiOD->actionLoad_Periph->setDisabled(true);
     uiOD->actionLoad_File->setText(TEXT_LOAD_FILE);
 

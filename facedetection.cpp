@@ -71,6 +71,7 @@ faceDetection::faceDetection(Ui::MainWindow *ui, QString inferenceEngine, Detect
     uiFD->actionFace_Detection->setDisabled(true);
 
     uiFD->actionLoad_Periph->setDisabled(true);
+    uiFD->actionLoad_Periph->setText(TEXT_LOAD_CAMERA);
     uiFD->actionLoad_File->setText(TEXT_LOAD_FILE);
 
     uiFD->labelIrisDiagram->setPixmap(irisDiagram);

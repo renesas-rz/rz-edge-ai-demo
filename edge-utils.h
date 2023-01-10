@@ -26,6 +26,7 @@
 #define TEXT_INFERENCE "Inference Time: "
 #define TEXT_LOAD_FILE "Load Image/Video"
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"
+#define TEXT_LOAD_CAMERA "Load Camera Feed"
 #define TEXT_TOTAL_FPS "Total FPS: "
 
 #define DETECT_DEFAULT_THRESHOLD 0.5

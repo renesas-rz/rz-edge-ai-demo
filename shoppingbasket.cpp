@@ -50,6 +50,7 @@ shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QS
     uiSB->actionPose_Estimation->setDisabled(false);
     uiSB->actionFace_Detection->setDisabled(false);
     uiSB->actionAudio_Command->setDisabled(false);
+    uiSB->actionLoad_Periph->setText(TEXT_LOAD_CAMERA);
     uiSB->actionLoad_Periph->setDisabled(true);
     uiSB->actionLoad_File->setText(TEXT_LOAD_IMAGE);
 

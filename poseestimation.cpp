@@ -81,6 +81,7 @@ poseEstimation::poseEstimation(Ui::MainWindow *ui, QString modelPath, QString in
     uiPE->actionFace_Detection->setDisabled(false);
     uiPE->actionAudio_Command->setDisabled(false);
     uiPE->actionLoad_File->setText(TEXT_LOAD_FILE);
+    uiPE->actionLoad_Periph->setText(TEXT_LOAD_CAMERA);
     uiPE->actionLoad_Periph->setDisabled(true);
 
     uiPE->labelAIModelFilenamePE->setText(modelName);
