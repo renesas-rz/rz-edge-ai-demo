@@ -44,6 +44,7 @@ float edgeUtils::calculateTotalFps()
     return  totalFps;
 }
 
-float edgeUtils::calculateSigmoid(float realNumber) {
+float edgeUtils::calculateSigmoid(float realNumber)
+{
     return (1 / (1 + exp(-realNumber)));
 }
