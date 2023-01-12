@@ -31,8 +31,6 @@
 #define TEXT_INFERENCE_FACE_LANDMARK "Face Landmark: "
 #define TEXT_INFERENCE_IRIS_LANDMARK "Iris Landmark: "
 
-class edgeUtils;
-
 namespace Ui { class MainWindow; }
 
 enum DetectMode { faceMode, irisMode };

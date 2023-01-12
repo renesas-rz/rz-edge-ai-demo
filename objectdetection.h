@@ -26,7 +26,6 @@
 #include "edge-utils.h"
 
 class QGraphicsScene;
-class edgeUtils;
 
 namespace Ui { class MainWindow; }
 
