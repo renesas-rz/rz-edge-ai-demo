@@ -23,6 +23,9 @@
 
 #include "mainwindow.h"
 
+#define OPTION_FD_DETECT_FACE "face"
+#define OPTION_FD_DETECT_IRIS "iris"
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);

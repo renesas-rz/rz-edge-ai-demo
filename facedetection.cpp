@@ -35,6 +35,11 @@
 #define ANCHOR_CENTER 0.5
 #define DETECT_BOUNDING_BOX_INCREASE 0.1 //Needed to ensure crop contains entire face
 
+#define IRIS_DIAGRAM_PATH "/opt/rz-edge-ai-demo/logos/iris-detection-diagram.png"
+
+#define STACK_WIDGET_INDEX_FACE_LANDMARK 0
+#define STACK_WIDGET_INDEX_IRIS_LANDMARK 1
+
 struct {
     float x;
     float y;
@@ -235,7 +240,7 @@ void faceDetection::drawPointsFaceLandmark(const QVector<float> &outputTensor, b
             float x = xCoordinate[i];
             float y = yCoordinate[i];
 
-            pen.setColor(DOT_RED);
+            pen.setColor(THEME_RED);
 
             if (x >= 0 && y >= 0) {
                 if (updateGraphicalView)
@@ -298,7 +303,7 @@ void faceDetection::connectLandmarks(int landmark1, int landmark2, bool drawGrap
     bool nanLandmark2;
 
     pen.setWidth(PEN_THICKNESS);
-    pen.setColor(LINE_GREEN);
+    pen.setColor(THEME_GREEN);
 
     nanLandmark1 = std::isnan(xCoordinate[landmark1]) && std::isnan(yCoordinate[landmark1]);
     nanLandmark2 = std::isnan(xCoordinate[landmark2]) && std::isnan(yCoordinate[landmark2]);

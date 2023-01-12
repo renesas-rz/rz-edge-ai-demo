@@ -30,6 +30,8 @@
 
 #define POSE_DETECT_THRESHOLD 0.3
 
+#define IDENTIFIER_HAND_POSE "hand_landmark"
+
 enum MoveNetPoints { NOSE, LEFT_EYE, RIGHT_EYE, LEFT_EAR, RIGHT_EAR, LEFT_SHOULDER, RIGHT_SHOULDER,
                      LEFT_ELBOW, RIGHT_ELBOW, LEFT_WRIST, RIGHT_WRIST, LEFT_HIP, RIGHT_HIP, LEFT_KNEE,
                      RIGHT_KNEE, LEFT_ANKLE, RIGHT_ANKLE};
@@ -233,7 +235,7 @@ void poseEstimation::drawLimbsMoveNet(const QVector<float> &outputTensor, bool u
         float x = xCoordinate[i];
         float y = yCoordinate[i];
 
-        pen.setColor(DOT_GREEN);
+        pen.setColor(THEME_GREEN);
 
         if (x >= 0 && y >= 0) {
             if (updateGraphicalView)
@@ -325,7 +327,7 @@ void poseEstimation::drawLimbsBlazePose(const QVector<float> &outputTensor, bool
         float x = xCoordinate[i];
         float y = yCoordinate[i];
 
-        pen.setColor(DOT_GREEN);
+        pen.setColor(THEME_GREEN);
 
         if (x >= 0 && y >= 0) {
             if (updateGraphicalView)
@@ -402,7 +404,7 @@ void poseEstimation::drawLimbsHandPose(const QVector<float> &outputTensor, bool 
         float x = xCoordinate[i];
         float y = yCoordinate[i];
 
-        pen.setColor(DOT_GREEN);
+        pen.setColor(THEME_GREEN);
 
         if (x >= 0 && y >= 0) {
             if (updateGraphicalView)
@@ -421,10 +423,10 @@ void poseEstimation::connectLimbs(int limb1, int limb2, bool drawGraphicalViewLi
 
     if (poseModelSet == HandPose) {
         pen.setWidth(PEN_WIDTH_HAND_POSE);
-        pen.setColor(LINE_BLUE);
+        pen.setColor(THEME_BLUE);
     } else {
         pen.setWidth(PEN_WIDTH);
-        pen.setColor(LINE_RED);
+        pen.setColor(THEME_RED);
     }
 
     nanLimb1 = !std::isnan(xCoordinate[limb1]) || !std::isnan(yCoordinate[limb1]);

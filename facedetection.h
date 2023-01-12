@@ -31,11 +31,6 @@
 #define TEXT_INFERENCE_FACE_LANDMARK "Face Landmark: "
 #define TEXT_INFERENCE_IRIS_LANDMARK "Iris Landmark: "
 
-#define IRIS_DIAGRAM_PATH "/opt/rz-edge-ai-demo/logos/iris-detection-diagram.png"
-
-#define STACK_WIDGET_INDEX_FACE_LANDMARK 0
-#define STACK_WIDGET_INDEX_IRIS_LANDMARK 1
-
 class edgeUtils;
 
 namespace Ui { class MainWindow; }

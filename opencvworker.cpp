@@ -30,6 +30,19 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
+#define G2L_CAM_INIT "media-ctl -d /dev/media0 --reset && media-ctl -d /dev/media0 -l \"'rzg2l_csi2 10830400.csi2':1->'CRU output':0 [1]\" && media-ctl -d /dev/media0 -V \"'rzg2l_csi2 10830400.csi2':1 [fmt:UYVY8_2X8/800x600 field:none]\" && media-ctl -d /dev/media0 -V \"'ov5645 0-003c':0 [fmt:UYVY8_2X8/800x600 field:none]\""
+#define G2M_CAM_INIT "media-ctl -d /dev/media0 -r && media-ctl -d /dev/media0 -l \"'rcar_csi2 fea80000.csi2':1->'VIN0 output':0 [1]\" && media-ctl -d /dev/media0 -V \"'rcar_csi2 fea80000.csi2':1 [fmt:UYVY8_2X8/800x600 field:none]\" && media-ctl -d /dev/media0 -V \"'ov5645 2-003c':0 [fmt:UYVY8_2X8/800x600 field:none]\""
+#define G2E_CAM_INIT "media-ctl -d /dev/media0 -r && media-ctl -d /dev/media0 -l \"'rcar_csi2 feaa0000.csi2':1->'VIN4 output':0 [1]\" && media-ctl -d /dev/media0 -V \"'rcar_csi2 feaa0000.csi2':1 [fmt:UYVY8_2X8/800x600 field:none]\" && media-ctl -d /dev/media0 -V \"'ov5645 3-003c':0 [fmt:UYVY8_2X8/800x600 field:none]\""
+
+#define GST_CODEC_PIPELINE " ! qtdemux ! queue ! h264parse ! omxh264dec ! queue ! vspmfilter dmabuf-use=true ! "
+#define GST_NO_CODEC_PIPELINE " ! decodebin ! videoscale ! videoconvert ! "
+
+#define RESOLUTION_ERR "Resolution of file is not supported."
+#define FILE_OPEN_ERR "File could not be opened, please check resolution"
+#define STREAM_OPEN_ERR "Could not open video file for streaming"
+
+#define SCALE_RATE 0.95
+
 opencvWorker::opencvWorker(QString cameraLocation, Board board)
 {
     webcamName = cameraLocation.toStdString();

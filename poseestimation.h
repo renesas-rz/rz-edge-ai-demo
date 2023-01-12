@@ -26,8 +26,6 @@
 #include "edge-utils.h"
 
 #define IDENTIFIER_MOVE_NET "lite-model_movenet_singlepose"
-#define IDENTIFIER_BLAZE_POSE "pose_landmark"
-#define IDENTIFIER_HAND_POSE "hand_landmark"
 
 class edgeUtils;
 

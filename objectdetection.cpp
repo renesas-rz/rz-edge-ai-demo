@@ -22,7 +22,6 @@
 #include "ui_mainwindow.h"
 
 #define ITEM_OFFSET 4
-#define BOX_POINTS 4
 
 objectDetection::objectDetection(Ui::MainWindow *ui, QStringList labelFileList, QString modelPath,
                                  QString inferenceEngine, bool cameraConnect)

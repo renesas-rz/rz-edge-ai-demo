@@ -23,29 +23,23 @@
 
 #include <chrono>
 
-#define BUTTON_BLUE "background-color: rgba(42, 40, 157);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
-#define BUTTON_GREYED_OUT "background-color: rgba(42, 40, 157, 90);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
-#define BUTTON_RED "background-color: rgba(255, 0, 0);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
-
 #define MODEL_PATH_FD_FACE_DETECTION "/opt/rz-edge-ai-demo/models/face_detection_short_range.tflite"
-#define MODEL_PATH_FD_FACE_LANDMARK "/opt/rz-edge-ai-demo/models/face_landmark.tflite"
-#define MODEL_PATH_FD_IRIS_LANDMARK "/opt/rz-edge-ai-demo/models/iris_landmark.tflite"
 
 #define TEXT_INFERENCE "Inference Time: "
 #define TEXT_LOAD_FILE "Load Image/Video"
 #define TEXT_LOAD_NEW_FILE "Load New Image/Video"
-#define TEXT_LOAD_AUDIO_FILE "Load Audio File"
 #define TEXT_TOTAL_FPS "Total FPS: "
 
 #define DETECT_DEFAULT_THRESHOLD 0.5
 
-#define BOX_GREEN Qt::green
-#define DOT_GREEN Qt::green
-#define DOT_RED Qt::red
-#define LINE_BLUE Qt::blue
-#define LINE_GREEN Qt::green
-#define LINE_RED Qt::red
-#define TEXT_GREEN Qt::green
+#define THEME_GREEN Qt::green
+#define THEME_RED Qt::red
+#define THEME_BLUE Qt::blue
+#define THEME_GREEN Qt::green
+#define BUTTON_BLUE "background-color: rgba(42, 40, 157);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
+#define BUTTON_GREYED_OUT "background-color: rgba(42, 40, 157, 90);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
+#define BUTTON_RED "background-color: rgba(255, 0, 0);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
+#define BOX_POINTS 4
 
 #define PEN_THICKNESS 2
 
@@ -57,17 +51,6 @@
 #define STACK_WIDGET_INDEX_PE 2
 #define STACK_WIDGET_INDEX_FD 3
 #define STACK_WIDGET_INDEX_AC 4
-
-#define SPLASH_SCREEN_TEXT_SIZE 22
-#define MENUBAR_TEXT_SIZE 15
-#define METRICS_TABLE_HEADING_SIZE 17
-#define METRICS_TABLE_TEXT_SIZE 14
-#define BLUE_BUTTON_TEXT_SIZE 17
-#define OUTPUT_GRAPH_TEXT_SIZE 16
-#define OUTPUT_TABLE_HEADING_SIZE 16
-#define OUTPUT_TABLE_TEXT_SIZE 12
-#define FILE_DIALOG_TEXT_SIZE 9
-#define POPUP_DIALOG_TEXT_SIZE 14
 
 enum Board { G2E, G2L, G2LC, G2M, Unknown };
 enum Input { cameraMode, imageMode, videoMode, audioFileMode };

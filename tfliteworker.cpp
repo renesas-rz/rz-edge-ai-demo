@@ -28,6 +28,12 @@
 #include <delegate/DelegateOptions.hpp>
 #include "tensorflow/lite/delegates/xnnpack/xnnpack_delegate.h"
 
+#define WARNING_IMAGE_RETREIVAL "Received invalid image path, could not run inference"
+#define WARNING_INVOKE "Failed to run invoke"
+#define WARNING_UNSUPPORTED_DATA_TYPE "Model data type currently not supported"
+
+#define SCALE_FACTOR_UCHAR_TO_FLOAT (1/255.0F)
+
 tfliteWorker::tfliteWorker(QString modelLocation, Delegate delegateType, int defaultThreads)
 {
     tflite::ops::builtin::BuiltinOpResolver tfliteResolver;

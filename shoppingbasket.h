@@ -23,8 +23,6 @@
 
 #include "edge-utils.h"
 
-#define TEXT_LOAD_IMAGE "Load Image"
-#define TEXT_LOAD_NEW_IMAGE "Load New Image"
 #define TEXT_TOTAL_ITEMS "Total Items: "
 
 class QGraphicsScene;

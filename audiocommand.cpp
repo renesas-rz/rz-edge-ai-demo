@@ -53,7 +53,7 @@ audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QStrin
     labelList = labelFileList;
     trail = QVector<QGraphicsLineItem*>();
     QGraphicsScene *scene = uiAC->graphicsView->scene();
-    QPen pen = QPen(LINE_BLUE);
+    QPen pen = QPen(THEME_BLUE);
     int width = uiAC->graphicsView->width();
     int height = uiAC->graphicsView->height();
 
@@ -104,8 +104,8 @@ audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QStrin
 
 void audioCommand::setupArrow()
 {
-    QPen pen = QPen(DOT_RED);
-    QBrush brush = QBrush(DOT_RED, Qt::Dense6Pattern);
+    QPen pen = QPen(THEME_RED);
+    QBrush brush = QBrush(THEME_RED, Qt::Dense6Pattern);
     QGraphicsScene *scene = uiAC->graphicsView->scene();
     QGraphicsLineItem *line = new QGraphicsLineItem();
     qreal arrowSize = ARROW_SIZE;
@@ -136,7 +136,7 @@ void audioCommand::updateArrow(QString instruction)
     QGraphicsLineItem *latest;
     QPointF oldPosition = arrow->pos();
     QGraphicsScene *scene = uiAC->graphicsView->scene();
-    QPen pen = QPen(DOT_RED);
+    QPen pen = QPen(THEME_RED);
     QPoint gridCentre = QPoint(uiAC->graphicsView->width() / 2, uiAC->graphicsView->height() / 2);
 
     pen.setWidth(ARROW_THICKNESS);

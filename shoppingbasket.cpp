@@ -28,6 +28,9 @@
 #define QUANT_COL 1
 #define PRICE_COL 2
 
+#define TEXT_LOAD_IMAGE "Load Image"
+#define TEXT_LOAD_NEW_IMAGE "Load New Image"
+
 shoppingBasket::shoppingBasket(Ui::MainWindow *ui, QStringList labelFileList, QString pricesFile,
                                QString modelPath, QString inferenceEngine, bool cameraConnect)
 {

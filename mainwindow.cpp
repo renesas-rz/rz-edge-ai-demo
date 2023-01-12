@@ -37,6 +37,62 @@
 #include "videoworker.h"
 #include "shoppingbasket.h"
 
+#define LABEL_DIRECTORY "/opt/rz-edge-ai-demo/labels/"
+
+#define TEXT_CAMERA_INIT_STATUS_ERROR "Camera Error!\n\n No camera detected, launching in cameraless mode.\n"
+#define TEXT_CAMERA_OPENING_ERROR "Camera Error!\n\n Camera not Opening, please check connection and relaunch application.\n"
+#define TEXT_CAMERA_FAILURE_ERROR "Camera Error!\n\n Camera has stopped working, please check the connection and relaunch application.\n"
+#define TEXT_INFERENCE_ENGINE_TFLITE "TensorFlow Lite"
+#define TEXT_INFERENCE_ENGINE_ARMNN_DELEGATE "TensorFlow Lite + ArmNN Delegate"
+#define TEXT_INFERENCE_ENGINE_XNNPACK_DELEGATE "TensorFlow Lite + XNNPACK Delegate"
+
+#define IMAGE_FILE_FILTER "Images (*.bmp *.dib *.jpeg *.jpg *.jpe *.png *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif)"
+#define VIDEO_FILE_FILTER "Videos (*.asf *.avi *.3gp *.mp4 *m4v *.mov *.flv *.mpeg *.mkv *.webm *.mxf *.ogg);;"
+#define AUDIO_FILE_FILTER "Audio Files (*.wav)"
+
+#define LABEL_PATH_AC "/opt/rz-edge-ai-demo/labels/audioDemo_labels.txt"
+
+#define MEDIA_DIRECTORY "/opt/rz-edge-ai-demo/media/"
+#define MEDIA_DIRECTORY_SB "/opt/rz-edge-ai-demo/media/shopping-basket/"
+#define MEDIA_DIRECTORY_FD "/opt/rz-edge-ai-demo/media/face-detection/"
+#define MEDIA_DIRECTORY_PE "/opt/rz-edge-ai-demo/media/pose-estimation/"
+#define MEDIA_DIRECTORY_OD "/opt/rz-edge-ai-demo/media/object-detection/"
+#define MEDIA_DIRECTORY_AC "/opt/rz-edge-ai-demo/media/audio-command/"
+#define MODEL_DIRECTORY "/opt/rz-edge-ai-demo/models/"
+#define PRICES_DIRECTORY "/opt/rz-edge-ai-demo/prices/"
+#define SPLASH_SCREEN_PATH "/opt/rz-edge-ai-demo/logos/rz-splashscreen.png"
+#define RENESAS_RZ_LOGO_PATH "/opt/rz-edge-ai-demo/logos/renesas-rz-logo.png"
+#define DEFAULT_VIDEO "/opt/rz-edge-ai-demo/media/pose-estimation/exercising_using_battle_ropes.mp4"
+#define DEFAULT_WAV_FILE "/opt/rz-edge-ai-demo/media/audio-command/right/right_1.wav"
+#define DEFAULT_SBD_IMG "/opt/rz-edge-ai-demo/media/shopping-basket/shopping_items_003.jpg"
+#define DEFAULT_FD_VIDEO "/opt/rz-edge-ai-demo/media/face-detection/face_shaking.mp4"
+#define MODEL_PATH_FD_FACE_LANDMARK "/opt/rz-edge-ai-demo/models/face_landmark.tflite"
+
+#define CONFIDENCE_OFFSET_SSD 5
+#define ITEM_OFFSET_SSD 4
+
+#define G2E_HW_INFO "Hardware Information\n\nBoard: RZ/G2E ek874\nCPUs: 2x Arm Cortex-A53,\nDDR: 2GB"
+#define G2L_HW_INFO "Hardware Information\n\nBoard: RZ/G2L smarc-rzg2l-evk\nCPUs: 2x Arm Cortex-A55\nDDR: 2GB"
+#define G2LC_HW_INFO "Hardware Information\n\nBoard: RZ/G2LC smarc-rzg2lc-evk\nCPUs: 2x Arm Cortex-A55\nDDR: 1GB"
+#define G2M_HW_INFO "Hardware Information\n\nBoard: RZ/G2M hihope-rzg2m\nCPUs: 2x Arm Cortex-A57, 4x Arm Cortex-A53\nDDR: 4GB"
+#define HW_INFO_WARNING "Unknown Board!"
+
+#define APP_WIDTH 1275
+#define APP_HEIGHT 635
+#define BOX_WIDTH 2
+#define MIPI_VIDEO_DELAY 50
+#define SPLASH_SCREEN_TEXT_SIZE 22
+
+#define MENUBAR_TEXT_SIZE 15
+#define METRICS_TABLE_HEADING_SIZE 17
+#define METRICS_TABLE_TEXT_SIZE 14
+#define BLUE_BUTTON_TEXT_SIZE 17
+#define OUTPUT_GRAPH_TEXT_SIZE 16
+#define OUTPUT_TABLE_HEADING_SIZE 16
+#define OUTPUT_TABLE_TEXT_SIZE 12
+#define FILE_DIALOG_TEXT_SIZE 9
+#define POPUP_DIALOG_TEXT_SIZE 14
+
 MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocation, QString labelLocation,
                        QString modelLocation, QString videoLocation, Mode mode, QString pricesFile, bool irisOption, bool autoStart)
     : QMainWindow(parent),
@@ -610,7 +666,7 @@ void MainWindow::drawBoxes(const QVector<float>& outputTensor, QStringList label
         float xmax = outputTensor[i + 3] * float(scene->width());
         float scorePercentage = outputTensor[i + CONFIDENCE_OFFSET_SSD] * 100;
 
-        pen.setColor(BOX_GREEN);
+        pen.setColor(THEME_GREEN);
         pen.setWidth(BOX_WIDTH);
 
         itemName->setHtml(QString("<div style='background:rgba(0, 0, 0, 100%);font-size:xx-large;'>" +
@@ -618,7 +674,7 @@ void MainWindow::drawBoxes(const QVector<float>& outputTensor, QStringList label
                                   QString::number(double(scorePercentage), 'f', 1) + "%") +
                                   QString("</div>")));
         itemName->setPos(xmin, ymin);
-        itemName->setDefaultTextColor(TEXT_GREEN);
+        itemName->setDefaultTextColor(THEME_GREEN);
         itemName->setZValue(1);
 
         scene->addRect(double(xmin), double(ymin), double(xmax - xmin), double(ymax - ymin), pen, brush);
