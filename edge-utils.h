@@ -19,8 +19,6 @@
 #ifndef EDGEUTILS_H
 #define EDGEUTILS_H
 
-#include <QObject>
-
 #include <chrono>
 
 #define MODEL_PATH_FD_FACE_DETECTION "/opt/rz-edge-ai-demo/models/face_detection_short_range.tflite"
@@ -57,9 +55,8 @@ enum Input { cameraMode, imageMode, videoMode, audioFileMode };
 enum Mode { SB, OD, PE, FD, AC };
 enum FaceModel { faceDetect, faceLandmark, irisLandmarkL, irisLandmarkR };
 
-class edgeUtils : public QObject
+class edgeUtils
 {
-    Q_OBJECT
 
 public:
     edgeUtils();
