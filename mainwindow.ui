@@ -1913,7 +1913,7 @@ Resets state.</string>
   </action>
   <action name="actionLoad_Periph">
    <property name="text">
-    <string>Load Camera Feed</string>
+    <string>Use Camera</string>
    </property>
   </action>
   <action name="actionTensorFlow_Lite">

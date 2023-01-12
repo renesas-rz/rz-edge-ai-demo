@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
     "             32 bit float data\n"
     "             RIFF (little-endian) format\n\n"
     "Common Mode Buttons:\n"
-    "  Input->Load Camera Feed: Removes media file and resumes live camera feed in supporting modes.\n"
+    "  Input->Use Camera: Removes media file and resumes live camera feed in supporting modes.\n"
     "  Inference Engine->TensorFlow Lite + ArmNN delegate: Run inference using TensorFlow\n"
     "                                                      Lite with ArmNN delegate enabled.\n"
     "  Inference Engine->TensorFlow Lite + XNNPack delegate: Run inference using TensorFlow\n"
