@@ -64,6 +64,7 @@ public:
     float calculateTotalFps();
     static float calculateSigmoid(float realNumber);
 
+private:
     std::chrono::high_resolution_clock::time_point startTime;
     int totalProcessTime;
 };
