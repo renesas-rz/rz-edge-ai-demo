@@ -21,6 +21,4 @@ This repository contains the code required to build the RZ Edge AI Demo applicat
 4. Run `qmake`.
 5. Run `make`.
 6. Copy `rz-edge-ai-demo` to the root filesystem.
-7. Copy the directory `models/` to `/opt/rz-edge-ai-demo`.
-8. Copy the directory `labels/` to `/opt/rz-edge-ai-demo`.
-9. Run the app with `./rz-edge-ai-demo`.
+7. Run the app with `./rz-edge-ai-demo`.
