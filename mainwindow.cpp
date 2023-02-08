@@ -113,6 +113,7 @@ MainWindow::MainWindow(QWidget *parent, QString boardName, QString cameraLocatio
     scene = new QGraphicsScene(this);
     sceneAC = new QGraphicsScene(this);
     bool mediaExists = QFile::exists(mediaPath);
+    audioCommandMode = nullptr;
 
     QPixmap splashScreenImage(SPLASH_SCREEN_PATH);
 
@@ -427,8 +428,7 @@ void MainWindow::setupObjectDetectMode()
     tfWorker->setDemoMode(demoMode);
     ui->graphicsView->setScene(scene);
 
-    if (audioCommandMode)
-        delete audioCommandMode;
+    checkAudioCommandMode();
 
     objectDetectMode = new objectDetection(ui, labelFileList, modelPath, inferenceEngine, cameraConnect);
 
@@ -453,8 +453,7 @@ void MainWindow::setupShoppingMode()
     tfWorker->setDemoMode(demoMode);
     ui->graphicsView->setScene(scene);
 
-    if (audioCommandMode)
-        delete audioCommandMode;
+    checkAudioCommandMode();
 
     shoppingBasketMode = new shoppingBasket(ui, labelFileList, pricesPath, modelPath, inferenceEngine, cameraConnect);
 
@@ -480,8 +479,7 @@ void MainWindow::setupPoseEstimateMode()
     tfWorker->setDemoMode(demoMode);
     ui->graphicsView->setScene(scene);
 
-    if (audioCommandMode)
-        delete audioCommandMode;
+    checkAudioCommandMode();
 
     poseEstimateMode = new poseEstimation(ui, modelPath, inferenceEngine, cameraConnect);
 
@@ -509,8 +507,7 @@ void MainWindow::setupFaceDetectMode()
     tfWorkerIrisLandmarkR->setDemoMode(demoMode);
     ui->graphicsView->setScene(scene);
 
-    if (audioCommandMode)
-        delete audioCommandMode;
+    checkAudioCommandMode();
 
     if (faceDetectIrisMode)
         detectModeToUse = irisMode;
@@ -546,6 +543,14 @@ void MainWindow::setupFaceDetectMode()
     } else {
         connect(tfWorkerFaceLandmark, SIGNAL(sendOutputTensorImageless(QVector<float>,int,int)),
                 faceDetectMode, SLOT(runInference(QVector<float>, int, int)));
+    }
+}
+
+void MainWindow::checkAudioCommandMode()
+{
+    if (audioCommandMode) {
+        delete audioCommandMode;
+        audioCommandMode = nullptr;
     }
 }
 

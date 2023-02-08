@@ -108,6 +108,7 @@ private:
     void setupPoseEstimateMode();
     void setupShoppingMode();
     void setupAudioCommandMode();
+    void checkAudioCommandMode();
     void disconnectSignals();
     void checkInputMode();
     void setPoseEstimateDelegateType();
