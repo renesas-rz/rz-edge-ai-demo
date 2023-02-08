@@ -1173,6 +1173,7 @@ void MainWindow::on_actionFace_Detection_triggered()
 void MainWindow::on_actionAudio_Command_triggered()
 {
     ui->menuDemoMode->setEnabled(false);
+    emit stopProcessing();
 
     if (cameraConnect)
         vidWorker->StopVideo();
@@ -1206,8 +1207,6 @@ void MainWindow::on_actionAudio_Command_triggered()
     startDefaultMode();
 
     ui->menuDemoMode->setEnabled(true);
-
-    emit stopProcessing();
 }
 
 void MainWindow::loadAIModel()
