@@ -70,7 +70,7 @@ public slots:
 signals:
     void fileLoaded();
     void modelLoaded();
-    void stopInference();
+    void stopProcessing();
     void sendMatToDraw(const cv::Mat& matToSend);
 
 private slots:

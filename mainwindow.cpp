@@ -427,7 +427,7 @@ void MainWindow::setupObjectDetectMode()
 
     objectDetectMode = new objectDetection(ui, labelFileList, modelPath, inferenceEngine, cameraConnect);
 
-    connect(this, SIGNAL(stopInference()), objectDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
+    connect(this, SIGNAL(stopProcessing()), objectDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
     connect(ui->pushButtonLoadAIModelOD, SIGNAL(pressed()), this, SLOT(loadAIModel()));
     connect(ui->pushButtonStartStop, SIGNAL(pressed()), objectDetectMode, SLOT(triggerInference()));
     connect(objectDetectMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
@@ -474,7 +474,7 @@ void MainWindow::setupPoseEstimateMode()
 
     poseEstimateMode = new poseEstimation(ui, modelPath, inferenceEngine, cameraConnect);
 
-    connect(this, SIGNAL(stopInference()), poseEstimateMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
+    connect(this, SIGNAL(stopProcessing()), poseEstimateMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
     connect(ui->pushButtonStartStopPose, SIGNAL(pressed()), poseEstimateMode, SLOT(triggerInference()));
     connect(poseEstimateMode, SIGNAL(getFrame()), this, SLOT(processFrame()), Qt::QueuedConnection);
     connect(poseEstimateMode, SIGNAL(sendMatToView(cv::Mat)), this, SLOT(drawMatToView(cv::Mat)));
@@ -505,7 +505,7 @@ void MainWindow::setupFaceDetectMode()
 
     faceDetectMode = new faceDetection(ui, inferenceEngine, detectModeToUse, cameraConnect);
 
-    connect(this, SIGNAL(stopInference()), faceDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
+    connect(this, SIGNAL(stopProcessing()), faceDetectMode, SLOT(stopContinuousMode()), Qt::DirectConnection);
     connect(ui->pushButtonStartStopFace, SIGNAL(pressed()), faceDetectMode, SLOT(triggerInference()));
     connect(ui->pushButtonDetectFace, SIGNAL(pressed()), faceDetectMode, SLOT(detectFaceMode()));
     connect(ui->pushButtonDetectIris, SIGNAL(pressed()), faceDetectMode, SLOT(detectIrisMode()));
@@ -764,7 +764,7 @@ void MainWindow::processFrame()
                                          QMessageBox::NoButton, this, Qt::Dialog | Qt::FramelessWindowHint);
             msgBox->setFont(font);
             msgBox->exec();
-            emit stopInference();
+            emit stopProcessing();
         } else {
             qWarning("Camera not working.");
             errorPopup(TEXT_CAMERA_FAILURE_ERROR);
@@ -824,7 +824,7 @@ void MainWindow::remakeTfWorker()
     createTfWorker();
     disconnectSignals();
 
-    emit stopInference();
+    emit stopProcessing();
 
     if (demoMode == SB)
         setupShoppingMode();
@@ -903,7 +903,7 @@ void MainWindow::inferenceWarning(QString warningMessage)
 
     /* Reset the GUI after showing inference warning */
     if (demoMode == OD || demoMode == PE)
-        emit stopInference();
+        emit stopProcessing();
     else
         checkInputMode();
 }
@@ -1059,7 +1059,7 @@ void MainWindow::on_actionObject_Detection_triggered()
 
     ui->menuDemoMode->setEnabled(true);
 
-    emit stopInference();
+    emit stopProcessing();
 }
 
 void MainWindow::on_actionPose_Estimation_triggered()
@@ -1105,7 +1105,7 @@ void MainWindow::on_actionPose_Estimation_triggered()
 
     ui->menuDemoMode->setEnabled(true);
 
-    emit stopInference();
+    emit stopProcessing();
 }
 
 void MainWindow::on_actionFace_Detection_triggered()
@@ -1149,7 +1149,7 @@ void MainWindow::on_actionFace_Detection_triggered()
 
     ui->menuDemoMode->setEnabled(true);
 
-    emit stopInference();
+    emit stopProcessing();
 }
 
 void MainWindow::on_actionAudio_Command_triggered()
@@ -1189,7 +1189,7 @@ void MainWindow::on_actionAudio_Command_triggered()
 
     ui->menuDemoMode->setEnabled(true);
 
-    emit stopInference();
+    emit stopProcessing();
 }
 
 void MainWindow::loadAIModel()
@@ -1200,7 +1200,7 @@ void MainWindow::loadAIModel()
     connect(this, SIGNAL(modelLoaded()), qeventLoop, SLOT(quit()));
 
     if (demoMode == OD)
-        emit stopInference();
+        emit stopProcessing();
 
     dialog.setFileMode(QFileDialog::AnyFile);
     dialog.setDirectory(MODEL_DIRECTORY);
@@ -1279,7 +1279,7 @@ void MainWindow::on_pushButtonLoadPoseModel_clicked()
 
     connect(this, SIGNAL(modelLoaded()), qeventLoop, SLOT(quit()));
 
-    emit stopInference();
+    emit stopProcessing();
 
     dialog.setFileMode(QFileDialog::AnyFile);
     dialog.setDirectory(MODEL_DIRECTORY);
@@ -1327,7 +1327,7 @@ void MainWindow::on_actionLoad_File_triggered()
     connect(this, SIGNAL(fileLoaded()), qeventLoop, SLOT(quit()));
 
     if (demoMode != SB)
-        emit stopInference();
+        emit stopProcessing();
 
     if (cameraConnect)
         vidWorker->StopVideo();
@@ -1453,7 +1453,7 @@ void MainWindow::on_actionLoad_Camera_triggered()
     checkInputMode();
 
     if (demoMode != SB)
-        emit stopInference();
+        emit stopProcessing();
 }
 
 void MainWindow::checkInputMode()
