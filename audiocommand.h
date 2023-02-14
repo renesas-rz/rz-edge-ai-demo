@@ -33,6 +33,14 @@ extern "C" {
 
 #include "edge-utils.h"
 
+enum word_location {
+	WORD_NOT_FOUND = 0,
+	WORD_FOUND,
+	WORD_LEFT_EDGE,
+	WORD_RIGHT_EDGE,
+	WORD_BOTH_EDGES
+};
+
 class QGraphicsPolygonItem;
 
 namespace Ui { class MainWindow; }
@@ -60,19 +68,24 @@ private:
     edgeUtils *utilAC;
     QStringList labelList;
     bool buttonIdleBlue;
-    bool firstBlock;
     bool recordButtonMutex;
     std::vector<float> content;
     QGraphicsPolygonItem *arrow;
     QVector<QGraphicsLineItem*> trail;
     QString history;
     QMap<QString, int> activeCommands;
-    float ambiantVol;
     snd_pcm_t *mic_pcm;
     snd_pcm_hw_params_t *hw_params;
     unsigned int sampleRate;
     Input inputModeAC;
     std::thread secThread;
+
+    // Buffering and trimming
+    float *buffer1;
+    float *buffer2;
+    float *buffer3;
+    float *working_buffer;
+    float *debug_buffer;
 
     QVector<float> sortTensor(const QVector<float> receivedTensor, int receivedStride);
     void updateDetectedWords(QString word);
@@ -83,8 +96,10 @@ private:
     bool setupMic();
     void closeMic();
     void clearTrail();
-    bool recordSecond();
-    bool checkForVolIncrease();
+    bool recordSecond(float *inputBuffer);
+
+    bool readSecondFromInputStream(float *inputBuffer);
+    void processWordsFromInputStream(int sampling_rate, float volume_threshold, bool debug);
 };
 
 #endif // AUDIOCOMMAND_H

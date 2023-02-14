@@ -47,8 +47,6 @@
 #define ARROW_DOWN -90
 #define ARROW_UP 90
 
-#define BACKGROUND_OVERHEAD 2 // How many times louder we expect speech to be than ambiant
-
 #define MIC_CHANNELS 1
 #define MIC_DEVICE "plughw:0,0"
 
@@ -83,8 +81,6 @@ audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QStrin
     int height = uiAC->graphicsView->height();
     inputModeAC = micMode;
     buttonIdleBlue = true;
-    firstBlock = true;
-    ambiantVol = 0;
     sampleRate = MODEL_SAMPLE_RATE;
     recordButtonMutex = false;
 
@@ -252,20 +248,9 @@ void audioCommand::interpretInference(const QVector<float> &receivedTensor, int 
     qApp->processEvents(QEventLoop::AllEvents);
 
     if (inputModeAC == micMode) {
-        /* If inference failed the first time, run inference a second time but
-         * half a second back to ensure the second of data provided to TFL has
-         * not completed whilst a word is being spoken */
-        if (firstBlock && label == "Unknown") {
-            firstBlock = false;
-            emit requestInference(content.data() + sampleRate / 2, (size_t) sampleRate * sizeof(float));
-        } else {
-            firstBlock = true;
-
-            if (secThread.joinable())
-                secThread.join();
-
-            secThread = std::thread(&audioCommand::startListening, this);
-        }
+        if (secThread.joinable())
+	    secThread.join();
+        secThread = std::thread(&audioCommand::startListening, this);
     } else {
         toggleTalkButtonState();
     }
@@ -333,45 +318,256 @@ void audioCommand::readAudioFile(QString filePath)
     uiAC->actionLoad_Periph->setEnabled(true);
 }
 
-bool audioCommand::checkForVolIncrease()
-{
-    float currentAverage = 0;
-
-    if (content.size() < sampleRate*2)
-        return false;
-
-    for (auto ptr = content.begin() + sampleRate; ptr != content.end(); ptr++)
-        currentAverage += std::fabs(*ptr);
-
-    currentAverage /= (content.size()/2);
-
-    return currentAverage > ambiantVol;
-}
-
 void audioCommand::setMicMode()
 {
     inputModeAC = micMode;
 }
 
+bool audioCommand::readSecondFromInputStream(float *inputBuffer) {
+    return recordSecond(inputBuffer);
+}
+
+/* Buffering and trimming */
+
+#define next_buffer()	((current_buffer == buffer1) ? buffer2 : buffer1)
+#define prev_buffer()	next_buffer()
+
+static void save_wav(float *buffer, int sampling_rate, int number_of_samples) {
+	static int index = 1;
+	char filename[64];
+	SF_INFO sfinfo;
+
+	sprintf(filename, "%04d.wav", index++);
+	printf("Creating file %s...\n", filename);
+
+	sfinfo.channels = 1;
+	sfinfo.samplerate = sampling_rate;
+	sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+
+	SNDFILE * outfile = sf_open(filename, SFM_WRITE, &sfinfo);
+	sf_write_float(outfile, buffer, number_of_samples);
+	sf_write_sync(outfile);
+	sf_close(outfile);
+}
+
+static void debug_to_file(float *input_buffer, float *debug_buffer, int buffer_size,
+		   float threshold) {
+	static FILE *fp = NULL;
+	static int sample = 0;
+	float marker;
+	int i;
+
+	if (fp == NULL) {
+		fp = fopen("debug.txt", "w");
+	}
+
+	for (i = 0; i < buffer_size; i++) {
+		if (i == 0)
+			marker = 1.0;
+		if (i == 1)
+			marker = -1.0;
+		if (i == 2)
+			marker = 0.0;
+		fprintf(fp, "%d %f %f %f %f\n",
+			sample++,
+			marker,
+			input_buffer[i],
+			debug_buffer[i],
+			threshold
+			);
+	}
+}
+
+static enum word_location locate_word(int sampling_rate, int *left, int *right,
+		float *input_buffer, float *working_buffer, float *debug_buffer,
+		int buffers_size, float threshold, bool debug) {
+	int i, j, slice, _left, _right;
+	int window = sampling_rate / 24;
+	float max, absolute;
+
+	_left = -1;
+	_right = -1;
+
+	for (i = 0, slice = 0; i < buffers_size; i+=window, slice++) {
+		max = 0;
+		for (j = i; (j < i + window) && (j < buffers_size); j++) {
+			absolute = fabs(input_buffer[j]);
+			max = absolute > max ? absolute : max;
+		}
+		working_buffer[slice] = max;
+	}
+
+	// Flatten the edges to prevent artifacts on the edges
+	working_buffer[0]         = working_buffer[1];
+	working_buffer[slice - 1] = working_buffer[slice - 2];
+
+	for (i = 0; i < slice; i++) {
+		if (working_buffer[i] >= threshold) {
+			if (_left == -1)
+				_left = i;
+		} else if (_left >= 0) {
+			_right = i;
+			break;
+		}
+	}
+
+	if (debug) {
+		for (i = 0; i < slice; i++) {
+			for (j = i * window;
+			     (j < ((i + 1) * window)) && (j < buffers_size);
+			     j++
+			    ) {
+			     debug_buffer[j] = working_buffer[i];
+			}
+		}
+		debug_to_file(input_buffer, debug_buffer, buffers_size,
+			      threshold);
+	}
+
+	if (_left == -1)
+		return WORD_NOT_FOUND;
+
+	if (_left == 0 && _right == -1)
+		return WORD_BOTH_EDGES;
+
+	if (_right == -1) {
+		*left = _left * window;
+		return WORD_RIGHT_EDGE;
+	}
+
+	*right = ((_right + 1) * window) - 1;
+
+	if (_left == 0)
+		return WORD_LEFT_EDGE;
+
+	*left = _left * window;
+
+	return WORD_FOUND;
+}
+
+void audioCommand::processWordsFromInputStream(int sampling_rate,
+                   float volume_threshold, bool debug) {
+	int left = 0, right = 0;
+	int sample_left = 0, sample_right = 0, sample_center = 0;
+	int current_left = 0, current_right = 0;
+	int previous_left = 0;
+	bool save_after_read;
+	bool save;
+	bool first_sample;
+	enum word_location current_search;
+	enum word_location previous_search;
+	int buffer_size = sampling_rate;
+	float *current_buffer;
+
+	if (!buffer1 or !buffer2 or !buffer3 or !debug_buffer or !working_buffer)
+		return;
+
+        current_search = WORD_NOT_FOUND;
+        previous_search = WORD_NOT_FOUND;
+        current_buffer = buffer1;
+        save_after_read = false;
+        first_sample = true;
+        save = false;
+
+	while (readSecondFromInputStream(current_buffer)) {
+		current_search = locate_word(sampling_rate,
+					     &current_left, &current_right,
+					     current_buffer, working_buffer,
+					     debug_buffer, buffer_size,
+					     volume_threshold, debug);
+
+		if (save_after_read) {
+			memcpy(
+			       buffer3,
+			       &(prev_buffer()[sample_left]),
+			       sizeof(float)*(buffer_size - sample_left)
+			       );
+			memcpy(
+			       &buffer3[buffer_size - sample_left],
+			       current_buffer,
+			       sizeof(float)*sample_right
+			       );
+			save_after_read = false;
+			if (debug)
+				save_wav(buffer3, sampling_rate, buffer_size);
+			emit requestInference(buffer3,
+				(size_t) sampling_rate * sizeof(float));
+			return;
+		}
+
+		// At the moment we are discarding WORD_BOTH_EDGES
+		if (current_search == WORD_FOUND) {
+			left = current_left;
+			right = current_right;
+			save = true;
+		} else if (current_search == WORD_LEFT_EDGE && previous_search == WORD_RIGHT_EDGE) {
+			left = previous_left - buffer_size;
+			right = current_right;
+			save = true;
+		}  else if (current_search == WORD_LEFT_EDGE) {
+			if (not first_sample) {
+				left = -1;
+				right = current_right;
+				save = true;
+			}
+		} else if (previous_search == WORD_RIGHT_EDGE) {
+			right = 0;
+			left =  previous_left - buffer_size;
+			save = true;
+		}
+
+		if (save) {
+			sample_center = (right + left) / 2;
+			sample_left = sample_center - (sampling_rate / 2 );
+			sample_right = sample_center + (sampling_rate / 2);
+
+			if (sample_left < 0) {
+				sample_left = buffer_size + sample_left;
+				memcpy(
+				       buffer3,
+				       &(prev_buffer()[sample_left]),
+				       sizeof(float)*(buffer_size - sample_left)
+				       );
+				memcpy(
+				       &buffer3[buffer_size - sample_left],
+				       current_buffer,
+				       sizeof(float)*sample_right
+				       );
+				if (debug)
+					save_wav(buffer3, sampling_rate, buffer_size);
+				emit requestInference(buffer3,
+					(size_t) sampling_rate * sizeof(float));
+
+				return;
+			} else if (sample_right < buffer_size) {
+				if (debug)
+					save_wav(current_buffer, sampling_rate, buffer_size);
+				emit requestInference(buffer3,
+					(size_t) sampling_rate * sizeof(float));
+				return;
+			} else if (sample_right >= buffer_size) {
+				// We need more samples to get the word nicely
+				// centered
+				save_after_read = true;
+				sample_right = sample_right - buffer_size;
+			}
+		}
+
+		first_sample = false;
+		previous_search = current_search;
+		current_buffer = next_buffer();
+		save = false;
+		previous_left = current_left;
+	}
+}
+
 void audioCommand::startListening()
 {
-    bool possibleCommand = false;
-    bool micAlive = true;
-
     if (inputModeAC == micMode && !buttonIdleBlue) {
-        while (!possibleCommand && micAlive) {
-            micAlive = recordSecond();
-            possibleCommand = checkForVolIncrease();
-
-            /* Allow the GUI to be updated between read cycles */
-            qApp->processEvents(QEventLoop::AllEvents);
-        }
-    }
-
-    if (inputModeAC == audioFileMode)
+	processWordsFromInputStream(sampleRate, 0.2, false);
+    } else if (inputModeAC == audioFileMode) {
         emit requestInference(content.data(), (size_t) sampleRate * sizeof(float));
-    else if (possibleCommand && inputModeAC == micMode && !buttonIdleBlue)
-        emit requestInference(content.data() + sampleRate, (size_t) sampleRate * sizeof(float));
+    }
 }
 
 void audioCommand::updateDetectedWords(QString word)
@@ -451,19 +647,15 @@ bool audioCommand::setupMic()
         qWarning(MIC_PREPARE_WARNING);
         emit micWarning(MIC_PREPARE_WARNING);
     } else {
-        /* Take an average of the ambiant background noise volume from the microphone,
-         * then add an overhead percentage to that to make a threshold volume to listen for */
-        content.clear();
 
-        if (!recordSecond())
-            return false;
+        // Buffering and trimming buffers
+        buffer1 = (float*)malloc(sizeof(float) * sampleRate);
+        buffer2 = (float*)malloc(sizeof(float) * sampleRate);
+        buffer3 = (float*)malloc(sizeof(float) * sampleRate);
+        debug_buffer = (float*)malloc(sizeof(float) * sampleRate);
+        working_buffer = (float*)malloc(sizeof(float) * sampleRate);
 
-        for (auto ptr = content.begin(); ptr != content.end(); ptr++)
-            ambiantVol += std::fabs(*ptr);
-
-        ambiantVol /= content.size();
-        ambiantVol *= BACKGROUND_OVERHEAD;
-
+        // content contains the samples to send for inference
         content.clear();
 
         retVal = true;
@@ -477,21 +669,31 @@ void audioCommand::closeMic()
     /* Close data structures */
     snd_pcm_close(mic_pcm);
     snd_pcm_hw_params_free(hw_params);
+
+
+    free(working_buffer);
+    free(debug_buffer);
+    free(buffer3);
+    free(buffer2);
+    free(buffer1);
+
+    buffer1 = NULL;
+    buffer2 = NULL;
+    buffer3 = NULL;
+    debug_buffer = NULL;
+    working_buffer = NULL;
 }
 
-bool audioCommand::recordSecond()
+bool audioCommand::recordSecond(float *inputBuffer)
 {
     int err;
-    float buffer[sampleRate];
 
     if (buttonIdleBlue)
         return false;
 
-    qApp->processEvents(QEventLoop::AllEvents);
-
     /* The last parameter is the number of frames to read from the mic.
      * We match that to our rate per second to retreive 1 second worth of data from the microphone */
-    err = snd_pcm_readi(mic_pcm, buffer, sampleRate);
+    err = snd_pcm_readi(mic_pcm, inputBuffer, sampleRate);
 
     if (err == -EPIPE) {
         qWarning(READ_OVERRUN_ERROR);
@@ -509,15 +711,6 @@ bool audioCommand::recordSecond()
         qWarning(READ_INCOMPLETE_WARNING);
         return false;
     }
-
-    /* Clear the second before last */
-    if (content.size() > sampleRate)
-        content.erase(content.begin(), content.begin() + sampleRate);
-
-    /* Place new elements to the back of the vector */
-    content.insert(content.end(), buffer, buffer+sampleRate);
-
-    qApp->processEvents(QEventLoop::AllEvents);
 
     return true;
 }
