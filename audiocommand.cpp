@@ -28,6 +28,10 @@
 #include <QGraphicsPolygonItem>
 #include <QGraphicsScene>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #define MODEL_NAME_AC "browserfft-speech-renesas.tflite"
 #define TEXT_LOAD_AUDIO_FILE "Load Audio File"
 
@@ -143,6 +147,16 @@ audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QStrin
     debug = false;
     if (audioMode == audioDebug or audioMode == audioRecordDebug or audioMode == audioPlaybackDebug)
         debug = true;
+
+    record = false;
+    if (audioMode == audioRecord or audioMode == audioRecordDebug)
+        record = true;
+
+    playback = false;
+    if (audioMode == audioPlayback or audioMode == audioPlaybackDebug)
+        playback = true;
+
+    recording_fd = -1;
 
     setupArrow();
 }
@@ -346,6 +360,25 @@ void audioCommand::setMicMode()
 }
 
 bool audioCommand::readSecondFromInputStream(float *inputBuffer) {
+
+    if (playback) {
+        ssize_t ret = read(recording_fd, inputBuffer, sizeof(float) * sampleRate);
+        sleep(1);
+
+        if (ret == -1) {
+            qWarning("ERROR: Can't read from file recording.dat");
+            return false;
+        } else if (ret == 0) {
+            qWarning("ERROR: recording.dat EOF reached");
+            return false;
+        } else if (ret != (long)(sizeof(float) * sampleRate)) {
+            qWarning("FIXME: I don't deal with incomplete reads from file "
+                   "recording.dat just yet (and maybe never will!)");
+            return false;
+        } else {
+            return true;
+        }
+    }
     return recordSecond(inputBuffer);
 }
 
@@ -693,6 +726,13 @@ bool audioCommand::setupMic()
         do_we_read = true;
         save = false;
 
+        if (record)
+            recording_fd = open("recording.dat", O_CREAT | O_TRUNC | O_WRONLY,
+                                S_IRUSR | S_IWUSR);
+
+        if (playback)
+            recording_fd = open("recording.dat", O_RDONLY);
+
         // content contains the samples to send for inference
         content.clear();
 
@@ -720,6 +760,9 @@ void audioCommand::closeMic()
     buffer3 = NULL;
     debug_buffer = NULL;
     working_buffer = NULL;
+
+    if (recording_fd != -1)
+        close(recording_fd);
 }
 
 bool audioCommand::recordSecond(float *inputBuffer)
@@ -748,6 +791,15 @@ bool audioCommand::recordSecond(float *inputBuffer)
     } else if ((unsigned int) err != sampleRate) {
         qWarning(READ_INCOMPLETE_WARNING);
         return false;
+    } else if (record) {
+        ssize_t ret = write(recording_fd, inputBuffer, sizeof(float) * sampleRate);
+
+        if (ret == -1) {
+            qWarning("ERROR: Can't write to file recording.dat");
+        } else if (ret != (long)sizeof(float) * sampleRate) {
+            qWarning("FIXME: I don't deal with incomplete writes to "
+                   "recording.dat just yet (and maybe never will!)");
+        }
     }
 
     return true;

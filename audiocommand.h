@@ -81,6 +81,9 @@ private:
     Input inputModeAC;
     std::thread secThread;
     bool debug;
+    bool record;
+    bool playback;
+    int recording_fd;
 
     // Buffering and trimming
     float *buffer1;
