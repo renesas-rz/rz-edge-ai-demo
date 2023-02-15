@@ -58,6 +58,7 @@ public:
 public slots:
     void interpretInference(const QVector<float> &receivedTensor, int receivedTimeElapsed);
     void toggleAudioInput();
+    void volumeThresholdDialChanged(int value);
 
 signals:
     void requestInference(void *data, size_t inputDataSize);
@@ -97,6 +98,7 @@ private:
     bool first_sample;
     enum word_location current_search;
     enum word_location previous_search;
+    float current_volume_threshold;
 
     QVector<float> sortTensor(const QVector<float> receivedTensor, int receivedStride);
     void updateDetectedWords(QString word);
@@ -110,7 +112,7 @@ private:
     bool recordSecond(float *inputBuffer);
 
     bool readSecondFromInputStream(float *inputBuffer);
-    void processWordsFromInputStream(int sampling_rate, float volume_threshold, bool debug);
+    void processWordsFromInputStream(int sampling_rate, bool debug);
 };
 
 #endif // AUDIOCOMMAND_H

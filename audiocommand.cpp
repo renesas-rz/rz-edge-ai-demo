@@ -68,6 +68,9 @@
 #define READ_SUSPEND_ERROR "Error: Suspend event occurred"
 #define READ_INCOMPLETE_WARNING "Warning: Incomplete read from microphone"
 
+#define VOLUME_THRESHOLD_MIN		0.05
+#define VOLUME_THRESHOLD_MAX		0.7
+#define VOLUME_THRESHOLD_DEFAULT	0.2
 
 audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QString inferenceEngine)
 {
@@ -126,6 +129,13 @@ audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QStrin
     uiAC->labelAIModelFilenameAC->setText(MODEL_NAME_AC);
     uiAC->labelInferenceTimePE->setText(TEXT_INFERENCE);
     uiAC->labelTotalFpsPose->setText(TEXT_TOTAL_FPS);
+
+    current_volume_threshold = VOLUME_THRESHOLD_DEFAULT;
+    uiAC->volumeThresholdDial->setMinimum(VOLUME_THRESHOLD_MIN * 100);
+    uiAC->volumeThresholdDial->setMaximum(VOLUME_THRESHOLD_MAX * 100);
+    uiAC->volumeThresholdDial->setValue(VOLUME_THRESHOLD_DEFAULT * 100);
+    connect(uiAC->volumeThresholdDial, SIGNAL(valueChanged(int)), this,
+	    SLOT(volumeThresholdDialChanged(int)));
 
     setupArrow();
 }
@@ -284,6 +294,11 @@ void audioCommand::toggleAudioInput()
     }
 
     recordButtonMutex = false;
+}
+
+void audioCommand::volumeThresholdDialChanged(int value)
+{
+	current_volume_threshold = (float)value / 100.0;
 }
 
 void audioCommand::readAudioFile(QString filePath)
@@ -445,8 +460,7 @@ static enum word_location locate_word(int sampling_rate, int *left, int *right,
 	return WORD_FOUND;
 }
 
-void audioCommand::processWordsFromInputStream(int sampling_rate,
-                   float volume_threshold, bool debug) {
+void audioCommand::processWordsFromInputStream(int sampling_rate, bool debug) {
 	bool run_inference = false;
 	int buffer_size = sampling_rate;
 
@@ -492,7 +506,7 @@ void audioCommand::processWordsFromInputStream(int sampling_rate,
 					     &current_left, &current_right,
 					     current_buffer, working_buffer,
 					     debug_buffer, buffer_size,
-					     volume_threshold, debug);
+					     current_volume_threshold, debug);
 
 		// At the moment we are discarding WORD_BOTH_EDGES
 		if (current_search == WORD_FOUND) {
@@ -566,7 +580,7 @@ void audioCommand::processWordsFromInputStream(int sampling_rate,
 void audioCommand::startListening()
 {
     if (inputModeAC == micMode && !buttonIdleBlue) {
-	processWordsFromInputStream(sampleRate, 0.2, false);
+	processWordsFromInputStream(sampleRate, true);
     } else if (inputModeAC == audioFileMode) {
         emit requestInference(content.data(), (size_t) sampleRate * sizeof(float));
     }

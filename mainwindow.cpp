@@ -420,6 +420,7 @@ void MainWindow::setGuiPixelSizes()
     ui->labelCountAC->setFont(font);
     ui->labelHistoryAC->setFont(font);
     ui->commandList->setFont(font);
+    ui->noiseLevel->setFont(font);
 }
 
 void MainWindow::setupObjectDetectMode()

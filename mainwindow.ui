@@ -661,6 +661,37 @@ Stop
 Halts recording</string>
       </property>
      </widget>
+     <widget class="QLabel" name="noiseLevel">
+      <property name="text">
+       <string>Noise Threshold</string>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>425</y>
+        <width>125</width>
+        <height>15</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+     </widget>
+     <widget class="QDial" name="volumeThresholdDial">
+      <property name="geometry">
+       <rect>
+        <x>15</x>
+        <y>445</y>
+        <width>100</width>
+        <height>100</height>
+       </rect>
+      </property>
+      <property name="notchesVisible">
+       <bool>true</bool>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QStackedWidget" name="stackedWidgetRight">
