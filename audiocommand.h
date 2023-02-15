@@ -86,6 +86,17 @@ private:
     float *buffer3;
     float *working_buffer;
     float *debug_buffer;
+    float *current_buffer;
+    int left, right;
+    int sample_left, sample_right, sample_center;
+    int current_left, current_right;
+    int previous_left;
+    bool save_after_read;
+    bool save;
+    bool do_we_read;
+    bool first_sample;
+    enum word_location current_search;
+    enum word_location previous_search;
 
     QVector<float> sortTensor(const QVector<float> receivedTensor, int receivedStride);
     void updateDetectedWords(QString word);

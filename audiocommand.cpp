@@ -447,34 +447,24 @@ static enum word_location locate_word(int sampling_rate, int *left, int *right,
 
 void audioCommand::processWordsFromInputStream(int sampling_rate,
                    float volume_threshold, bool debug) {
-	int left = 0, right = 0;
-	int sample_left = 0, sample_right = 0, sample_center = 0;
-	int current_left = 0, current_right = 0;
-	int previous_left = 0;
-	bool save_after_read;
-	bool save;
-	bool first_sample;
-	enum word_location current_search;
-	enum word_location previous_search;
+	bool run_inference = false;
 	int buffer_size = sampling_rate;
-	float *current_buffer;
 
 	if (!buffer1 or !buffer2 or !buffer3 or !debug_buffer or !working_buffer)
 		return;
 
-        current_search = WORD_NOT_FOUND;
-        previous_search = WORD_NOT_FOUND;
-        current_buffer = buffer1;
-        save_after_read = false;
-        first_sample = true;
-        save = false;
+	while (true) {
+		/* If do_we_read is set to false, it means we already read
+		 * current_buffer, but we haven't processed it yet, therefore
+		 * just process current_buffer without reading a new one.
+		 * If do_we_read is set to true, then read a new buffer and
+		 * process it.
+		 */
+		if (do_we_read)
+			if (not readSecondFromInputStream(current_buffer))
+				return;
 
-	while (readSecondFromInputStream(current_buffer)) {
-		current_search = locate_word(sampling_rate,
-					     &current_left, &current_right,
-					     current_buffer, working_buffer,
-					     debug_buffer, buffer_size,
-					     volume_threshold, debug);
+		do_we_read = true;
 
 		if (save_after_read) {
 			memcpy(
@@ -487,13 +477,22 @@ void audioCommand::processWordsFromInputStream(int sampling_rate,
 			       current_buffer,
 			       sizeof(float)*sample_right
 			       );
-			save_after_read = false;
 			if (debug)
 				save_wav(buffer3, sampling_rate, buffer_size);
 			emit requestInference(buffer3,
 				(size_t) sampling_rate * sizeof(float));
+
+			save_after_read = false;
+			do_we_read = false;
+
 			return;
 		}
+
+		current_search = locate_word(sampling_rate,
+					     &current_left, &current_right,
+					     current_buffer, working_buffer,
+					     debug_buffer, buffer_size,
+					     volume_threshold, debug);
 
 		// At the moment we are discarding WORD_BOTH_EDGES
 		if (current_search == WORD_FOUND) {
@@ -538,13 +537,13 @@ void audioCommand::processWordsFromInputStream(int sampling_rate,
 				emit requestInference(buffer3,
 					(size_t) sampling_rate * sizeof(float));
 
-				return;
+				run_inference = true;
 			} else if (sample_right < buffer_size) {
 				if (debug)
 					save_wav(current_buffer, sampling_rate, buffer_size);
 				emit requestInference(buffer3,
 					(size_t) sampling_rate * sizeof(float));
-				return;
+				run_inference = true;
 			} else if (sample_right >= buffer_size) {
 				// We need more samples to get the word nicely
 				// centered
@@ -558,6 +557,9 @@ void audioCommand::processWordsFromInputStream(int sampling_rate,
 		current_buffer = next_buffer();
 		save = false;
 		previous_left = current_left;
+
+		if (run_inference)
+			break;
 	}
 }
 
@@ -654,6 +656,21 @@ bool audioCommand::setupMic()
         buffer3 = (float*)malloc(sizeof(float) * sampleRate);
         debug_buffer = (float*)malloc(sizeof(float) * sampleRate);
         working_buffer = (float*)malloc(sizeof(float) * sampleRate);
+        left = 0;
+        right = 0;
+        sample_left = 0;
+        sample_right = 0;
+        sample_center = 0;
+        current_left = 0;
+        current_right = 0;
+        previous_left = 0;
+        current_search = WORD_NOT_FOUND;
+        previous_search = WORD_NOT_FOUND;
+        current_buffer = buffer1;
+        save_after_read = false;
+        first_sample = true;
+        do_we_read = true;
+        save = false;
 
         // content contains the samples to send for inference
         content.clear();
