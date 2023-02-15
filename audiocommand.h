@@ -80,6 +80,7 @@ private:
     unsigned int sampleRate;
     Input inputModeAC;
     std::thread secThread;
+    bool debug;
 
     // Buffering and trimming
     float *buffer1;

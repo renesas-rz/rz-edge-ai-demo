@@ -56,6 +56,17 @@ enum Board { G2E, G2L, G2LC, G2M, Unknown };
 enum Input { cameraMode, imageMode, videoMode, audioFileMode, micMode };
 enum Mode { SB, OD, PE, FD, AC };
 enum FaceModel { faceDetect, faceLandmark, irisLandmarkL, irisLandmarkR };
+enum AudioMode {
+	no_audio_selection = 0,
+	audio,
+	audioDebug,
+	audioRecord,
+	audioRecordDebug,
+	audioPlayback,
+	audioPlaybackDebug
+};
+
+extern enum AudioMode audioMode;
 
 class edgeUtils
 {

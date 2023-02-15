@@ -20,6 +20,8 @@
 
 #include "edge-utils.h"
 
+enum AudioMode audioMode;
+
 edgeUtils::edgeUtils()
 {
     totalProcessTime = 0;

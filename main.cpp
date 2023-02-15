@@ -211,12 +211,28 @@ int main(int argc, char *argv[])
             irisOption = false;
             modelLocation = MODEL_PATH_FD_FACE_DETECTION;
         }
-    } else if (modeString == "audio-command") {
+    } else if (modeString.startsWith("audio-command")) {
         mode = AC;
         modelLocation = MODEL_PATH_AC;
+        if (modeString == "audio-command") {
+            audioMode = audio;
+        } else if (modeString == "audio-command-debug") {
+            audioMode = audioDebug;
+	} else if (modeString == "audio-command-record") {
+            audioMode = audioRecord;
+	} else if (modeString == "audio-command-record-debug") {
+            audioMode = audioRecordDebug;
+	} else if (modeString == "audio-command-playback") {
+            audioMode = audioPlayback;
+	} else if (modeString == "audio-command-playback-debug") {
+            audioMode = audioPlaybackDebug;
+	}
     } else {
         qWarning("Warning: unknown demo mode requested, starting in default mode...");
     }
+
+    if (mode != AC)
+	    audioMode = no_audio_selection;
 
     if (mode != FD) {
         if (!faceOption.isEmpty())

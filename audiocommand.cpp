@@ -137,6 +137,13 @@ audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QStrin
     connect(uiAC->volumeThresholdDial, SIGNAL(valueChanged(int)), this,
 	    SLOT(volumeThresholdDialChanged(int)));
 
+    if (audioMode == no_audio_selection)
+	    audioMode = audio;
+
+    debug = false;
+    if (audioMode == audioDebug or audioMode == audioRecordDebug or audioMode == audioPlaybackDebug)
+        debug = true;
+
     setupArrow();
 }
 
@@ -580,7 +587,7 @@ void audioCommand::processWordsFromInputStream(int sampling_rate, bool debug) {
 void audioCommand::startListening()
 {
     if (inputModeAC == micMode && !buttonIdleBlue) {
-	processWordsFromInputStream(sampleRate, true);
+        processWordsFromInputStream(sampleRate, debug);
     } else if (inputModeAC == audioFileMode) {
         emit requestInference(content.data(), (size_t) sampleRate * sizeof(float));
     }
