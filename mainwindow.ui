@@ -639,26 +639,19 @@ border-style: outset;
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>120</y>
+        <y>130</y>
         <width>111</width>
-        <height>321</height>
+        <height>150</height>
        </rect>
       </property>
       <property name="text">
-       <string>Commands:
+       <string>Voice
+Commands:
 
 Up
 Down
 Left
-Right
-Off/Stop
-Go
-
-Off
-Resets state
-
-Stop
-Halts recording</string>
+Right</string>
       </property>
      </widget>
      <widget class="QLabel" name="noiseLevel">

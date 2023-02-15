@@ -196,7 +196,6 @@ void audioCommand::updateArrow(QString instruction)
     QPointF oldPosition = arrow->pos();
     QGraphicsScene *scene = uiAC->graphicsView->scene();
     QPen pen = QPen(THEME_RED);
-    QPoint gridCentre = QPoint(uiAC->graphicsView->width() / 2, uiAC->graphicsView->height() / 2);
 
     pen.setWidth(ARROW_THICKNESS);
 
@@ -220,25 +219,6 @@ void audioCommand::updateArrow(QString instruction)
             arrow->setPos(arrow->x(), arrow->y() - GRID_INC);
 
         arrow->setRotation(ARROW_UP);
-    } else if (instruction.compare("go") == 0) {
-        if (arrow->rotation() == ARROW_RIGHT)
-            updateArrow(QString("right"));
-        else if (arrow->rotation() == ARROW_LEFT)
-            updateArrow(QString("left"));
-        else if (arrow->rotation() == ARROW_DOWN)
-            updateArrow(QString("down"));
-        else if (arrow->rotation() == ARROW_UP)
-            updateArrow(QString("up"));
-
-    } else if (instruction.compare("off") == 0) {
-        arrow->setPos(gridCentre);
-        arrow->setRotation(ARROW_UP);
-        clearTrail();
-        return;
-    } else if (instruction.compare("stop") == 0
-               && inputModeAC == micMode && !buttonIdleBlue) {
-        toggleAudioInput();
-        return;
     }
 
     latest = scene->addLine(QLineF(oldPosition, arrow->pos()), pen);
@@ -289,6 +269,9 @@ void audioCommand::interpretInference(const QVector<float> &receivedTensor, int 
 
 void audioCommand::toggleAudioInput()
 {
+    QPoint gridCentre = QPoint(uiAC->graphicsView->width() / 2, uiAC->graphicsView->height() / 2);
+    QTableWidget * table = uiAC->tableWidgetAC;
+
     if (recordButtonMutex)
         return;
 
@@ -301,6 +284,13 @@ void audioCommand::toggleAudioInput()
             if (secThread.joinable())
                 secThread.join();
 
+            history.clear();
+            uiAC->commandReaderAC->setText(history);
+            arrow->setPos(gridCentre);
+            arrow->setRotation(ARROW_UP);
+            clearTrail();
+            activeCommands.clear();
+            table->setRowCount(0);
             secThread = std::thread(&audioCommand::startListening, this);
         } else {
             toggleTalkButtonState();
@@ -657,14 +647,7 @@ void audioCommand::updateDetectedWords(QString word)
 
     uiAC->tableWidgetAC->scrollToBottom();
 
-    /* Clear history on keyword "off" */
-    if (word.compare("off") == 0) {
-        history.clear();
-        activeCommands.clear();
-        table->setRowCount(0);
-    } else {
-        history.append(" " + word);
-    }
+    history.append(" " + word);
 
     /* Active commands update */
     uiAC->commandReaderAC->setText(history);
