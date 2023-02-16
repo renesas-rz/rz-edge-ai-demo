@@ -55,7 +55,7 @@
 #define MIC_DEVICE "plughw:0,0"
 
 #define MODEL_SAMPLE_RATE 44100
-#define AUDIO_DETECT_THRESHOLD 0.80
+#define AUDIO_DETECT_THRESHOLD 0.90
 
 #define MIC_OPEN_WARNING "Warning: Cannot open audio device"
 #define MIC_HW_PARAM_ALLOC_WARNING "Warning: Cannot allocate hardware parameter structure"
