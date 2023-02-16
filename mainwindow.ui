@@ -592,7 +592,7 @@ Face</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>20</y>
+        <y>10</y>
         <width>111</width>
         <height>111</height>
        </rect>
@@ -626,7 +626,8 @@ border-style: outset;
 </string>
       </property>
       <property name="text">
-       <string>Talk</string>
+       <string>Speak
+Commands</string>
       </property>
       <property name="checkable">
        <bool>true</bool>
@@ -638,20 +639,25 @@ border-style: outset;
      <widget class="QLabel" name="commandList">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>130</y>
-        <width>111</width>
+        <x>6</x>
+        <y>160</y>
+        <width>120</width>
         <height>150</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">
+color: rgb(42, 40, 157);
+</string>
+      </property>
       <property name="text">
-       <string>Voice
+       <string>Supported Voice
 Commands:
 
-Up
-Down
-Left
-Right</string>
+UP
+DOWN
+LEFT
+RIGHT</string>
       </property>
      </widget>
      <widget class="QLabel" name="noiseLevel">
@@ -660,7 +666,7 @@ Right</string>
       </property>
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>6</x>
         <y>425</y>
         <width>125</width>
         <height>15</height>

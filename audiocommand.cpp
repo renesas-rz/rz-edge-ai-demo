@@ -83,7 +83,7 @@ audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QStrin
     labelList = labelFileList;
     trail = QVector<QGraphicsLineItem*>();
     QGraphicsScene *scene = uiAC->graphicsView->scene();
-    QPen pen = QPen(THEME_BLUE);
+    QPen pen = QPen(THEME_LIGHT_GRAY);
     int width = uiAC->graphicsView->width();
     int height = uiAC->graphicsView->height();
     inputModeAC = micMode;
@@ -163,8 +163,8 @@ audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QStrin
 
 void audioCommand::setupArrow()
 {
-    QPen pen = QPen(THEME_RED);
-    QBrush brush = QBrush(THEME_RED, Qt::Dense6Pattern);
+    QPen pen = QPen(THEME_RENESAS_BLUE);
+    QBrush brush = QBrush(THEME_RENESAS_BLUE, Qt::Dense6Pattern);
     QGraphicsScene *scene = uiAC->graphicsView->scene();
     QGraphicsLineItem *line = new QGraphicsLineItem();
     qreal arrowSize = ARROW_SIZE;
@@ -195,7 +195,7 @@ void audioCommand::updateArrow(QString instruction)
     QGraphicsLineItem *latest;
     QPointF oldPosition = arrow->pos();
     QGraphicsScene *scene = uiAC->graphicsView->scene();
-    QPen pen = QPen(THEME_RED);
+    QPen pen = QPen(THEME_RENESAS_BLUE);
 
     pen.setWidth(ARROW_THICKNESS);
 
@@ -793,7 +793,7 @@ void audioCommand::toggleTalkButtonState()
     buttonIdleBlue = !buttonIdleBlue;
 
     if (buttonIdleBlue) {
-        uiAC->pushButtonTalk->setText("Talk");
+        uiAC->pushButtonTalk->setText("Speak\nCommands");
         uiAC->pushButtonTalk->setStyleSheet(BUTTON_BLUE);
     } else {
         uiAC->pushButtonTalk->setText("Stop");

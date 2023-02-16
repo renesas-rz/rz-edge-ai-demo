@@ -32,10 +32,12 @@
 
 #define DETECT_DEFAULT_THRESHOLD 0.5
 
+#define THEME_RENESAS_BLUE QColor(42, 40, 157)
 #define THEME_GREEN Qt::green
 #define THEME_RED Qt::red
 #define THEME_BLUE Qt::blue
 #define THEME_GREEN Qt::green
+#define THEME_LIGHT_GRAY Qt::lightGray
 #define BUTTON_BLUE "background-color: rgba(42, 40, 157);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
 #define BUTTON_GREYED_OUT "background-color: rgba(42, 40, 157, 90);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
 #define BUTTON_RED "background-color: rgba(255, 0, 0);color: rgb(255, 255, 255);border: 2px;border-radius: 55px;border-style: outset;"
