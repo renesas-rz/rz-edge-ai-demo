@@ -156,6 +156,21 @@ audioCommand::audioCommand(Ui::MainWindow *ui, QStringList labelFileList, QStrin
     if (audioMode == audioPlayback or audioMode == audioPlaybackDebug)
         playback = true;
 
+    uiAC->micVolume->setEnabled(false);
+    uiAC->micVolumeDial->setEnabled(false);
+    if (not playback) {
+        if (setupAlsaMixer()) {
+            uiAC->micVolumeDial->setMinimum(mic_volume_min);
+            uiAC->micVolumeDial->setMaximum(mic_volume_max);
+            setMicVolume(mic_volume_max);
+            uiAC->micVolumeDial->setValue(mic_volume_max);
+            connect(uiAC->micVolumeDial, SIGNAL(valueChanged(int)), this,
+                    SLOT(micVolumeDialChanged(int)));
+            uiAC->micVolume->setEnabled(true);
+            uiAC->micVolumeDial->setEnabled(true);
+	}
+    }
+
     recording_fd = -1;
 
     setupArrow();
@@ -310,6 +325,26 @@ void audioCommand::toggleAudioInput()
 void audioCommand::volumeThresholdDialChanged(int value)
 {
 	current_volume_threshold = (float)value / 100.0;
+}
+
+
+void audioCommand::setMicVolume(long volume)
+{
+	if (alsa_element) {
+		if (volume > mic_volume_max)
+			mic_volume_current = mic_volume_max;
+		else if (volume < mic_volume_min)
+			mic_volume_current = mic_volume_min;
+		else
+			mic_volume_current = volume;
+		snd_mixer_selem_set_capture_volume_all(alsa_element,
+						       mic_volume_current);
+	}
+}
+
+void audioCommand::micVolumeDialChanged(int value)
+{
+	setMicVolume(value);
 }
 
 void audioCommand::readAudioFile(QString filePath)
@@ -653,6 +688,80 @@ void audioCommand::updateDetectedWords(QString word)
     uiAC->commandReaderAC->setText(history);
 }
 
+bool audioCommand::setupAlsaMixer()
+{
+	snd_mixer_elem_t *element = NULL;
+	int count, i, err;
+	long min, max;
+
+	err = snd_mixer_open(&alsa_handle, 0);
+	if (err) {
+		qWarning("Warning: I can't open ALSA mixer");
+		return false;
+	}
+
+	err = snd_mixer_attach(alsa_handle, alsa_card);
+	if (err)
+		goto alsa_close;
+
+	err = snd_mixer_selem_register(alsa_handle, NULL, NULL);
+	if (err)
+		goto alsa_detach;
+
+	err = snd_mixer_load(alsa_handle);
+	if (err)
+		goto alsa_free;
+
+	count = snd_mixer_get_count(alsa_handle);
+	element = snd_mixer_first_elem(alsa_handle);
+	for (i = 0; i < count; i++) {
+		if (snd_mixer_selem_has_capture_volume (element)) {
+			alsa_element = element;
+			break;
+		}
+		element = snd_mixer_elem_next(element);
+	}
+
+	if (alsa_element == NULL)
+		goto alsa_free;
+
+	err = snd_mixer_selem_get_capture_volume_range(alsa_element, &min, &max);
+	if (err)
+		goto alsa_free;
+
+	mic_volume_min = min;
+	mic_volume_max = max;
+
+	return true;
+
+alsa_free:
+	snd_mixer_free(alsa_handle);
+
+alsa_detach:
+	snd_mixer_detach(alsa_handle, alsa_card);
+
+alsa_close:
+	snd_mixer_close(alsa_handle);
+	alsa_handle = NULL;
+	alsa_element = NULL;
+
+        qWarning("Warning: I can't use ALSA mixer");
+
+	return false;
+}
+
+void audioCommand::clearAlsaMixer()
+{
+	if (alsa_handle == NULL)
+		return;
+
+	snd_mixer_free(alsa_handle);
+	snd_mixer_detach(alsa_handle, alsa_card);
+	snd_mixer_close(alsa_handle);
+	alsa_handle = NULL;
+	alsa_element = NULL;
+}
+
 bool audioCommand::setupMic()
 {
     int err;
@@ -807,4 +916,7 @@ audioCommand::~audioCommand()
 {
     if (!buttonIdleBlue && inputModeAC == micMode)
         toggleAudioInput();
+
+    if (not playback)
+        clearAlsaMixer();
 }

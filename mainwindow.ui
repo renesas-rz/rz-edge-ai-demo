@@ -640,7 +640,7 @@ Commands</string>
       <property name="geometry">
        <rect>
         <x>6</x>
-        <y>160</y>
+        <y>140</y>
         <width>120</width>
         <height>150</height>
        </rect>
@@ -660,13 +660,44 @@ LEFT
 RIGHT</string>
       </property>
      </widget>
+     <widget class="QLabel" name="micVolume">
+      <property name="text">
+       <string>MIC Gain</string>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>29</x>
+        <y>305</y>
+        <width>125</width>
+        <height>15</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+     </widget>
+     <widget class="QDial" name="micVolumeDial">
+      <property name="geometry">
+       <rect>
+        <x>15</x>
+        <y>325</y>
+        <width>100</width>
+        <height>100</height>
+       </rect>
+      </property>
+      <property name="notchesVisible">
+       <bool>true</bool>
+      </property>
+     </widget>
      <widget class="QLabel" name="noiseLevel">
       <property name="text">
        <string>Noise Threshold</string>
       </property>
       <property name="geometry">
        <rect>
-        <x>6</x>
+        <x>8</x>
         <y>425</y>
         <width>125</width>
         <height>15</height>

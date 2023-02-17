@@ -421,6 +421,7 @@ void MainWindow::setGuiPixelSizes()
     ui->labelHistoryAC->setFont(font);
     ui->commandList->setFont(font);
     ui->noiseLevel->setFont(font);
+    ui->micVolume->setFont(font);
 }
 
 void MainWindow::setupObjectDetectMode()

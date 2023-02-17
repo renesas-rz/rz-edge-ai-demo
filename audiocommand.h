@@ -59,6 +59,7 @@ public slots:
     void interpretInference(const QVector<float> &receivedTensor, int receivedTimeElapsed);
     void toggleAudioInput();
     void volumeThresholdDialChanged(int value);
+    void micVolumeDialChanged(int value);
 
 signals:
     void requestInference(void *data, size_t inputDataSize);
@@ -103,6 +104,17 @@ private:
     enum word_location current_search;
     enum word_location previous_search;
     float current_volume_threshold;
+
+    // ALSA Mixer
+    snd_mixer_t *alsa_handle = NULL;
+    snd_mixer_elem_t *alsa_element = NULL;
+    const char *alsa_card = "default";
+    long mic_volume_min;
+    long mic_volume_max;
+    long mic_volume_current;
+    bool setupAlsaMixer();
+    void clearAlsaMixer();
+    void setMicVolume(long volume);
 
     QVector<float> sortTensor(const QVector<float> receivedTensor, int receivedStride);
     void updateDetectedWords(QString word);
