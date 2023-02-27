@@ -376,12 +376,33 @@ void audioCommand::readAudioFile(QString filePath)
     }
 
     inputModeAC = audioFileMode;
+    // FIXME - there may be no MIC connected, which means this logic will need
+    // to be fixed.
     uiAC->actionLoad_Periph->setEnabled(true);
+
+    uiAC->micVolume->setEnabled(false);
+    uiAC->micVolumeDial->setEnabled(false);
 }
 
 void audioCommand::setMicMode()
 {
     inputModeAC = micMode;
+
+    uiAC->micVolume->setEnabled(false);
+    uiAC->micVolumeDial->setEnabled(false);
+    if (not playback) {
+        clearAlsaMixer();
+        if (setupAlsaMixer()) {
+            uiAC->micVolumeDial->setMinimum(mic_volume_min);
+            uiAC->micVolumeDial->setMaximum(mic_volume_max);
+            setMicVolume(mic_volume_max);
+            uiAC->micVolumeDial->setValue(mic_volume_max);
+            connect(uiAC->micVolumeDial, SIGNAL(valueChanged(int)), this,
+                    SLOT(micVolumeDialChanged(int)));
+            uiAC->micVolume->setEnabled(true);
+            uiAC->micVolumeDial->setEnabled(true);
+	}
+    }
 }
 
 bool audioCommand::readSecondFromInputStream(float *inputBuffer) {
